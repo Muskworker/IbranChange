@@ -57,6 +57,10 @@ class Segment < Hash
     @dictum.fetch(@pos + 1, Segment.new)
   end
   
+  def after_next
+    self.next.next
+  end
+  
   def phon
     fetch(:IPA, '')
   end
@@ -343,7 +347,7 @@ def step_VL0(str)
   @current.change({IPA: "g"}, {IPA: "gw", orthography: "gu"}, ->(segm){segm.next.delete}) do |segm| 
     segm.prev.phon == 'n' && 
     segm.next.phon == 'u' &&  
-    is_vowel?(segm.next.next)
+    is_vowel?(segm.after_next)
   end
 
   # /nf/ acts like /mf/
@@ -351,7 +355,7 @@ def step_VL0(str)
   
   # /Vns/ -> /V:s/
   @current = @current.each_with_index do |segm, idx|
-    if is_vowel?(segm) && segm.next.phon == "n" && segm.next.next.phon == "s"
+    if is_vowel?(segm) && segm.next.phon == "n" && segm.after_next.phon == "s"
       segm[:long] = true
       segm[:orthography] = segm[:orthography].tr("aeiouy", "āēīōūȳ")
       segm.next.delete
