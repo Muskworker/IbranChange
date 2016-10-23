@@ -6,6 +6,14 @@ class Dictum < Array
     super(segm)
   end
   
+  def insert(idx, *segm)
+    super(idx, *segm)
+    
+    segm.each {|s| s.dictum = self}
+    renumber
+  end
+
+  
   def initialize segments = []
     segments.inject(self) do |dict, seg|
       dict << seg
