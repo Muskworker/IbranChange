@@ -2323,7 +2323,7 @@ end
 
 # INCOMPLETE
 def convert_LL str
-  @current = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|./i).inject([]) do |memo, obj|
+  @current = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra.merge!({ long: true }) if obj.match(/aũ|éũ|eũ|éu|eu|iũ/i)
     #supra.merge!({ originally_long: true }) if obj.match(/[āēīōūȳ]/i)
@@ -2361,7 +2361,7 @@ def convert_LL str
     else obj.dup
     end
   
-    memo << { IPA: phon, orthography: orth }.merge(supra)
+    memo << Segment[{ IPA: phon, orthography: orth }.merge(supra).to_a]
   end
 
   @current = @current.each_with_index do |segment, idx|
@@ -2439,22 +2439,30 @@ def convert_LL str
   # Endings
   case join(@current)
   when /alis|alem$/
-    @current[-4..-1] = [{:IPA=>"o", :orthography=>"au", :stress=>true, :long=>true}] 
+    @current.pop(4) 
+    @current << Segment[{:IPA=>"o", :orthography=>"au", :stress=>true, :long=>true}.to_a]
   when /āre$/
-    @current[-3..-1] = [{:IPA=>"ɑ", :orthography=>"a", :stress=>true, :long=>false}, {:IPA=>"r", :orthography=>"r", :long=>false}] 
+    @current.pop(3)
+    @current << Segment[{:IPA=>"ɑ", :orthography=>"a", :stress=>true, :long=>false}.to_a] << Segment[{:IPA=>"r", :orthography=>"r", :long=>false}.to_a]
   when /as$/
-    @current[-2..-1] = [{:IPA=>"ə", :orthography=>"e", :long=>false}, {:IPA=>"s", :orthography=>"s", :long=>false}] 
+    @current.pop(2)
+    @current << Segment[{:IPA=>"ə", :orthography=>"e", :long=>false}.to_a] << Segment[{:IPA=>"s", :orthography=>"s", :long=>false}.to_a]
   when /atio$/
-    @current[-3..-1] = [{:IPA=>"ɑ", :orthography=>"a", :long=>false}, {:IPA=>"ʒʒ", :orthography=>"sç", :long=>false}, {:IPA=>"ũ", :orthography=>"uon", :long=>true, :stress=>true}] 
+    @current.pop(3)
+    @current << Segment[{:IPA=>"ɑ", :orthography=>"a", :long=>false}.to_a] << Segment[{:IPA=>"ʒʒ", :orthography=>"sç", :long=>false}.to_a] << Segment[{:IPA=>"ũ", :orthography=>"uon", :long=>true, :stress=>true}.to_a]
   when /a$/
-    @current[-1] = {:IPA=>"ə", :orthography=>"e", :long=>false}
+    @current.pop
+    @current << Segment[{:IPA=>"ə", :orthography=>"e", :long=>false}.to_a]
     respell_velars(@current)
   when /ēre$/
-    @current[-3..-1] = [{:IPA=>"je", :orthography=>"ié", :stress=>true, :long=>false}, {:IPA=>"r", :orthography=>"r", :long=>false}] 
+    @current.pop(3)
+    @current << Segment[{:IPA=>"je", :orthography=>"ié", :stress=>true, :long=>false}.to_a] << Segment[{:IPA=>"r", :orthography=>"r", :long=>false}.to_a]
   when /(énsem|énsis)$/
-    @current[-5..-1] = [{:IPA=>"e", :orthography=>"é", :stress=>true, :long=>false}, {:IPA=>"s", :orthography=>"s", :long=>false}] 
+    @current.pop(5)
+    @current << Segment[{:IPA=>"e", :orthography=>"é", :stress=>true, :long=>false}.to_a] << Segment[{:IPA=>"s", :orthography=>"s", :long=>false}.to_a]
   when /(sin|sis)$/
-    @current[-3..-1] = [{:IPA=>"s", :orthography=>"s", :long=>false}]
+    @current.pop(3)
+    @current << Segment[{:IPA=>"s", :orthography=>"s", :long=>false}.to_a]
   when /um$/ # not us
     @current.pop(1)
     @current = step_OI26(@current)
