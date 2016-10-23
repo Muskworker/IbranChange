@@ -2202,7 +2202,7 @@ end
 
 # INCOMPLETE
 def convert_OLF str
-  @current = str.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|./i).inject([]) do |memo, obj|
+  @current = str.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra.merge!({ long: true }) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
   
@@ -2244,7 +2244,7 @@ def convert_OLF str
     else obj.dup
     end
   
-    memo << { IPA: phon, orthography: orth }.merge(supra)
+    memo << Segment[{ IPA: phon, orthography: orth }.merge(supra).to_a]
   end
   
   # velar before front vowels
@@ -2272,8 +2272,15 @@ def convert_OLF str
   end
   
   # Endings
-  @current[-3..-1] = [{:IPA=>"ɑ", :orthography=>"a", :long=>false, :stress=>true}, {:IPA=>"r", :orthography=>"r", :long=>false}] if join(@current) =~ /are$/ 
-  @current[-5..-1] = [{:IPA=>"a", :orthography=>"ài", :long=>true, :stress=>true}, {:IPA=>"r", :orthography=>"r", :long=>false}] if join(@current) =~ /ariu(m|s)$/ #ariam, arium
+  case join(@current)
+  when /are$/
+    @current.pop(3)
+    @current << Segment[{:IPA=>"ɑ", :orthography=>"a", :long=>false, :stress=>true}.to_a] << Segment[{:IPA=>"r", :orthography=>"r", :long=>false}.to_a]
+  when /ariu(m|s)$/ #ariam, arium
+    @current.pop(5)
+    @current << Segment[{:IPA=>"a", :orthography=>"ài", :long=>true, :stress=>true}.to_a] << Segment[{:IPA=>"r", :orthography=>"r", :long=>false}.to_a]
+  end
+
 
   # assign stress
   # This is not even close to universally true but will work for our initial case
