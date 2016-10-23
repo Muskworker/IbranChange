@@ -1716,7 +1716,7 @@ def step_RI2 ary
       # segm[:IPA][0] = 'ʝ'  
 
       if segm[:IPA][1] # part of a diphthong
-        ary.insert(idx,  { IPA: 'ʝ', orthography: '' })
+        ary.insert(idx, Segment[{ IPA: 'ʝ', orthography: '' }.to_a])
         segm[:IPA][0] = ''
       else # by itself
         segm[:IPA] = 'ʝ'
@@ -1727,7 +1727,7 @@ def step_RI2 ary
       segm[:IPA][-2] && is_vowel?(segm[:IPA][-1]) &&   # end of diphthong
       (ary[idx+1] && is_vowel?(ary[idx+1][:IPA][0]))
       # segm[:IPA][0] = 'ʝ'  
-      ary.insert(idx+1, { IPA: 'ʝ', orthography: '' })
+      ary.insert(idx+1, Segment[{ IPA: 'ʝ', orthography: '' }.to_a])
       segm[:IPA][-1] = ''
     end
   end
@@ -2066,7 +2066,7 @@ def step_PI5 ary
         posttonic = true
       
         if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯"
-          ary.insert(idx+1, { IPA: 'ə', orthography: 'ă' })
+          ary.insert(idx+1, Segment[{ IPA: 'ə', orthography: 'ă' }.to_a])
           any_breve = true
           case
           when segm[:IPA][-1] == "ɥ"
@@ -2081,7 +2081,7 @@ def step_PI5 ary
         segm[:long] = true if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯" || (ary[idx+1] && is_vowel?(ary[idx+1]) && !ary[idx+1][:stress])
         
         if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯"
-          ary.insert(idx+1, { IPA: 'ə', orthography: 'a' })
+          ary.insert(idx+1, Segment[{ IPA: 'ə', orthography: 'a' }.to_a])
           case
           when segm[:IPA][-1] == "ɥ"
             segm[:IPA][-1] = ''
