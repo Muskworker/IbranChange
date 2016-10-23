@@ -53,6 +53,7 @@ class Segment < Hash
   end
   
   def next
+    @dictum.renumber
     @dictum.fetch(@pos + 1, Segment.new)
   end
   
