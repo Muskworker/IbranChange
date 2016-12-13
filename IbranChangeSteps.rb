@@ -1367,8 +1367,8 @@ end
 # plural /Os As/ to /@s/
 def step_OIx1 ary
   if @plural
-    ary.push({IPA: 'ə', orthography: 'e'}) unless ary[-1][:IPA][-1] == 'ə'
-    ary.push({IPA: 's', orthography: 's'})
+    ary << (Segment[{IPA: 'ə', orthography: 'e'}.to_a]) unless ary[-1][:IPA][-1] == 'ə'
+    ary << (Segment[{IPA: 's', orthography: 's'}.to_a])
   end
   
   @current = ary # This is not something we would feed in here without marking it's plural or a noun to be declined.
