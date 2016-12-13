@@ -2397,6 +2397,7 @@ def convert_LL str
     when /c/i      then "k"
     when /z/i      then "ʃ"
     when /ph/i     then 'f'
+    when /th/      then 'θ'
       #when /ng/i     then 'ng'
     when /j/       then 'ʝ'
     else obj.dup.downcase
