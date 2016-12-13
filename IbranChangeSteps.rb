@@ -1968,6 +1968,27 @@ def cyrillize ary
   cyrl.gsub(/ç/, 'ш')
 end
 
+def neocyrillize ary
+  cyrl = full_ipa(ary).tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐ", "абвджзилмннњоөпрсстуүфѡшыюяя")
+  cyrl.gsub!(/\u0304/, '')
+  cyrl.gsub!(/тш/, "ч")
+  cyrl.gsub!(/дж/, "џ")
+  cyrl.gsub!(/gʲ/, "г")
+  cyrl.gsub!(/kʲ/, "к")
+  cyrl.gsub!(/g/, "гъ")
+  cyrl.gsub!(/k/, "къ")
+  cyrl.gsub!(/ç/, 'с́')
+  cyrl.gsub!(/ŋ/, 'нг')
+  cyrl.gsub!(/[jʝ]ɛ/, 'є')
+  cyrl.gsub!(/[jʝ][ei]/, 'ї')
+  cyrl.gsub!(/ʝ$/, "јъ")
+  cyrl = cyrl.tr("ʝɛi", "јеі")
+  cyrl.gsub!(/([аиоөуүѡыюєяїеі])j([^аиоөуүѡыюєяїеі])/, '\1й\2')
+  cyrl.gsub!(/([аиоөуүѡыюєяїеі])w([^аиоөуүѡыюєяїеі])/, '\1ў\2')
+  cyrl = cyrl.tr("jw", "јв")
+  cyrl.gsub(/[ˈː]/, '')
+end
+
 #############
 # i~ o~ y~ > E~ O~ œ~
 def step_PI1 ary

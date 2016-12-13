@@ -278,3 +278,5 @@ end
 if ARGV.include?("-t")
   puts "{ w: \"#{input}\", RI_IPA: \"#{full_ipa(@roesan_steps[-1])}\", RI_Cyrl: \"#{cyrillize(@roesan_steps[-1])}\", RI_Latn: \"#{join(@roesan_steps[-1])}\", PI_IPA: \"#{full_ipa(@paysan_steps[-1])}\", PI: \"#{join(@paysan_steps[-1])}\" },"
 end
+
+p "Neocyrillic: #{neocyrillize(@roesan_steps[-1])}"
