@@ -1637,6 +1637,7 @@ def step_CI6 ary
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm[:IPA] == 'g' && segm.next.phon == 'l' 
       segm[:IPA] = "l"
+      segm[:palatalized] = false
     end
   end
 end
