@@ -155,7 +155,7 @@ end
 def is_diphthong?(phone)
   case phone
   when String
-    (phone.count("aeiouyæɑɐəɛɔøœ") > 0 && phone.count("jwɥ\u032f") > 0 && phone.count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032f") == 0) ||
+    (phone.count("aeiouyæɑɐəɛɔøœ") > 0 && phone.count("jwɥ\u032fː") > 0 && phone.count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː") == 0) ||
     %w{au ae oe}.include?(phone)
 #    %w{au ae oe oj   ɔj  ɛj  ej  jɛ  je  ɔɛ̯  ɑɛ̯  wɛ 
 #                ojw  ɔjw ɛjw ejw jɛw jew ɔɛ̯w ɑɛ̯w wɛw aw ɑw əw ɛw ew iw ɔw ow uw 
