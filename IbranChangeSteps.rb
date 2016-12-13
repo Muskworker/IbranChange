@@ -1648,20 +1648,20 @@ def step_CI7 ary
     if is_affricate?(segm)
       case segm[:IPA]
       when "tʃ"
-        if ary[idx-1] && ary[idx-1][:IPA] == 't' 
+        if segm.prev.phon == 't' 
           segm[:IPA] = "tʃ"
-          segm[:orthography] = "#{ary[idx-1][:orthography]}#{segm[:orthography]}"
-          ary[idx-1][:IPA] = nil
-          ary[idx-1][:orthography] = nil
+          segm[:orthography] = "#{segm.prev.orth}#{segm[:orthography]}"
+          segm.prev[:IPA] = nil
+          segm.prev[:orthography] = nil
         else
           segm[:IPA] = "ç"
         end
       when "dʒ"
-        if ary[idx-1] && ary[idx-1][:IPA] == 'd' 
+        if segm.prev.phon == 'd' 
           segm[:IPA] = "dʒ"
-          segm[:orthography] = "#{ary[idx-1][:orthography]}#{segm[:orthography]}"
-          ary[idx-1][:IPA] = nil
-          ary[idx-1][:orthography] = nil
+          segm[:orthography] = "#{segm.prev.orth}#{segm[:orthography]}"
+          segm.prev[:IPA] = nil
+          segm.prev[:orthography] = nil
         else
           segm[:IPA] = "ʝ"
         end
