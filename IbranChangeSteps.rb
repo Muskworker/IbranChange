@@ -525,6 +525,11 @@ def step_VL6(ary)
           segment.next[:IPA] = 'r'
           segment.next[:orthography] = 'r'
         end
+        
+        # some assimilation
+        if is_voiceless?(segment.next) && is_voiced?(segment.prev)
+          devoice! segment.prev
+        end
       end
     end
   end
