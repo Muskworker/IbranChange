@@ -2137,9 +2137,10 @@ def step_PI5 ary
         
         if !segm[:long]  # I don't think this will catch /jV/ /wV/ diphthongs
           #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' : 
-          segm[:IPA][0] = 'ə'
+          vowel_pos = is_vowel?(segm[:IPA][0]) ? 0 : 1
+          segm[:IPA][vowel_pos] = 'ə'
           if posttonic && segm[:orthography] != 'ă'
-            segm[:orthography][0] = (any_breve ? 'a' : 'ă')
+            segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
             segm[:orthography].gsub!(/ă\u0302/, "ă")  # no ă̂
             any_breve = true
           end
@@ -2530,6 +2531,7 @@ def convert_LL str
   @current = step_CI2(@current)
   @current = step_CI3(@current)
   @current = step_CI4(@current)
+  @current = step_CI8(@current)
 
   posttonic = false
   
