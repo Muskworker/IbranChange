@@ -2461,6 +2461,12 @@ def convert_LL str
   when /atio$/
     @current.pop(3)
     @current << Segment[{:IPA=>"ɑ", :orthography=>"a", :long=>false}.to_a] << Segment[{:IPA=>"ʒʒ", :orthography=>"sç", :long=>false}.to_a] << Segment[{:IPA=>"ũ", :orthography=>"uon", :long=>true, :stress=>true}.to_a]
+  when /illum$/
+    @current.pop(3)
+    @current << Segment[{IPA: "i", orthography: "ill", stress: true, long: true}.to_a]
+  when /illa$/
+    @current.pop(4)
+    @current << Segment[{IPA: "i", orthography: "i", stress: true}.to_a] << Segment[{IPA: "j", orthography: "ll"}.to_a] << Segment[{IPA: "ə", orthography: "e"}]
   when /a$/
     @current.pop
     @current << Segment[{:IPA=>"ə", :orthography=>"e", :long=>false}.to_a]
