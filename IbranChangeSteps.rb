@@ -375,13 +375,24 @@ def step_VL0(str)
       word[-1][:IPA] = nil
       word[-1][:orthography] = nil
     else
+      modifier = 0
+      if word[-1][:orthography] == ">" # stress to the right
+        modifier = 1
+        word[-1][:IPA] = nil
+        word[-1][:orthography] = nil
+      elsif word[-1][:orthography] == "<" # stress to the left
+        modifier = -1
+        word[-1][:IPA] = nil
+        word[-1][:orthography] = nil
+      end
+      
       case vowels.length
       when 0, 1
         # no stress
       when 2 
         vowels[-2][:stress] = true 
       else
-        (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2][:stress] = true : vowels[-3][:stress] = true
+        (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2+modifier][:stress] = true : vowels[-3+modifier][:stress] = true
       end
     end
   end
