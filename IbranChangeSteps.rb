@@ -1296,7 +1296,7 @@ def step_OI29 ary
           
 
           if ary[idx-1] && ary[idx-1][:IPA] && %w{ʃ ʒ ç k g}.include?(ary[idx-1][:IPA][-1]) && 
-              segm.next.phon && %w{a à o ó u}.include?(segm.next.orth[0])
+              segm.next.phon && !%w{i y e é}.include?(segm.next.orth[0])
             case ary[idx-1][:IPA][-1]
             when 'ʃ', 'ç'
               ary[idx-1][:orthography][-1] = 'ç'
