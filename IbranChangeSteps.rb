@@ -1731,7 +1731,7 @@ def step_RI2 ary
     if segm[:IPA][0] == "j" && 
       (is_vowel?(segm[:IPA][1]) ||   # front of diphthong
       (!segm[:IPA][1] && ary[idx+1] && is_vowel?(ary[idx+1][:IPA][0]))) && # isolated segment
-      !(idx > 0 && ary[idx-1] && !(is_dental?(ary[idx-1]) || ary[idx-1][:IPA] == 'r' || is_vowel_or_diphthong?(ary[idx-1]))) &&
+      !(idx > 0 && ary[idx-1] && !(is_dental?(ary[idx-1]) || (ary[idx-1][:IPA] == 'r' && is_vowel_or_diphthong?(segm.prev.prev)) || is_vowel_or_diphthong?(ary[idx-1]))) &&
       !(idx > 0 && ary[idx-1] && ary[idx-1][:IPA] == 'l') && 
       !(idx > 0 && ary[0...idx].all?{|seg| !is_vowel_or_diphthong?(seg[:IPA])})
       # segm[:IPA][0] = 'ʝ'  
