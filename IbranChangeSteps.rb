@@ -49,7 +49,7 @@ class Segment < Hash
   attr_accessor :dictum, :pos
   
   def prev
-    @dictum.fetch(@pos - 1, Segment.new)
+    @pos == 0 ? Segment.new : @dictum.fetch(@pos - 1, Segment.new)
   end
   
   def next
