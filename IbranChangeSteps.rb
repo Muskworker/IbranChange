@@ -2352,6 +2352,12 @@ def convert_OLF str
 
         # metathesis of @C > C@
         if is_intervocalic?(idx-1) && is_final?(idx+1) && @current[idx+1] && !is_vowel_or_diphthong?(segm.next)
+          @current[idx-1][:orthography] = case @current[idx-1][:orthography]
+            when "qu" then "c"
+            when "gu" then "g"
+            else @current[idx-1][:orthography]
+            end
+          
           @current[idx], @current[idx+1] = @current[idx+1], @current[idx]
         end
         
