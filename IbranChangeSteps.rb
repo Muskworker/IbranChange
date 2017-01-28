@@ -1,3 +1,4 @@
+# !is_vowel_or_diphthong => present && is_consonant
 class Dictum < Array
   def <<(segm)
     segm.dictum = self
@@ -2236,7 +2237,7 @@ def step_PI10 ary
     segm[:orthography].gsub!(/w̃/, 'w')
     segm[:orthography].gsub!(/uou/, 'uo')
     segm[:orthography] = "l" if segm[:IPA] == "l" # |gl| /ll/
-    segm[:orthography].gsub!(/ă/, 'a') if segm.prev && %w{é ó}.include?(ary[idx-1][:orthography][-1])
+    segm[:orthography].gsub!(/ă/, 'a') if segm.prev.orth && %w{é ó}.include?(segm.prev.orth[-1])
     segm[:orthography].gsub!(/àu/, 'au')
     segm[:orthography] = "y" if segm[:IPA] == "ji"
     segm[:orthography] = "c" if segm[:orthography] == "qu" && %w{a à o ó u}.include?(segm.next.orth[0])
@@ -2308,7 +2309,7 @@ def convert_OLF str
 
   # post-vocalic H
   @current = @current.each_with_index do |segm, idx|
-    if ((@current[idx-1] && is_vowel_or_diphthong?(@current[idx-1]) &&
+    if ((is_vowel_or_diphthong?(segm.prev) &&
         !is_vowel_or_diphthong?(segm.next)) || is_final?(idx)) &&
         segm[:IPA] == 'h'
       segm[:orthography] = "gh"  # How's this?
@@ -2353,21 +2354,21 @@ def convert_OLF str
 
         # metathesis of @C > C@
         if is_intervocalic?(idx-1) && is_final?(idx+1) && @current[idx+1] && !is_vowel_or_diphthong?(segm.next)
-          @current[idx-1][:orthography] = case @current[idx-1][:orthography]
+          segm.prev[:orthography] = case segm.prev.orth
             when "qu" then "c"
             when "gu" then "g"
-            else @current[idx-1][:orthography]
+            else segm.prev.orth
             end
           
           @current[idx], @current[idx+1] = @current[idx+1], @current[idx]
         end
         
-        if @current[idx-1] && %w{e i é}.include?(@current[idx][:orthography])
-          case @current[idx-1][:IPA]
+        if segm.prev && %w{e i é}.include?(@current[idx][:orthography])
+          case segm.prev.phon
           when "k"
-            @current[idx-1][:orthography] = "qu"
+            segm.prev[:orthography] = "qu"
           when "g"
-            @current[idx-1][:orthography] = "gu"
+            segm.prev[:orthography] = "gu"
           end
         end
       end
@@ -2428,7 +2429,7 @@ def convert_LL str
     if segment[:IPA] == 'g' && 
       segment.next.phon == 'u' &&
       is_vowel?(segment.after_next) && 
-      idx > 0 && @current[idx-1] && @current[idx-1][:IPA] == 'n'
+      idx > 0 && segm.prev.phon == 'n'
         segment[:IPA] = 'gw'
         segment[:orthography] = 'gu'
         segment.next.phon = nil
