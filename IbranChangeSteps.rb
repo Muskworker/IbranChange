@@ -420,9 +420,9 @@ end
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
 def step_VL1(ary)
   phrase = ary.slice_before {|word| word[:IPA] == " " }.collect do |word| 
-    n = word.monosyllable? ? {IPA: "n", orthography: "n"} : {}
+    new_final = word.monosyllable? ? {IPA: "n", orthography: "n"} : {}
   
-    word.change({IPA: 'm'}, n, word.monosyllable? ? nil : ->(segm){segm.delete}) do |segm|
+    word.change({IPA: 'm'}, new_final, word.monosyllable? ? nil : ->(segm){segm.delete}) do |segm|
       segm.final?
     end
   end
