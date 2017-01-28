@@ -2246,7 +2246,7 @@ end
 
 # INCOMPLETE
 def convert_OLF str
-  @current = str.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|./i).inject(Dictum.new) do |memo, obj|
+  @current = str.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra.merge!({ long: true }) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
   
@@ -2272,6 +2272,7 @@ def convert_OLF str
     when /c/i    then "k"
     when /ng/i   then 'ŋ'
     when /ph/i   then 'f'
+    when /nj/i   then 'ɲ'
     else obj.dup.downcase
     end
   
@@ -2284,6 +2285,7 @@ def convert_OLF str
     when /ī/i  then "i"
     when /ō/i  then "ó"
     when /ū/i  then "u"
+    when /nj/i then "nh"
     when /j/i  then "y" # revisit this as needed
     else obj.dup
     end
