@@ -2429,7 +2429,7 @@ def convert_LL str
     end
 
     # |tiV| 
-    if segment[:IPA] == 't' && 
+    if %w{t s}.include?(segment[:IPA]) && 
       segment.next.phon == 'i' &&
       is_vowel?(segment.after_next)
         # do the thing
