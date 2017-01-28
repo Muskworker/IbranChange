@@ -43,6 +43,16 @@ class Dictum < Array
       segm.pos = idx
     end
   end  
+  
+  ### Linguistic functions
+  # Number of syllables
+  def syllable_count
+    count {|segm| is_vowel_or_diphthong?(segm)}
+  end
+  
+  def monosyllable?
+    syllable_count == 1
+  end
 end
 
 class Segment < Hash
@@ -109,7 +119,6 @@ end
 
 def full_ipa(ary)
   output = "" 
-  syllable_count = ary.count{|segm| is_vowel_or_diphthong?(segm) } 
   
   ary.each_with_index do |segm, idx|
     # stress mark
@@ -117,7 +126,7 @@ def full_ipa(ary)
     is_initial = (idx == 0) || (ary[idx-1] && [' ', nil].include?(ary[idx-1][:IPA]))
     is_prior_initial = (idx == 1) || (ary[idx-2] && [' ', nil].include?(ary[idx-2][:IPA]))
     
-    if syllable_count > 1
+    if ary.syllable_count > 1
       # LOL
       if ((intervocalic || is_initial || ((is_consonant?(segm) && ary[idx-1] && (is_sonorant?(ary[idx-1]) || (!is_prior_initial && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && is_consonant?(segm)) || # (V(R))'CV
           ((is_consonant?(segm) && !is_sonorant?(segm)) && is_sonorant?(segm.next) && segm.after_next[:stress] && !(ary[idx-1] && ary[idx-1][:IPA] == 's')) || # 'CRV - initial cluster
@@ -374,7 +383,6 @@ def step_VL0(str)
   # assign stress to each word
   @current.slice_before {|word| word[:IPA] == " " }.each do |word| 
     vowels = word.find_all{|segment| is_vowel_or_diphthong?(segment[:IPA])}
-#    syllable_count = vowels.length
   
     if word[-1][:orthography] == "!" # Manual override for final stress
       vowels[-1][:stress] = true
@@ -412,10 +420,9 @@ end
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
 def step_VL1(ary)
   phrase = ary.slice_before {|word| word[:IPA] == " " }.collect do |word| 
-    monosyllable = word.count {|s| is_vowel_or_diphthong?(s)} == 1
-    n = monosyllable ? {IPA: "n", orthography: "n"} : {}
+    n = word.monosyllable? ? {IPA: "n", orthography: "n"} : {}
   
-    word.change({IPA: 'm'}, n, monosyllable ? nil : ->(segm){segm.delete}) do |segm|
+    word.change({IPA: 'm'}, n, word.monosyllable? ? nil : ->(segm){segm.delete}) do |segm|
       segm.final?
     end
   end
@@ -458,34 +465,22 @@ end
 # { e, i }[-stress][+penult] > j / __V
 # Changed to { e, i }[-stress][-initial_syllable] > j / __V
 def step_VL5(ary)
-  #syllable_count = 0
-
   # each word
   ary.slice_before {|word| word[:IPA] == " " }.each do |word| 
     # assign stress.
-     vowels = word.find_all{|segment| is_vowel_or_diphthong?(segment[:IPA])}
-     syllable_count = vowels.length
-#  
-#    case vowels.length
-#    when 0, 1
-#      # no stress
-#    when 2 
-#      vowels[-2][:stress] = true 
-#    else
-#      (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2][:stress] = true : vowels[-3][:stress] = true
-#    end
+     syllables_from_end = word.syllable_count
 
     # 5.
     word.each_with_index do |segment, idx|
-      if is_vowel_or_diphthong?(segment[:IPA]) then syllable_count -= 1 end
-    
-      if syllable_count != vowels.length - 1 && #was: "syllable_count == 1 &&" # penult
+      if syllables_from_end < word.syllable_count && # non-initial syllable
         %w{e i}.include?(segment[:IPA]) && 
         !segment[:stress] &&
         is_vowel_or_diphthong?(segment.next.phon)
           segment[:IPA] = "j"
           segment[:orthography] = "j"
       end
+
+      if is_vowel_or_diphthong?(segment[:IPA]) then syllables_from_end -= 1 end
     end
   end
 
@@ -512,14 +507,14 @@ def step_VL6(ary)
 
   ary.slice_before {|word| word[:IPA] == " " }.each do |word| 
 
-    syllable_count = word.count{ |segment| is_vowel_or_diphthong? segment[:IPA] }
+    syllables_from_end = word.syllable_count
   
     word.each_with_index do |segment, idx|
       if is_vowel_or_diphthong?(segment[:IPA]) 
-         syllable_count -= 1 
+         syllables_from_end -= 1 
          posttonic = true if segment[:stress]
       end      
-      if syllable_count == 1 && !segment[:stress] && is_vowel?(segment) && posttonic
+      if syllables_from_end == 1 && !segment[:stress] && is_vowel?(segment) && posttonic
         if is_stop?(segment.before_prev) && is_sonorant?(segment.prev) && is_consonant?(segment.next)
           # putridum > puterdum
           segment[:IPA], segment.prev[:IPA] = segment.prev[:IPA], "e"
@@ -635,7 +630,7 @@ def step_OI1(ary)
   when 0
     # Monosyllables don't get stress till end of OI.
     # But monosyllables that combined, like 'de post', get final accent.
-    ary.select {|segm| is_vowel?(segm) }.last[:stress] = true unless ary.count{|segm| is_vowel?(segm)} < 2
+    ary.select {|segm| is_vowel?(segm) }.last[:stress] = true unless ary.monosyllable?
   when 1
   else
     # If multiple vowels are stressed, only the last one gets the new primary stress
@@ -1202,7 +1197,7 @@ def step_OI26 ary
       if (is_consonant?(segm.prev) && is_consonant?(segm.before_prev) && 
           stop_cluster) && 
           !(is_vowel_or_diphthong?(segm.prev.phon[-1])) || # drop a vowel after a vowel
-          ary.count{|s| is_vowel_or_diphthong?(s) } < 2 || # don't drop our only vowel
+          ary.monosyllable? || # don't drop our only vowel
           fricative_cluster ||
           (segm.next.phon == 's' && is_sibilant?(segm.prev))
         segm[:IPA] = "ə"
@@ -1246,7 +1241,7 @@ end
 # A > @
 def step_OI27 ary
   @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == 'ɑ' && !segm[:stress] && is_final?(idx) && ary.count {|s| is_vowel_or_diphthong?(s) } > 1
+    if segm[:IPA] == 'ɑ' && !segm[:stress] && is_final?(idx) && !ary.monosyllable?
       segm[:IPA] = 'ə'
       segm[:orthography] = 'e'
 
@@ -1285,14 +1280,13 @@ end
 # reduce unstressed medial syllables
 def step_OI29 ary
   syllable = 0
-  syllable_count = ary.count{|segm| is_vowel_or_diphthong?(segm) }
   
   @current = ary.each_with_index do |segm, idx|    
     if is_vowel_or_diphthong?(segm)
       syllable += 1
       
       # if is not initial, and is not final, and is unstressed
-      if syllable > 1 && syllable < syllable_count && !segm[:stress] &&
+      if syllable > 1 && syllable < ary.syllable_count && !segm[:stress] &&
         segm[:IPA] != 'ə' # these come from #28 which we're working in parallel with
         # one consonant or less to either side
         if (is_vowel_or_diphthong?(segm.prev) || 
@@ -1386,7 +1380,7 @@ end
 # loss of initial unstressed /E/ and /i/
 def step_OIx2 ary
   # Initial letter is E or i && is unstressed && is not the only syllable && sonority
-  if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first[:stress] && ary.count{|segm| is_vowel_or_diphthong?(segm)} > 1 
+  if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first[:stress] && !ary.monosyllable? 
     if !(ary[1] && ary[2] && is_consonant?(ary[1]) && !(%w{s ss}.include?(ary[1][:IPA])) && (is_stop?(ary[2]) || is_nasal?(ary[2]) || is_fricative?(ary[2]) || is_affricate?(ary[2])))
       ary.first[:IPA] = nil
       ary.first[:orthography] = nil
@@ -1877,8 +1871,7 @@ end
 
 # lose final schwa
 def step_RI10 ary
-  # ary.count {|segm| is_vowel_or_diphthong?(segm) } > 1 &&
-  # ^ we can have words of one character like ч.
+  # We can have words of one character like ч.
   # But don't lose our only segment.
   if (ary.size > 1 && %W{ə ə\u0303}.include?(ary.last[:IPA])) || (ary[-2] && !ary[-2][:stress] && ary.last[:IPA] == "ʰ" && ary[-2][:IPA] == "ə")
     case ary.last[:IPA]
@@ -2460,7 +2453,6 @@ def convert_LL str
   # assign stress to each word
   @current.slice_before {|word| word[:IPA] == " " }.each do |word| 
     vowels = word.find_all{|segment| is_vowel_or_diphthong?(segment[:IPA])}
-#    syllable_count = vowels.length
   
     if word[-1][:orthography] == "!" # Manual override for final stress
       vowels[-1][:stress] = true
