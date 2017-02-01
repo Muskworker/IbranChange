@@ -1426,6 +1426,7 @@ class IbranChangeTest < Minitest::Test
       { w: "andorranum>", RI_IPA: "ɑ̃dɔrˈrɑ̃", RI_Cyrl: "андорран", RI_Latn: "andorran", PI_IPA: "ə̃dərˈrɑ̃", PI: "andorran" },
       { w: "anulāre", RI_IPA: "ɑnyˈlɑr", RI_Cyrl: "анүлар", RI_Latn: "anular", PI_IPA: "ənəˈlɑr", PI: "anular" },
       { w: "astrum", RI_IPA: "ɑttr", RI_Cyrl: "аттр", RI_Latn: "astre", PI_IPA: "ˈɑtrə", PI: "âtră" },
+      { w: "augmentāre", RI_IPA: "ogʲmɛ̃ˈtɑr", RI_Cyrl: "ѡгментар", RI_Latn: "augmentar", PI_IPA: "əxmə̃ˈtɑr", PI: "augmentar" },
       { w: "basilicum", RI_IPA: "bɑˈzilikʲ", RI_Cyrl: "базілік", RI_Latn: "basilic", PI_IPA: "bəˈzilək", PI: "basilăc" },
       { w: "caienna", RI_IPA: "kʲɑˈʝɛ̃n", RI_Cyrl: "каженн", RI_Latn: "cayenne", PI_IPA: "kəˈjɛ̃nə", PI: "cayennă" },
       { w: "canella", RI_IPA: "kʲɑˈnell", RI_Cyrl: "канилл", RI_Latn: "canélle", PI_IPA: "kəˈnellə", PI: "canéllă" },
@@ -1440,6 +1441,7 @@ class IbranChangeTest < Minitest::Test
       { w: "diatribas>", RI_IPA: "diɑˈtrib", RI_Cyrl: "діатріб", RI_Latn: "diatribes", PI_IPA: "diːəˈtribəs", PI: "diatribăs" },
       { w: "discum", RI_IPA: "dikʲkʲ", RI_Cyrl: "дікк", RI_Latn: "disc", PI_IPA: "dik", PI: "dîc" },
       { w: "emphasis", RI_IPA: "ˈɛ̃vɑʰ", RI_Cyrl: "енва’", RI_Latn: "emfas", PI_IPA: "ˈɛ̃vəs", PI: "emfăs" },
+      { w: "entropia>", RI_IPA: "ɛ̃trɔˈpi", RI_Cyrl: "ентропі", RI_Latn: "entropie", PI_IPA: "ə̃trəˈpiə", PI: "entropiă" },
       { w: "epictetum>", RI_IPA: "ɛpikʲˈtet", RI_Cyrl: "епіктит", RI_Latn: "epictét", PI_IPA: "əpəkˈtet", PI: "epictét" },
       { w: "existēre", RI_IPA: "ɛksicˈcçer", RI_Cyrl: "ексіттјир", RI_Latn: "existiér", PI_IPA: "əksəˈtir", PI: "exîtir" },
       { w: "existiée", RI_IPA: "ɛksicˈcçe", RI_Cyrl: "ексіттји", RI_Latn: "existiée", PI_IPA: "əksəˈtjeə", PI: "exîtiéa" },
@@ -1451,6 +1453,7 @@ class IbranChangeTest < Minitest::Test
       { w: "helice", RI_IPA: "ˈɛliç", RI_Cyrl: "еліш", RI_Latn: "helice", PI_IPA: "ˈhɛləçə", PI: "helăça" }, # sg based on pl
       { w: "indice", RI_IPA: "ˈĩdiç", RI_Cyrl: "індіш", RI_Latn: "indice", PI_IPA: "ˈɛ̃dəçə", PI: "indăça" }, # sg based on pl
       { w: "inflatio", RI_IPA: "ĩvlɑˈʒʒũː", RI_Cyrl: "інвлажжӯн", RI_Latn: "imflasçuon", PI_IPA: "ə̃vləˈʒʒũː", PI: "imflasçuon" },
+      { w: "isolāre", RI_IPA: "izɔˈlɑr", RI_Cyrl: "ізолар", RI_Latn: "isolar", PI_IPA: "əzəˈlɑr", PI: "isolar" },
       { w: "jamaica", RI_IPA: "ʝɑˈmɑʝikʲ", RI_Cyrl: "жамажік", RI_Latn: "jamayque", PI_IPA: "ʝəˈmɑjəkə", PI: "jamayăca" },
       { w: "japon!", RI_IPA: "ʝɑˈpɔ̃", RI_Cyrl: "жапон", RI_Latn: "japon", PI_IPA: "ʝəˈpɔ̃", PI: "japon" },
       { w: "japonensis", RI_IPA: "ʝɑpɔˈneʰ", RI_Cyrl: "жапони’", RI_Latn: "japonés", PI_IPA: "ʝəpəˈnes", PI: "japonés" },
@@ -1487,6 +1490,7 @@ class IbranChangeTest < Minitest::Test
       { w: "sphera", RI_IPA: "zver", RI_Cyrl: "звир", RI_Latn: "sfére", PI_IPA: "ˈzverə", PI: "sféră" },
       { w: "spiralis>", RI_IPA: "ʰpiˈroː", RI_Cyrl: "’пірѡ̄", RI_Latn: "spirau", PI_IPA: "spəˈroː", PI: "spirau" },
       { w: "sumach", RI_IPA: "ˈzymɑkʲ", RI_Cyrl: "зүмак", RI_Latn: "sumac", PI_IPA: "ˈzymək", PI: "sumăc" },
+      { w: "systema>", RI_IPA: "zitˈtem", RI_Cyrl: "зіттим", RI_Latn: "sistéme", PI_IPA: "zəˈtemə", PI: "sîtémă" },
       { w: "thymum", RI_IPA: "dĩ", RI_Cyrl: "дін", RI_Latn: "dim", PI_IPA: "dɛ̃", PI: "dim" },
       { w: "zeta", RI_IPA: "ʒet", RI_Cyrl: "жит", RI_Latn: "zéte", PI_IPA: "ˈʒetə", PI: "zétă" },
       { w: "zuccarum", RI_IPA: "ˈʒykʲkʲɑr", RI_Cyrl: "жүккар", RI_Latn: "zuccar", PI_IPA: "ˈʒykkər", PI: "zuccăr" }
