@@ -1,3 +1,4 @@
+# Dictum: A word or series of segments.
 class Dictum < Array
   def <<(segm)
     segm.dictum = self
