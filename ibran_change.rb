@@ -1,6 +1,6 @@
 #!/usr/bin/ruby -w
-require './IbranChangeSteps.rb'
-require './IbranVerbPresenter.rb'
+require './ibran_change_steps.rb'
+require './ibran_verb_presenter.rb'
 
 input = ARGV[-1] # STDIN.read
 

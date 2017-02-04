@@ -2,7 +2,7 @@
 
 #require 'test/unit'
 require 'minitest/autorun'
-require './IbranChangeSteps.rb'
+require './ibran_change_steps.rb'
 
 class IbranChangeTest < Minitest::Test  
   def test_zero
