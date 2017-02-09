@@ -112,7 +112,15 @@ class Segment < Hash
     segm.all? do |k, _|
       self[k] == segm[k]
     end
+  end
 
+  ### Linguistic functions
+  def intervocalic?
+    prev.vocalic? && nxt.vocalic?
+  end
+
+  def vocalic?
+    is_vowel?(phon) || is_diphthong?(phon)
   end
 
   def final?
@@ -134,13 +142,12 @@ def full_ipa(ary)
 
   ary.each_with_index do |segm, idx|
     # stress mark
-    intervocalic = idx != 0 && ary[idx-1] && is_vowel_or_diphthong?(ary[idx-1]) && is_vowel_or_diphthong?(segm.next)
     is_initial = (idx == 0) || (ary[idx-1] && [' ', nil].include?(ary[idx-1][:IPA]))
     is_prior_initial = (idx == 1) || (ary[idx-2] && [' ', nil].include?(ary[idx-2][:IPA]))
 
     if ary.syllable_count > 1
       # LOL
-      if ((intervocalic || is_initial || ((is_consonant?(segm) && ary[idx-1] && (is_sonorant?(ary[idx-1]) || (!is_prior_initial && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && is_consonant?(segm)) || # (V(R))'CV
+      if ((segm.intervocalic? || is_initial || ((is_consonant?(segm) && ary[idx-1] && (is_sonorant?(ary[idx-1]) || (!is_prior_initial && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && is_consonant?(segm)) || # (V(R))'CV
           ((is_consonant?(segm) && !is_sonorant?(segm)) && is_sonorant?(segm.next) && segm.after_next[:stress] && !(ary[idx-1] && ary[idx-1][:IPA] == 's')) || # 'CRV - initial cluster
           ((is_initial || (ary[idx-1] && is_vowel_or_diphthong?(ary[idx-1]))) && segm[:stress]) || # 'V - Syllable-initial stressed vowel
           (is_fricative?(ary[idx-1]) && is_fricative?(segm) && segm.next[:stress]) || #F'F - fricative cluster
@@ -193,6 +200,7 @@ def is_diphthong?(phone)
   end
 end
 
+# DEPRECATED: TODO: Use segm.vocalic?
 def is_vowel_or_diphthong?(phone)
   is_vowel?(phone) || is_diphthong?(phone)
 end
@@ -209,6 +217,7 @@ def is_final?(pos)
   @current[pos+1].nil? || [' ', nil].include?(@current[pos+1][:IPA])
 end
 
+# DEPRECATED: TODO: Use segm.intervocalic?
 def is_intervocalic?(pos)
   pos != 0 && is_vowel_or_diphthong?(@current[pos+1]) && is_vowel_or_diphthong?(@current[pos-1])
 end
