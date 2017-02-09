@@ -104,10 +104,7 @@ class Segment < Hash
     segm.all? do |k, _|
       self[k] == segm[k]
     end
-#    matches_phon = segm[:IPA] ? phon == segm[:IPA] : true
-#    matches_orth = segm[:orthography] ? orth == segm[:orthography] : true
 
-#    matches_phon && matches_orth
   end
 
   def final?
