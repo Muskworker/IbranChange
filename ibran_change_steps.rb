@@ -67,13 +67,14 @@ class Segment < Hash
     @dictum.renumber
     @dictum.fetch(@pos + 1, Segment.new)
   end
+  alias :nxt :next # 'next' is the best name, but it's a keyword 
 
   def before_prev
     prev.prev
   end
 
   def after_next
-    self.next.next
+    nxt.nxt
   end
 
   def phon
@@ -103,7 +104,7 @@ class Segment < Hash
   end
 
   def final?
-    pos == @dictum.size - 1 || self.next.phon == ' '
+    pos == @dictum.size - 1 || nxt.phon == ' '
   end
 end
 
