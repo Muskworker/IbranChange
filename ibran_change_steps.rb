@@ -49,6 +49,14 @@ class Dictum < Array
     end
   end
   
+  # TODO: Replace all the delete_if with this
+  def compact
+    Dictum.new(self - [Segment[IPA: nil, orthography: nil]])
+  end
+  
+  def compact!
+    self if delete(Segment[IPA: nil, orthography: nil])
+  end
 
   ### Linguistic functions
   # Number of syllables
@@ -2449,7 +2457,7 @@ def convert_LL str
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact!
 
   # assign stress to each word
   @current.slice_before {|word| word[:IPA] == " " }.each do |word|
@@ -2494,7 +2502,7 @@ def convert_LL str
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact!
 
   # Endings
   case join(@current)
@@ -2582,7 +2590,7 @@ def convert_LL str
     posttonic = true if segm[:stress]
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # Ugh
