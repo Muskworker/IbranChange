@@ -42,6 +42,13 @@ class Dictum < Array
       segm.pos = idx
     end
   end
+  
+  def join(type = :orthography)
+    inject('') do |memo, obj|
+      memo << (obj[type] || '')
+    end
+  end
+  
 
   ### Linguistic functions
   # Number of syllables
@@ -108,14 +115,13 @@ class Segment < Hash
   end
 end
 
-def join(ary, type = :orthography)
-  ary.inject("") do |memo, obj|
-    memo << (obj[type] || '')
-  end
+# DEPRECATED: TODO: Use Dictum.join
+def join(dict, type = :orthography)
+  dict.join(type)
 end
 
-def ipa(ary)
-  join ary, :IPA
+def ipa(dict)
+  dict.join :IPA
 end
 
 def full_ipa(ary)
