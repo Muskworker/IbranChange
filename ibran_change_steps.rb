@@ -118,6 +118,14 @@ class Segment < Hash
       self[k] == segm[k]
     end
   end
+  
+  def starts_with
+    Segment[IPA: phon[0]]
+  end
+  
+  def ends_with
+    Segment[IPA: phon[-1]]
+  end
 
   ### Linguistic functions
   def intervocalic?
@@ -130,6 +138,10 @@ class Segment < Hash
 
   def initial?
     pos.zero? || nxt.phon == ' '
+  end
+
+  def consonantal?
+    !vocalic?
   end
 
   def final?
@@ -149,11 +161,11 @@ def full_ipa(ary)
     # stress mark
     if ary.syllable_count > 1
       # LOL
-      if ((segm.intervocalic? || segm.initial? || ((is_consonant?(segm) && ary[idx-1] && (is_sonorant?(ary[idx-1]) || (!segm.prev.initial? && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && is_consonant?(segm)) || # (V(R))'CV
-          ((is_consonant?(segm) && !is_sonorant?(segm)) && is_sonorant?(segm.next) && segm.after_next[:stress] && !(ary[idx-1] && ary[idx-1][:IPA] == 's')) || # 'CRV - initial cluster
+      if ((segm.intervocalic? || segm.initial? || ((segm.consonantal? && ary[idx-1] && (is_sonorant?(ary[idx-1]) || (!segm.prev.initial? && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && segm.consonantal?) || # (V(R))'CV
+          ((segm.consonantal? && !is_sonorant?(segm)) && is_sonorant?(segm.next) && segm.after_next[:stress] && !(ary[idx-1] && ary[idx-1][:IPA] == 's')) || # 'CRV - initial cluster
           ((segm.initial? || segm.prev.vocalic?) && segm[:stress]) || # 'V - Syllable-initial stressed vowel
           (is_fricative?(ary[idx-1]) && is_fricative?(segm) && segm.next[:stress]) || #F'F - fricative cluster
-          (segm.initial? && is_fricative?(segm) && is_consonant?(segm.next) && segm.after_next[:stress]) || # 'FCV - initial fricative + consonant + vowel
+          (segm.initial? && is_fricative?(segm) && segm.next.consonantal? && segm.after_next[:stress]) || # 'FCV - initial fricative + consonant + vowel
           (ary[idx-1] && ary[idx+1] && is_stop?(ary[idx-1]) && (is_stop?(segm) || is_affricate?(segm)) && ary[idx+1][:stress]) # CC cluster
         output << 'ˈ' unless output =~ /ˈ\S*$/ || (segm[:IPA] == " ") # don't add more than one
       end
@@ -200,10 +212,6 @@ def is_diphthong?(phone)
   when Hash
     is_diphthong? phone[:IPA]
   end
-end
-
-def is_consonant?(phone)
-  phone && !Segment[IPA: phone].vocalic?
 end
 
 # DEPRECATED: TODO: Use Segment.initial?
@@ -530,7 +538,7 @@ def step_VL6(ary)
          posttonic = true if segment[:stress]
       end
       if syllables_from_end == 1 && !segment[:stress] && is_vowel?(segment) && posttonic
-        if is_stop?(segment.before_prev) && is_sonorant?(segment.prev) && is_consonant?(segment.next)
+        if is_stop?(segment.before_prev) && is_sonorant?(segment.prev) && segment.next.consonantal?
           # putridum > puterdum
           segment[:IPA], segment.prev[:IPA] = segment.prev[:IPA], "e"
           segment[:orthography], segment.prev[:orthography] = segment.prev[:orthography], "e"
@@ -1203,9 +1211,9 @@ def step_OI26 ary
       # So precedent shows that /SSV/ reduces to /SS@/, not /SS/.  /ZZ/ for symmetry.
       fricative_cluster = %w{ʃʃ ʒʒ}.include?(segm.prev.phon)
 
-      if (is_consonant?(segm.prev) && is_consonant?(segm.before_prev) &&
+      if (segm.prev.consonantal? && segm.before_prev.consonantal? &&
           stop_cluster) &&
-          !Segment[IPA: segm.prev.phon[-1]].vocalic? || # drop a vowel after a vowel [simplify this]
+          !segm.prev.ends_with.vocalic? || # drop a vowel after a vowel
           ary.monosyllable? || # don't drop our only vowel
           fricative_cluster ||
           (segm.next.phon == 's' && is_sibilant?(segm.prev))
@@ -1299,9 +1307,9 @@ def step_OI29 ary
         segm[:IPA] != 'ə' # these come from #28 which we're working in parallel with
         # one consonant or less to either side
         if (segm.prev.vocalic? ||
-            (is_consonant?(segm.prev) && segm.before_prev.vocalic?)) &&
+            (segm.prev.consonantal? && segm.before_prev.vocalic?)) &&
             ((segm.next.vocalic?) ||
-            (is_consonant?(segm.next) && segm.after_next.vocalic?)) &&
+            (segm.next.consonantal? && segm.after_next.vocalic?)) &&
             (segm.next.vocalic? || segm.next.phon.nil? ? 0 : segm.next.phon.length) + (segm.prev.vocalic? || segm.prev.phon.nil? ? 0 : segm.prev.phon.length) <= 2 # Longs count to this total too.
           segm[:IPA] = nil
           segm[:orthography] = nil
@@ -1390,7 +1398,7 @@ end
 def step_OIx2 ary
   # Initial letter is E or i && is unstressed && is not the only syllable && sonority
   if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first[:stress] && !ary.monosyllable?
-    if !(ary[1] && ary[2] && is_consonant?(ary[1]) && !(%w{s ss}.include?(ary[1][:IPA])) && (is_stop?(ary[2]) || is_nasal?(ary[2]) || is_fricative?(ary[2]) || is_affricate?(ary[2])))
+    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (is_stop?(ary[2]) || is_nasal?(ary[2]) || is_fricative?(ary[2]) || is_affricate?(ary[2])))
       ary.first[:IPA] = nil
       ary.first[:orthography] = nil
 
@@ -1411,7 +1419,7 @@ end
 def step_OIx3 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? && segm.next.phon == 'm' && # Tried assimilating /n/ to labial, don't like.
-        ((is_consonant?(segm.after_next.phon[0])) || segm.next.final?)
+        (segm.after_next.starts_with.consonantal? || segm.next.final?)
 
         (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
         segm[:IPA] << 'w̃'
@@ -1421,7 +1429,7 @@ def step_OIx3 ary
       elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
             is_sonorant?(segm.next) &&
             segm.after_next.phon == 'm' &&
-            (is_consonant?(segm.next.after_next.phon[0]) || segm.after_next.final?)
+            (segm.next.after_next.starts_with.consonantal? || segm.after_next.final?)
         ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
 
         (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
@@ -1440,7 +1448,7 @@ def step_OIx4 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? &&
         (segm.next.phon == 'l' || is_labial?(segm.next)) &&
-        (is_consonant?(segm.after_next.phon[0]) || segm.next.final?)
+        (segm.after_next.starts_with.consonantal? || segm.next.final?)
 
       (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
       segm[:IPA] << 'w'
@@ -1449,7 +1457,7 @@ def step_OIx4 ary
     elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
           is_sonorant?(segm.next) &&
           (segm.after_next.phon == 'l' || is_labial?(segm.after_next)) &&
-          (is_consonant?(segm.next.after_next) || segm.after_next.final?)
+          (segm.next.after_next.consonantal? || segm.after_next.final?)
       ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
 
       (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
@@ -1581,7 +1589,7 @@ def step_CI2 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? && !%w{j w ɥ œ̯}.include?(segm[:IPA][-1]) &&
         ary[idx+1] && %w{m n ŋ}.include?(segm.next.phon) &&
-        (segm.after_next.phon && is_consonant?(segm.after_next.phon[0]) || is_final?(idx+1))
+        (segm.after_next.phon && segm.after_next.starts_with.consonantal? || is_final?(idx+1))
 
       segm[:IPA] << "\u0303"
       segm[:orthography] << case #'n'#ary[idx+1][:orthography]
@@ -1630,7 +1638,7 @@ end
 def step_CI5 ary
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] && segm[:IPA][-1] == 'i' && segm.next.phon == 'ʎ' &&
-        (is_consonant?(segm.after_next.phon[0]) || segm.next.final?)
+        (segm.after_next.starts_with.consonantal? || segm.next.final?)
       segm[:long] = true
       segm[:orthography] << "ll"
       segm.next[:IPA] = nil
@@ -1743,7 +1751,7 @@ def step_RI2 ary
       (!segm[:IPA][1] && is_vowel?(segm.next.phon[0]))) && # isolated segment
       !(idx > 0 && !(is_dental?(segm.prev) || (segm.prev.phon == 'r' && segm.before_prev.vocalic?) || segm.prev.vocalic?)) &&
       !(idx > 0 && segm.prev.phon == 'l') &&
-      !(idx > 0 && ary[0...idx].all?{|seg| is_consonant?(seg.phon)})
+      !(idx > 0 && ary[0...idx].all?(&:consonantal?))
       # segm[:IPA][0] = 'ʝ'
 
       if segm[:IPA][1] # part of a diphthong
@@ -1773,12 +1781,12 @@ def step_RI3 ary
       case
       when segm.final?
         segm[:IPA] = 'ʰ'
-      when is_consonant?(segm.next)
+      when segm.next.consonantal?
         segm[:IPA] = segm.next.phon[0]
       end
     end
 
-    if idx == 0 && segm[:IPA] == 's' && is_consonant?(segm.next)
+    if idx == 0 && segm[:IPA] == 's' && segm.next.consonantal?
       segm[:IPA] = 'ʰ'
     end
   end
@@ -1787,8 +1795,8 @@ end
 # je wo wø > ji u y in closed syllables
 def step_RI4 ary
   @current = ary.each_with_index do |segm, idx|
-    if %w{je wo wø}.include?(segm[:IPA]) && is_consonant?(segm.next) &&
-        (segm.next.final? || (ary[idx+2] && is_consonant?(segm.next)))
+    if %w{je wo wø}.include?(segm[:IPA]) && segm.next.consonantal? &&
+        (segm.next.final? || (ary[idx+2] && segm.next.consonantal?))
       case segm[:IPA]
       when "je"
         segm[:IPA] = 'ji'
@@ -2018,7 +2026,7 @@ end
 # assimilation of /s/
 def step_PI3 ary
   @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == 's' && !segm[:long] && idx > 0 && !segm.final? && segm.prev.vocalic? && is_consonant?(segm.next)
+    if segm[:IPA] == 's' && !segm[:long] && idx > 0 && !segm.final? && segm.prev.vocalic? && segm.next.consonantal?
         segm[:IPA] = nil
         segm[:orthography] = nil
 
@@ -2041,8 +2049,8 @@ end
 # je wo wø > i u y in closed syllables
 def step_PI4 ary
   @current = ary.each_with_index do |segm, idx|
-    if (%w{je jẽ wo wõ wø wø̃}.include?(segm[:IPA]) || ((segm.prev.phon == 'w' && (%w{o ø õ ø̃}.include?(segm[:IPA])) || (segm.prev.phon == 'j' && %w{e ẽ}.include?(segm[:IPA]))))) && ary[idx+1] && is_consonant?(segm.next) &&
-        (segm.next.final? || is_consonant?(segm.after_next))
+    if (%w{je jẽ wo wõ wø wø̃}.include?(segm[:IPA]) || ((segm.prev.phon == 'w' && (%w{o ø õ ø̃}.include?(segm[:IPA])) || (segm.prev.phon == 'j' && %w{e ẽ}.include?(segm[:IPA]))))) && ary[idx+1] && segm.next.consonantal? &&
+        (segm.next.final? || segm.after_next.consonantal?)
       case segm[:IPA]
       when "je"
         segm[:IPA] = 'i'
@@ -2318,7 +2326,7 @@ def convert_OLF str
   # post-vocalic H
   @current = @current.each_with_index do |segm, idx|
     if ((segm.prev.vocalic? &&
-        is_consonant?(segm.next)) || segm.final?) &&
+        segm.next.consonantal?) || segm.final?) &&
         segm[:IPA] == 'h'
       segm[:orthography] = "gh"  # How's this?
       segm[:IPA] = is_voiced?(segm.next) ? 'g' : 'k'
@@ -2361,7 +2369,7 @@ def convert_OLF str
         segm[:orthography] = 'e'
 
         # metathesis of @C > C@
-        if segm.prev.intervocalic? && segm.next.final? && @current[idx+1] && is_consonant?(segm.next)
+        if segm.prev.intervocalic? && segm.next.final? && @current[idx+1] && segm.next.consonantal?
           segm.prev[:orthography] = case segm.prev.orth
                                     when "qu" then "c"
                                     when "gu" then "g"
