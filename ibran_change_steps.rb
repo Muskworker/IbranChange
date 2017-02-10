@@ -167,6 +167,11 @@ class Segment < Hash
   def stop?
     %w(p b t d k g c).include? phon
   end
+
+  def affricate?
+    %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? phon
+  end
+
 end
 
 def ipa(dict)
@@ -258,10 +263,6 @@ end
 
 def is_nasal?(segment)
   %w{m ɱ ɲ ɳ n ɴ ŋ}.include? segment[:IPA]
-end
-
-def is_affricate?(segment)
-  %w{pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ}.include? segment[:IPA]
 end
 
 def devoice!(segment)
@@ -939,7 +940,7 @@ def step_OI18 ary
         %w{k g l}.include?(segm.next.phon) &&  # next segment is c g l
         # next is L or dental stop or nasal
         ((segm.after_next.phon == 'l') ||
-          ((segm.after_next.stop? || is_affricate?(segm.after_next)) && (is_dental?(segm.after_next))) ||
+          ((segm.after_next.stop? || segm.after_next.affricate?) && (is_dental?(segm.after_next))) ||
           is_nasal?(segm.after_next)) &&
         !(segm.next.phon == 'l' && segm.after_next.phon == 'l')  # next two are not both L
       case segm[:IPA]
@@ -976,7 +977,7 @@ def step_OI19 ary
       # x or dental/velar + sibilant
       (segm.next.phon == 'ks' ||
         ((is_dental?(segm.next) || is_velar?(segm.next)) && segm.after_next.sibilant?) ||
-        is_affricate?(segm.next))
+        segm.next.affricate?)
 
       case segm[:IPA]
       when 'a', 'ɑ'
@@ -1030,7 +1031,7 @@ def step_OI19 ary
       elsif segm[:IPA] == 'ks'
         segm[:IPA] = 'ss'
         segm[:orthography] = is_vowel?(segm.next) ? 'ss' : 's'
-      elsif is_affricate?(segm)
+      elsif segm.affricate?
         segm[:IPA] = "#{segm[:IPA][1] * 2}"
         segm[:orthography] = "s#{segm[:orthography]}"
       end
@@ -1146,7 +1147,7 @@ def step_OI24 ary
     if segm.stressed? && !segm[:long]
       case segm[:IPA]
       when 'ɛ', 'e'
-        unless idx > 0 && (segm.prev.sibilant? || is_affricate?(segm.prev) || segm.prev[:palatalized] || %w{ʎ j i}.include?(segm.prev.phon[-1]))
+        unless idx > 0 && (segm.prev.sibilant? || segm.prev.affricate? || segm.prev[:palatalized] || %w{ʎ j i}.include?(segm.prev.phon[-1]))
           segm[:IPA] = "j#{segm[:IPA]}"
           segm[:orthography] = "i#{segm[:orthography]}"
         end
@@ -1192,9 +1193,9 @@ def step_OI26 ary
         (idx > 0) # not if it's also the initial vowel
 
       # assume sonority hierarchy will be C?V
-      stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || is_affricate?(segm.before_prev) ||
-        (is_nasal?(segm.before_prev) && !(segm.prev.stop? || is_affricate?(segm.prev)) ) ||
-        segm.before_prev.phon == "s" && (segm.prev.sonorant? || is_affricate?(segm.prev))) ||
+      stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || segm.before_prev.affricate? ||
+        (is_nasal?(segm.before_prev) && !(segm.prev.stop? || segm.prev.affricate?) ) ||
+        segm.before_prev.phon == "s" && (segm.prev.sonorant? || segm.prev.affricate?)) ||
         (segm.next.phon == "s")
 
       # So precedent shows that /SSV/ reduces to /SS@/, not /SS/.  /ZZ/ for symmetry.
@@ -1387,7 +1388,7 @@ end
 def step_OIx2 ary
   # Initial letter is E or i && is unstressed && is not the only syllable && sonority
   if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first.stressed? && !ary.monosyllable?
-    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || is_nasal?(ary[2]) || ary[2].fricative? || is_affricate?(ary[2])))
+    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || is_nasal?(ary[2]) || ary[2].fricative? || ary[2].affricate?))
       ary.first[:IPA] = nil
       ary.first[:orthography] = nil
 
@@ -1653,7 +1654,7 @@ end
 # reduce affricates
 def step_CI7 ary
   @current = ary.each do |segm|
-    if is_affricate?(segm)
+    if segm.affricate?
       case segm[:IPA]
       when "tʃ"
         if segm.prev.phon == 't'
