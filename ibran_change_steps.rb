@@ -425,7 +425,7 @@ def step_VL0(str)
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
@@ -460,7 +460,7 @@ def step_VL3(ary)
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # drop /h/
@@ -551,7 +551,7 @@ def step_VL6(ary)
 
   @current = ary
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # tk |tc| > tS |ç|
@@ -565,7 +565,7 @@ def step_VL7(ary)
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # stressed vowels
@@ -643,7 +643,7 @@ def step_OI1(ary)
     ary.select {|segm| is_vowel?(segm) }.last[:stress] = true unless ary.monosyllable?
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact!
 
   # { [+stop], [+fric] }[+voice]j > dʒ
   @current = ary.each do |segm|
@@ -656,7 +656,7 @@ def step_OI1(ary)
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # { [+stop], [+fric] }[-voice]j > tʃ
@@ -677,7 +677,7 @@ def step_OI2(ary)
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # j > dʒ / { #, V }__V
@@ -702,7 +702,7 @@ def step_OI4 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # ll, lj > ʎ
@@ -722,7 +722,7 @@ def step_OI5 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # { d, ɡ } > ∅ / V__V
@@ -759,7 +759,7 @@ def step_OI8 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # { ɛ, i }[-stress] > j / e__
@@ -774,7 +774,7 @@ def step_OI9 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # { i }[-stress] > j / { ɔ, o }__
@@ -927,7 +927,7 @@ def step_OI17 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # Clusters
@@ -963,7 +963,7 @@ def step_OI18 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # Clusters pt 2 (in two parts)
@@ -1240,7 +1240,7 @@ def step_OI26 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # A > @
@@ -1338,7 +1338,7 @@ def step_OI29 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 =begin
   @current = ary.each_with_index do |segm, idx|
     if %w{ʃ ʒ ç k g}.include?(segm[:IPA][-1]) &&
@@ -1637,7 +1637,7 @@ def step_CI5 ary
     segm[:IPA].gsub!(/ʎ/, 'j') if segm[:IPA]
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # gl > ll
@@ -1812,7 +1812,7 @@ def step_RI5 ary
       segm[:IPA][0] = ''
     end
   end
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.compact
 end
 
 # k_j g_j > tS dZ
@@ -1894,7 +1894,7 @@ def step_RI10 ary
     end
   end
 
-  @current = ary.delete_if {|segment| segment[:IPA].nil? }
+  @current = ary.compact
 end
 
 # lose /h/
@@ -2032,7 +2032,7 @@ def step_PI3 ary
     end
   end
 
-  @current = ary.delete_if {|segment| segment[:IPA].nil? }
+  @current = ary.compact
 end
 
 # je wo wø > i u y in closed syllables
