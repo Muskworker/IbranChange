@@ -155,13 +155,17 @@ class Segment < Hash
   def sibilant?
     %w(ɕ ɧ ʑ ʐ ʂ ʒ z ʃ ʃʃ s).include? phon
   end
-  
+
   def stressed?
     self[:stress]
   end
-  
+
   def fricative?
     %w(h v f ç ʒ z ʃ ʃʃ s ʰ θ).include? phon
+  end
+  
+  def stop?
+    %w(p b t d k g c).include? phon
   end
 end
 
@@ -182,7 +186,7 @@ def full_ipa(ary)
           ((segm.initial? || segm.prev.vocalic?) && segm.stressed?) || # 'V - Syllable-initial stressed vowel
           (segm.prev.fricative? && segm.fricative? && segm.next.stressed?) || #F'F - fricative cluster
           (segm.initial? && segm.fricative? && segm.next.consonantal? && segm.after_next.stressed?) || # 'FCV - initial fricative + consonant + vowel
-          (ary[idx-1] && is_stop?(ary[idx-1]) && (is_stop?(segm) || is_affricate?(segm)) && segm.next.stressed?) # CC cluster
+          (segm.prev.stop? && (segm.stop? || is_affricate?(segm)) && segm.next.stressed?) # CC cluster
         output << 'ˈ' unless output =~ /ˈ\S*$/ || (segm[:IPA] == " ") # don't add more than one
       end
     end
@@ -242,10 +246,6 @@ end
 
 def is_short?(segment)
   !segment[:long]
-end
-
-def is_stop?(segment)
-  %w{p b t d k g c}.include? segment[:IPA]
 end
 
 def is_dental?(segment)
@@ -528,7 +528,7 @@ def step_VL6(ary)
          posttonic = true if segment.stressed?
       end
       if syllables_from_end == 1 && !segment.stressed? && is_vowel?(segment) && posttonic
-        if is_stop?(segment.before_prev) && segment.prev.sonorant? && segment.next.consonantal?
+        if segment.before_prev.stop? && segment.prev.sonorant? && segment.next.consonantal?
           # putridum > puterdum
           segment[:IPA], segment.prev[:IPA] = segment.prev[:IPA], "e"
           segment[:orthography], segment.prev[:orthography] = segment.prev[:orthography], "e"
@@ -649,7 +649,7 @@ def step_OI1(ary)
 
   # { [+stop], [+fric] }[+voice]j > dʒ
   @current = ary.each do |segm|
-    if (is_stop?(segm) || segm.fricative?) && is_voiced?(segm) && segm.next.phon == 'j'
+    if (segm.stop? || segm.fricative?) && is_voiced?(segm) && segm.next.phon == 'j'
       segm[:IPA] = 'dʒ'
       segm.next[:IPA] = nil
 
@@ -664,7 +664,7 @@ end
 # { [+stop], [+fric] }[-voice]j > tʃ
 def step_OI2(ary)
   @current = ary.each do |segm|
-    if (is_stop?(segm) || segm.fricative?) && !is_voiced?(segm) && segm.next.phon == 'j'
+    if (segm.stop? || segm.fricative?) && !is_voiced?(segm) && segm.next.phon == 'j'
       # ssj -> tS also.  But not stj
       if segm.prev.phon == 's' && segm.phon == 's'
         segm.prev[:IPA] = nil
@@ -939,7 +939,7 @@ def step_OI18 ary
         %w{k g l}.include?(segm.next.phon) &&  # next segment is c g l
         # next is L or dental stop or nasal
         ((segm.after_next.phon == 'l') ||
-          ((is_stop?(segm.after_next) || is_affricate?(segm.after_next)) && (is_dental?(segm.after_next))) ||
+          ((segm.after_next.stop? || is_affricate?(segm.after_next)) && (is_dental?(segm.after_next))) ||
           is_nasal?(segm.after_next)) &&
         !(segm.next.phon == 'l' && segm.after_next.phon == 'l')  # next two are not both L
       case segm[:IPA]
@@ -1192,8 +1192,8 @@ def step_OI26 ary
         (idx > 0) # not if it's also the initial vowel
 
       # assume sonority hierarchy will be C?V
-      stop_cluster = (is_stop?(segm.before_prev) || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || is_affricate?(segm.before_prev) ||
-        (is_nasal?(segm.before_prev) && !(is_stop?(segm.prev) || is_affricate?(segm.prev)) ) ||
+      stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || is_affricate?(segm.before_prev) ||
+        (is_nasal?(segm.before_prev) && !(segm.prev.stop? || is_affricate?(segm.prev)) ) ||
         segm.before_prev.phon == "s" && (segm.prev.sonorant? || is_affricate?(segm.prev))) ||
         (segm.next.phon == "s")
 
@@ -1387,7 +1387,7 @@ end
 def step_OIx2 ary
   # Initial letter is E or i && is unstressed && is not the only syllable && sonority
   if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first.stressed? && !ary.monosyllable?
-    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (is_stop?(ary[2]) || is_nasal?(ary[2]) || ary[2].fricative? || is_affricate?(ary[2])))
+    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || is_nasal?(ary[2]) || ary[2].fricative? || is_affricate?(ary[2])))
       ary.first[:IPA] = nil
       ary.first[:orthography] = nil
 
@@ -1866,7 +1866,7 @@ end
 
 # Devoice final stops
 def step_RI9 ary
-  devoice!(ary.last) if is_stop?(ary.last)
+  devoice!(ary.last) if ary.last.stop?
 
   @current = ary
 end
