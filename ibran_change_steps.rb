@@ -212,11 +212,6 @@ def is_final?(pos)
   @current[pos+1].nil? || [' ', nil].include?(@current[pos+1][:IPA])
 end
 
-# DEPRECATED: TODO: Use segm.intervocalic?
-def is_intervocalic?(pos)
-  pos != 0 && @current[pos+1] && @current[pos-1] && @current[pos+1].vocalic? && @current[pos-1].vocalic?
-end
-
 def is_short?(segment)
   !segment[:long]
 end
@@ -688,7 +683,7 @@ end
 # j > dʒ / { #, V }__V
 def step_OI3 ary
   @current = ary.each_with_index do |segm, idx|
-    if (is_initial?(idx) || is_intervocalic?(idx)) && segm[:IPA] == 'j'
+    if (is_initial?(idx) || segm.intervocalic?) && segm[:IPA] == 'j'
       segm[:IPA] = 'dʒ'
       segm[:orthography] = 'j'
     end
@@ -733,7 +728,7 @@ end
 # { d, ɡ } > ∅ / V__V
 def step_OI6 ary
   @current = ary.each_with_index do |segm, idx|
-    if %w{d g ɡ}.include?(segm[:IPA]) && is_intervocalic?(idx)
+    if %w{d g ɡ}.include?(segm[:IPA]) && segm.intervocalic?
       segm[:IPA] = nil
       segm[:orthography] = nil
     end
@@ -745,7 +740,7 @@ end
 # b > v / V__V
 def step_OI7 ary
   @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == "b" && is_intervocalic?(idx)
+    if segm[:IPA] == "b" && segm.intervocalic?
       segm[:IPA] = "v"
       segm[:orthography] = "v"
     end
@@ -854,7 +849,7 @@ end
 # Intervocalic consonants
 def step_OI14 ary
   @current = ary.each_with_index do |segm, idx|
-    if ary[idx+1] && is_intervocalic?(idx)
+    if ary[idx+1] && segm.intervocalic?
       case segm[:IPA]
       when 'p'
         segm[:IPA] = 'b'
@@ -863,12 +858,12 @@ def step_OI14 ary
         segm[:IPA] = 'v'
         segm[:orthography] = 'v'
       when 'l'
-        if segm.after_next.phon == 't' && is_intervocalic?(idx+2)
+        if segm.after_next.phon == 't' && segm.after_next.intervocalic?
           segm[:IPA] = 'd'
           segm[:orthography] = 'd'
         end
       when 't'
-        if segm.before_prev.phon == 'l' && is_intervocalic?(idx-2) && segm.before_prev[:was_t]
+        if segm.before_prev.phon == 'l' && segm.before_prev.intervocalic? && segm.before_prev[:was_t]
           segm[:IPA] = 'd'
           segm[:orthography] = 'd'
         else
@@ -2363,7 +2358,7 @@ def convert_OLF str
         segm[:orthography] = 'e'
 
         # metathesis of @C > C@
-        if is_intervocalic?(idx-1) && is_final?(idx+1) && @current[idx+1] && is_consonant?(segm.next)
+        if segm.prev.intervocalic? && is_final?(idx+1) && @current[idx+1] && is_consonant?(segm.next)
           segm.prev[:orthography] = case segm.prev.orth
                                     when "qu" then "c"
                                     when "gu" then "g"
