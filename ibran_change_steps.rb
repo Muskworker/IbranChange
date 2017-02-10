@@ -124,7 +124,7 @@ class Segment < Hash
   end
 
   def ends_with
-    Segment[IPA: phon[-1]]
+    Segment[IPA: phon ? phon[-1] : '']
   end
 
   ### Linguistic functions
