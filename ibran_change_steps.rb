@@ -128,11 +128,6 @@ class Segment < Hash
   end
 end
 
-# DEPRECATED: TODO: Use Dictum.join
-def join(dict, type = :orthography)
-  dict.join(type)
-end
-
 def ipa(dict)
   dict.join :IPA
 end
@@ -1438,7 +1433,6 @@ def step_OIx4 ary
         (segm.next.phon == 'l' || is_labial?(segm.next)) &&
         (is_consonant?(segm.after_next.phon[0]) || is_final?(idx+1))
 
-      # p "#{join(ary)} && #{segm} && #{is_diphthong?(segm)}"
       (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
       segm[:IPA] << 'w'
       segm.next[:IPA] = nil
@@ -2323,7 +2317,7 @@ def convert_OLF str
   end
 
   # Endings
-  case join(@current)
+  case @current.join
   when /are$/
     @current.pop(3)
     @current << Segment[{:IPA=>"ɑ", :orthography=>"a", :long=>false, :stress=>true}.to_a] << Segment[{:IPA=>"r", :orthography=>"r", :long=>false}.to_a]
@@ -2501,7 +2495,7 @@ def convert_LL str
   @current.compact!
 
   # Endings
-  case join(@current)
+  case @current.join
   when /alis|alem$/
     @current.pop(4)
     @current << Segment[{:IPA=>"o", :orthography=>"au", :stress=>true, :long=>true}.to_a]

@@ -16,7 +16,7 @@ plural = ARGV.include? '--pl'
 
 transform input, since, plural
 
-puts "###{ " " << since unless since == "L"} #{caps(input)} > PI #{join(@paysan_steps[-1])} [#{full_ipa(@paysan_steps[-1])}], RI #{cyrillize(@roesan_steps[-1])} / #{join(@roesan_steps[-1])} [#{full_ipa(@roesan_steps[-1])}]"
+puts "###{ " " << since unless since == "L"} #{caps(input)} > PI #{@paysan_steps[-1].join} [#{full_ipa(@paysan_steps[-1])}], RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join} [#{full_ipa(@roesan_steps[-1])}]"
 
 len = [*@steps, *@roesan_steps, *@paysan_steps].compact.inject(0) do |memo, step|
   memo = [memo, full_ipa(step).length].max
@@ -24,50 +24,50 @@ end
 
 if since == "L"
   @steps[0..9].each_with_index do |step, idx|
-    puts "#{(idx.to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len)} | #{join(step)}" unless full_ipa(@steps[idx-1]) == full_ipa(step)
+    puts "#{(idx.to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len)} | #{step.join}" unless full_ipa(@steps[idx-1]) == full_ipa(step)
   end
 
-  puts "#{'-' * (9 + len * 2)} VL #{join(@steps[9])}"
+  puts "#{'-' * (9 + len * 2)} VL #{@steps[9].join}"
 
   @steps[10..38].each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{join(step)}" unless full_ipa(@steps[idx+10-1]) == full_ipa(step)
+    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{step.join}" unless full_ipa(@steps[idx+10-1]) == full_ipa(step)
   end
 end
 
-puts "0.  | #{full_ipa(@steps[38]).ljust(len + full_ipa(@steps[38]).count("\u032f\u0303"))} | #{join(@steps[38])}" if since == "OLF"
+puts "0.  | #{full_ipa(@steps[38]).ljust(len + full_ipa(@steps[38]).count("\u032f\u0303"))} | #{@steps[38].join}" if since == "OLF"
 
 if ["OLF", "L"].include?(since)
   @steps[39..45].each_with_index do |step, idx|
-    puts "x#{((idx + 1).to_s << ".").ljust(2)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{join(step)}" unless full_ipa(@steps[idx+39-1]) == full_ipa(step)
+    puts "x#{((idx + 1).to_s << ".").ljust(2)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{step.join}" unless full_ipa(@steps[idx+39-1]) == full_ipa(step)
   end
 
-  puts "#{'-' * (9 + len * 2)} OI #{join(@steps[45])}"
+  puts "#{'-' * (9 + len * 2)} OI #{@steps[45].join}"
 
   @steps[46..53].each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{join(step)}" unless full_ipa(@steps[idx+46-1]) == full_ipa(step)
+    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{step.join}" unless full_ipa(@steps[idx+46-1]) == full_ipa(step)
   end
 end
 
-puts "0.  | #{full_ipa(@steps[53]).ljust(len + full_ipa(@steps[53]).count("\u032f\u0303"))} | #{join(@steps[53])}" if since == "LL"
+puts "0.  | #{full_ipa(@steps[53]).ljust(len + full_ipa(@steps[53]).count("\u032f\u0303"))} | #{@steps[53].join}" if since == "LL"
 
 if ["OLF", "LL", "L"].include?(since)
-  puts "#{'-' * (9 + len * 2)} CI #{join(@steps[53])}"
+  puts "#{'-' * (9 + len * 2)} CI #{@steps[53].join}"
 
   puts "RI"
 
   @roesan_steps.each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{join(step)}" unless full_ipa(idx == 0 ? @steps[53] : @roesan_steps[idx-1]) == full_ipa(step)
+    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{step.join}" unless full_ipa(idx == 0 ? @steps[53] : @roesan_steps[idx-1]) == full_ipa(step)
   end
 
-  puts "#{'-' * (9 + len * 2)} RI #{cyrillize(@roesan_steps[-1])} / #{join(@roesan_steps[-1])}"
+  puts "#{'-' * (9 + len * 2)} RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join}"
 
   puts "PI"
 
   @paysan_steps.each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{join(step)}" unless full_ipa(idx == 0 ? @steps[53] : @paysan_steps[idx-1]) == full_ipa(step)
+    puts "#{((idx + 1).to_s << ".").ljust(3)} | #{full_ipa(step).ljust(len + full_ipa(step).count("\u032f\u0303\u0320"))} | #{step.join}" unless full_ipa(idx == 0 ? @steps[53] : @paysan_steps[idx-1]) == full_ipa(step)
   end
   
-  puts "#{'-' * (9 + len * 2)} PI #{join(@paysan_steps[-1])}"
+  puts "#{'-' * (9 + len * 2)} PI #{@paysan_steps[-1].join}"
 end
 
 if ARGV.include?("-v")
@@ -172,7 +172,7 @@ if ARGV.include?("-v")
     "īre" => ["iraez!", "iraus!", "irau!", "ireuiéũs!", "ireuiéus!", "iraven>"]
   }}
   
-  inf = { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+  inf = { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
 
   gerund = { "L"  => { "āre" => "andum", "ēre" => "endum", "īre" => "jendum" },
@@ -199,43 +199,43 @@ if ARGV.include?("-v")
 
   pres = (0..5).collect do |person|
     transform (stem + present[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
 
   impf = (0..5).collect do |person|
     transform (stem + imperfect[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
   pret = (0..5).collect do |person|
     transform (stem + preterite[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
   psubj = (0..5).collect do |person|
     transform (stem + present_subj[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
   isubj = (0..5).collect do |person|
     transform (stem + imperfect_subj[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
   cond = (0..5).collect do |person|
     transform (stem + conditional[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
   fut = (0..5).collect do |person|
     transform (stem + future[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
@@ -246,18 +246,18 @@ if ARGV.include?("-v")
   
   # Gerund
   transform (stem + gerund[since][conj]), since
-  ger = { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+  ger = { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
       
   # Past Participle
   transform (stem + past_participle[since][conj]), since
-  ppl = { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+  ppl = { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
     
   # Imperatives
   imv = (0..1).collect do |person|
     transform (stem + imperative[since][conj][person]), since
-    { PI: join(@paysan_steps[-1]), RIL: join(@roesan_steps[-1]), RIC: cyrillize(@roesan_steps[-1]), 
+    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]), 
       PIPA: full_ipa(@paysan_steps[-1]), RIPA: full_ipa(@roesan_steps[-1]) }
   end
   
@@ -276,7 +276,7 @@ if ARGV.include?("-v")
 end
 
 if ARGV.include?("-t")
-  puts "{ w: \"#{input}\", RI_IPA: \"#{full_ipa(@roesan_steps[-1])}\", RI_Cyrl: \"#{cyrillize(@roesan_steps[-1])}\", RI_Latn: \"#{join(@roesan_steps[-1])}\", PI_IPA: \"#{full_ipa(@paysan_steps[-1])}\", PI: \"#{join(@paysan_steps[-1])}\" },"
+  puts "{ w: \"#{input}\", RI_IPA: \"#{full_ipa(@roesan_steps[-1])}\", RI_Cyrl: \"#{cyrillize(@roesan_steps[-1])}\", RI_Latn: \"#{@roesan_steps[-1].join}\", PI_IPA: \"#{full_ipa(@paysan_steps[-1])}\", PI: \"#{@paysan_steps[-1].join}\" },"
 end
 
 p "Neocyrillic: #{neocyrillize(@roesan_steps[-1])}"
