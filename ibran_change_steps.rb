@@ -184,6 +184,8 @@ class Segment < Hash
 
   def in_onset?
     next_more_sonorous = ends_with.sonority < nxt.starts_with.sonority
+    # We explicitly check for nxt.vocalic because of things like /erje/
+    # (where /je/ is a diphthong).
     consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
   end
 end
