@@ -147,6 +147,10 @@ class Segment < Hash
   def final?
     pos == @dictum.size - 1 || nxt.phon == ' '
   end
+  
+  def sonorant?
+    %w{m ɱ ɲ ɳ n ɴ ŋ ʎ r l w j ɥ}.include? phon
+  end
 end
 
 def ipa(dict)
@@ -161,8 +165,8 @@ def full_ipa(ary)
     # stress mark
     if ary.syllable_count > 1
       # LOL
-      if ((segm.intervocalic? || segm.initial? || ((segm.consonantal? && ary[idx-1] && (is_sonorant?(ary[idx-1]) || (!segm.prev.initial? && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && segm.consonantal?) || # (V(R))'CV
-          ((segm.consonantal? && !is_sonorant?(segm)) && is_sonorant?(segm.next) && segm.after_next[:stress] && !(ary[idx-1] && ary[idx-1][:IPA] == 's')) || # 'CRV - initial cluster
+      if ((segm.intervocalic? || segm.initial? || ((segm.consonantal? && ary[idx-1] && (segm.prev.sonorant? || (!segm.prev.initial? && (%w{ss ks}.include?(ary[idx-1][:IPA]) || is_sibilant?(ary[idx-1]))))))) && ary[idx+1] && ary[idx+1][:stress] && segm[:IPA] != " " && segm.consonantal?) || # (V(R))'CV
+          ((segm.consonantal? && !segm.sonorant?) && segm.next.sonorant? && segm.after_next[:stress] && !(ary[idx-1] && ary[idx-1][:IPA] == 's')) || # 'CRV - initial cluster
           ((segm.initial? || segm.prev.vocalic?) && segm[:stress]) || # 'V - Syllable-initial stressed vowel
           (is_fricative?(ary[idx-1]) && is_fricative?(segm) && segm.next[:stress]) || #F'F - fricative cluster
           (segm.initial? && is_fricative?(segm) && segm.next.consonantal? && segm.after_next[:stress]) || # 'FCV - initial fricative + consonant + vowel
@@ -246,10 +250,6 @@ end
 
 def is_sibilant?(segment)
   %w{ɕ ɧ ʑ ʐ ʂ ʒ z ʃ ʃʃ s}.include? segment[:IPA]
-end
-
-def is_sonorant?(segment)
-  %w{m ɱ ɲ ɳ n ɴ ŋ ʎ r l w j ɥ}.include? segment[:IPA]
 end
 
 def is_affricate?(segment)
@@ -538,7 +538,7 @@ def step_VL6(ary)
          posttonic = true if segment[:stress]
       end
       if syllables_from_end == 1 && !segment[:stress] && is_vowel?(segment) && posttonic
-        if is_stop?(segment.before_prev) && is_sonorant?(segment.prev) && segment.next.consonantal?
+        if is_stop?(segment.before_prev) && segment.prev.sonorant? && segment.next.consonantal?
           # putridum > puterdum
           segment[:IPA], segment.prev[:IPA] = segment.prev[:IPA], "e"
           segment[:orthography], segment.prev[:orthography] = segment.prev[:orthography], "e"
@@ -1162,7 +1162,7 @@ def step_OI24 ary
           segm[:orthography] = "i#{segm[:orthography]}"
         end
       when 'ɔ'
-        if is_sonorant?(segm.next) && (segm.next.final? || !is_vowel?(segm.after_next))
+        if segm.next.sonorant? && (segm.next.final? || !is_vowel?(segm.after_next))
           segm[:IPA] = 'wɛ'
           segm[:orthography] = 'ue'
         else
@@ -1205,7 +1205,7 @@ def step_OI26 ary
       # assume sonority hierarchy will be C?V
       stop_cluster = (is_stop?(segm.before_prev) || (is_fricative?(segm.before_prev) && segm.before_prev.phon != "s") || is_affricate?(segm.before_prev) ||
         (is_nasal?(segm.before_prev) && !(is_stop?(segm.prev) || is_affricate?(segm.prev)) ) ||
-        segm.before_prev.phon == "s" && (is_sonorant?(segm.prev) || is_affricate?(segm.prev))) ||
+        segm.before_prev.phon == "s" && (segm.prev.sonorant? || is_affricate?(segm.prev))) ||
         (segm.next.phon == "s")
 
       # So precedent shows that /SSV/ reduces to /SS@/, not /SS/.  /ZZ/ for symmetry.
@@ -1427,7 +1427,7 @@ def step_OIx3 ary
         segm.next[:IPA] = nil
         segm.next[:orthography] = nil
       elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
-            is_sonorant?(segm.next) &&
+            segm.next.sonorant? &&
             segm.after_next.phon == 'm' &&
             (segm.next.after_next.starts_with.consonantal? || segm.after_next.final?)
         ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
@@ -1455,7 +1455,7 @@ def step_OIx4 ary
       segm.next[:IPA] = nil
       segm.next[:orthography] = nil
     elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
-          is_sonorant?(segm.next) &&
+          segm.next.sonorant? &&
           (segm.after_next.phon == 'l' || is_labial?(segm.after_next)) &&
           (segm.next.after_next.consonantal? || segm.after_next.final?)
       ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
