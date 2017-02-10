@@ -42,18 +42,18 @@ class Dictum < Array
       segm.pos = idx
     end
   end
-  
+
   def join(type = :orthography)
     inject('') do |memo, obj|
       memo << (obj[type] || '')
     end
   end
-  
+
   # TODO: Replace all the delete_if with this
   def compact
     Dictum.new(self - [Segment[IPA: nil, orthography: nil]])
   end
-  
+
   def compact!
     self if delete(Segment[IPA: nil, orthography: nil])
   end
@@ -61,7 +61,7 @@ class Dictum < Array
   ### Linguistic functions
   # Number of syllables
   def syllable_count
-    count { |segm| segm.vocalic? }
+    count(&:vocalic?)
   end
 
   def monosyllable?
@@ -82,7 +82,7 @@ class Segment < Hash
     @dictum.renumber
     @dictum.fetch(@pos + 1, Segment.new)
   end
-  alias :nxt :next # 'next' is the best name, but it's a keyword 
+  alias nxt next # 'next' is the best name, but it's a keyword
 
   def before_prev
     prev.prev
@@ -196,7 +196,7 @@ def is_diphthong?(phone)
 end
 
 def is_consonant?(phone)
-  phone && !Segment[IPA: phone].vocalic? 
+  phone && !Segment[IPA: phone].vocalic?
 end
 
 def is_initial?(pos)
