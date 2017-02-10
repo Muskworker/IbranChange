@@ -163,7 +163,7 @@ class Segment < Hash
   def fricative?
     %w(h v f ç ʒ z ʃ ʃʃ s ʰ θ).include? phon
   end
-  
+
   def stop?
     %w(p b t d k g c).include? phon
   end
