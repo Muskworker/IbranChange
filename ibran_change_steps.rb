@@ -172,10 +172,31 @@ class Segment < Hash
     %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? phon
   end
 
+  def sonority
+    if vocalic? then 6
+    elsif sonorant? then 4
+    elsif fricative? then 3
+    elsif affricate? then 2
+    elsif stop? then 1
+    else 0
+    end
+  end
+
+  def in_onset?
+    next_more_sonorous = ends_with.sonority < nxt.starts_with.sonority
+    consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
+  end
 end
 
 def ipa(dict)
   dict.join :IPA
+end
+
+def takes_stress_mark(segm)
+  return true if segm.stressed?
+
+  dictum = segm.dictum
+  dictum[segm.pos...dictum.index(&:stressed?)].all?(&:in_onset?)
 end
 
 def full_ipa(ary)
@@ -185,14 +206,8 @@ def full_ipa(ary)
   ary.each_with_index do |segm, idx|
     # stress mark
     if ary.syllable_count > 1
-      # LOL
-      if ((segm.intervocalic? || segm.initial? || ((segm.consonantal? && (segm.prev.sonorant? || (!segm.prev.initial? && (%w{ss ks}.include?(segm.prev.phon) || segm.prev.sibilant?)))))) && segm.next.stressed? && segm[:IPA] != " " && segm.consonantal?) || # (V(R))'CV
-          ((segm.consonantal? && !segm.sonorant?) && segm.next.sonorant? && segm.after_next.stressed? && !(segm.prev.phon == 's')) || # 'CRV - initial cluster
-          ((segm.initial? || segm.prev.vocalic?) && segm.stressed?) || # 'V - Syllable-initial stressed vowel
-          (segm.prev.fricative? && segm.fricative? && segm.next.stressed?) || #F'F - fricative cluster
-          (segm.initial? && segm.fricative? && segm.next.consonantal? && segm.after_next.stressed?) || # 'FCV - initial fricative + consonant + vowel
-          (segm.prev.stop? && (segm.stop? || is_affricate?(segm)) && segm.next.stressed?) # CC cluster
-        output << 'ˈ' unless output =~ /ˈ\S*$/ || (segm[:IPA] == " ") # don't add more than one
+      if takes_stress_mark(segm)
+        output << 'ˈ' unless output =~ /ˈ\S*$/ || (segm.phon == " ") # don't add more than one
       end
     end
 
