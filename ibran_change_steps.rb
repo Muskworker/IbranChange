@@ -152,13 +152,22 @@ class Segment < Hash
   end
 
   def vocalic?
-    vowel? || is_diphthong?(phon)
+    vowel? || diphthong?
   end
 
   def vowel?
+    return false unless phon
+
     vowels = 'aeioõuyæɑɐəɛɔøœ'
     neither_vowel_nor_modifier = "^aeioõuyæɑɐəɛɔøœ\u0303"
-    phon && phon.count(vowels) == 1 && phon.count(neither_vowel_nor_modifier).zero?
+    phon.count(vowels) == 1 && phon.count(neither_vowel_nor_modifier).zero?
+  end
+
+  def diphthong?
+    return false unless phon
+    
+    (phon.count("aeiouyæɑɐəɛɔøœ") > 0 && phon.count("jwɥ\u032fː") > 0 && phon.count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː") == 0) ||
+      %w{au ae oe}.include?(phon)
   end
 
   def initial?
@@ -232,21 +241,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_diphthong?(phone)
-  case phone
-  when String
-    (phone.count("aeiouyæɑɐəɛɔøœ") > 0 && phone.count("jwɥ\u032fː") > 0 && phone.count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː") == 0) ||
-    %w{au ae oe}.include?(phone)
-#    %w{au ae oe oj   ɔj  ɛj  ej  jɛ  je  ɔɛ̯  ɑɛ̯  wɛ
-#                ojw  ɔjw ɛjw ejw jɛw jew ɔɛ̯w ɑɛ̯w wɛw aw ɑw əw ɛw ew iw ɔw ow uw
-#                ojw̃  ɔjw̃ ɛjw̃ ejw̃ jɛw̃ jew̃ ɔɛ̯w̃ ɑɛ̯w̃ wɛw̃ aw̃ ɑw̃ əw̃ ɛw̃ ew̃ iw̃ ɔw̃ ow̃ uw̃
-#                ojww ɔjww ɛjww ejww jɛww jeww ɔɛ̯ww ɑɛ̯ww wɛww aww ɑww əww ɛww eww iww ɔww oww uww
-#                ojw̃w ɔjw̃w ɛjw̃w ejw̃w jɛw̃w jew̃w ɔɛ̯w̃w ɑɛ̯w̃w wɛw̃w aw̃w ɑw̃w əw̃w ɛw̃w ew̃w iw̃w ɔw̃w ow̃w uw̃w }.include? phone #lol
-  when Hash
-    is_diphthong? phone[:IPA]
-  end
 end
 
 # DEPRECATED: TODO: Use Segment.initial?
@@ -1421,7 +1415,7 @@ def step_OIx3 ary
     if segm.vocalic? && segm.next.phon == 'm' && # Tried assimilating /n/ to labial, don't like.
         (segm.after_next.starts_with.consonantal? || segm.next.final?)
 
-        (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
+        (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
         segm[:IPA] << 'w̃'
 #        segm[:orthography] << 'ũ'
         segm.next[:IPA] = nil
@@ -1432,7 +1426,7 @@ def step_OIx3 ary
             (segm.next.after_next.starts_with.consonantal? || segm.after_next.final?)
         ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
 
-        (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
+        (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
         segm[:IPA] << 'w̃'
         #segm[:orthography] << 'ũ'
         segm.next[:IPA] = nil
@@ -1450,7 +1444,7 @@ def step_OIx4 ary
         (segm.next.phon == 'l' || is_labial?(segm.next)) &&
         (segm.after_next.starts_with.consonantal? || segm.next.final?)
 
-      (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
+      (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
       segm[:IPA] << 'w'
       segm.next[:IPA] = nil
       segm.next[:orthography] = nil
@@ -1460,7 +1454,7 @@ def step_OIx4 ary
           (segm.next.after_next.consonantal? || segm.after_next.final?)
       ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
 
-      (is_diphthong?(segm) && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
+      (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
       segm[:IPA] << 'w'
       segm.next[:IPA] = nil
       segm.next[:orthography] = nil
@@ -1698,14 +1692,14 @@ def step_CI8 ary
   # initial |i, u| or in a new syllable after a (non-diphthong) vowel become |y, w|
   @current = ary.each_with_index do |segm, idx|
     if segm[:orthography][0] == "i" &&
-      ((idx == 0 && is_diphthong?(segm)) || segm.prev.vowel?)
+      ((idx == 0 && segm.diphthong?) || segm.prev.vowel?)
       segm[:orthography][0] = "y"
     end
   end
 
   @current = ary.each_with_index do |segm, idx|
     if segm[:orthography][0] == "u" && segm[:orthography][0..1] != "uo" && # don't do 'uo'/ů
-      ((idx == 0 && is_diphthong?(segm)) ||
+      ((idx == 0 && segm.diphthong?) ||
       (idx > 0 && segm.prev.vowel?))
       segm[:orthography][0] = "w"
     end
@@ -2357,7 +2351,7 @@ def convert_OLF str
   @current = @current.each_with_index do |segm, idx|
     # unstressed schwas - non-initial
     if segm.vocalic? && !segm.stressed? && postinitial
-      if !segm[:long] && !is_diphthong?(segm) && segm[:IPA] != 'ə'
+      if !segm[:long] && !segm.diphthong? && segm[:IPA] != 'ə'
         segm[:IPA] = 'ə'
         segm[:orthography] = 'e'
 
