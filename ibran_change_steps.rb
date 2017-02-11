@@ -67,6 +67,18 @@ class Dictum < Array
   def monosyllable?
     syllable_count == 1
   end
+  
+  def to_ipa
+    renumber # Ugh
+
+    inject('') do |output, segm|
+      if syllable_count > 1 && takes_stress_mark(segm)
+        output << 'ˈ' unless output =~ /ˈ\S*$/ # Don't add more than one
+      end
+
+      output << segm.to_ipa
+    end
+  end
 end
 
 # A phonetic segment and its orthographic representation.
@@ -125,6 +137,13 @@ class Segment < Hash
 
   def ends_with
     Segment[IPA: phon ? phon[-1] : '']
+  end
+
+  def to_ipa
+    output = "#{phon}#{"\u0320" if self[:back]}#{'ʲ' if self[:palatalized]}"
+    # /o:w/, not /ow:/
+    output.sub!(/([jwɥ]*)$/, 'ː\1') if self[:long]
+    output
   end
 
   ### Linguistic functions
@@ -199,31 +218,6 @@ def takes_stress_mark(segm)
 
   dictum = segm.dictum
   dictum[segm.pos...dictum.index(&:stressed?)].all?(&:in_onset?)
-end
-
-def full_ipa(ary)
-  output = ""
-  ary.renumber # Ugh
-
-  ary.each_with_index do |segm, idx|
-    # stress mark
-    if ary.syllable_count > 1
-      if takes_stress_mark(segm)
-        output << 'ˈ' unless output =~ /ˈ\S*$/ || (segm.phon == " ") # don't add more than one
-      end
-    end
-
-    output << (segm[:IPA] || '')
-    output << "\u0320" if segm[:back]
-    output << 'ʲ' if segm[:palatalized]
-
-    # /o:w/, not /ow:/
-    if segm[:long]
-      output.sub!(/([jwɥ]*)$/, "ː\\1")
-    end
-  end
-
-  output
 end
 
 # Upcase doesn't handle the macrons
@@ -1973,7 +1967,7 @@ end
 
 # rough, cleanup
 def cyrillize ary
-  cyrl = full_ipa(ary).tr("ɑbvgdɛfʒzeijklmn\u0303ɲɔœøprstuwɥyoʃəɐaʰː", "абвгдевжзиіјклмннњоөөпрстууүүѡшъъя’\u0304")
+  cyrl = ary.to_ipa.tr("ɑbvgdɛfʒzeijklmn\u0303ɲɔœøprstuwɥyoʃəɐaʰː", "абвгдевжзиіјклмннњоөөпрстууүүѡшъъя’\u0304")
   cyrl.gsub!(/н\u0304/, "\u0304н")  # ũː > ун̄ > ӯн
   cyrl.gsub!(/н’/, "’н")            # w̃ʰ > н’ > ’н
   cyrl.sub!(/н$/, 'н’') if ary[-1][:final_n] && cyrl != "н" && %W{а е и і ј о ө у ү ѡ ъ я \u0304}.include?(cyrl[-2]) # && !(cyrl[-2] == "н") # no need for нн' or н' solo
@@ -1990,7 +1984,7 @@ def cyrillize ary
 end
 
 def neocyrillize ary
-  cyrl = full_ipa(ary).tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐ", "абвджзилмннњоөпрсстуүфѡшыюяя")
+  cyrl = ary.to_ipa.tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐ", "абвджзилмннњоөпрсстуүфѡшыюяя")
   cyrl.gsub!(/\u0304/, '')
   cyrl.gsub!(/тш/, "ч")
   cyrl.gsub!(/дж/, "џ")

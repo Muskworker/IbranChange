@@ -293,7 +293,7 @@ class IbranChangeTest < Minitest::Test
       xform = to_OI11 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
-      assert_equal word[:full_ipa], full_ipa(xform) if word[:full_ipa]
+      assert_equal word[:full_ipa], xform.to_ipa if word[:full_ipa]
     end    
   end
   
@@ -1266,11 +1266,11 @@ class IbranChangeTest < Minitest::Test
     latin_words.each do |word|
       xform = transform word[:w]
 
-      assert_equal word[:RI_IPA], full_ipa(xform[1])
+      assert_equal word[:RI_IPA], xform[1].to_ipa
       assert_equal word[:RI_Cyrl], cyrillize(xform[1])
       assert_equal word[:RI_Latn], xform[1].join
 
-      assert_equal word[:PI_IPA], full_ipa(xform[2])
+      assert_equal word[:PI_IPA], xform[2].to_ipa
       assert_equal word[:PI], xform[2].join
     end
 
@@ -1410,11 +1410,11 @@ class IbranChangeTest < Minitest::Test
     olf_words.each do |word|
       xform = transform word[:w], "OLF"
 
-      assert_equal word[:RI_IPA], full_ipa(xform[1])
+      assert_equal word[:RI_IPA], xform[1].to_ipa
       assert_equal word[:RI_Cyrl], cyrillize(xform[1])
       assert_equal word[:RI_Latn], xform[1].join
 
-      assert_equal word[:PI_IPA], full_ipa(xform[2])
+      assert_equal word[:PI_IPA], xform[2].to_ipa
       assert_equal word[:PI], xform[2].join
     end
 
@@ -1499,11 +1499,11 @@ class IbranChangeTest < Minitest::Test
     late_latin_words.each do |word|
       xform = transform word[:w], "LL"
 
-      assert_equal word[:RI_IPA], full_ipa(xform[1])
+      assert_equal word[:RI_IPA], xform[1].to_ipa
       assert_equal word[:RI_Cyrl], cyrillize(xform[1])
       assert_equal word[:RI_Latn], xform[1].join
 
-      assert_equal word[:PI_IPA], full_ipa(xform[2])
+      assert_equal word[:PI_IPA], xform[2].to_ipa
       assert_equal word[:PI], xform[2].join
     end
   end
@@ -1529,7 +1529,7 @@ class IbranChangeTest < Minitest::Test
        tempus toccāre tōtum tripālium tūtāre
        ūnam ūnum 
        verācum veritātem vetulum vidēre volēre}.each do |word| 
-         p "#{word}: PI #{transform(word)[2].join} /#{full_ipa(transform(word)[2])}/, RI #{cyrillize(transform(word)[1]) }, #{transform(word)[1].join} /#{full_ipa(transform(word)[1])}/"
+         p "#{word}: PI #{transform(word)[2].join} /#{transform(word)[2].to_ipa}/, RI #{cyrillize(transform(word)[1]) }, #{transform(word)[1].join} /#{transform(word)[1].to_ipa}/"
        end
   end
 end
