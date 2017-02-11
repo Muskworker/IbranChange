@@ -67,7 +67,7 @@ class Dictum < Array
   def monosyllable?
     syllable_count == 1
   end
-  
+
   def to_ipa
     renumber # Ugh
 
@@ -222,7 +222,9 @@ end
 
 # Upcase doesn't handle the macrons
 def caps(string)
-  string.tr("aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz", "AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ")
+  lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
+  uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
+  string.tr(lc, uc)
 end
 
 def is_vowel?(phone)
