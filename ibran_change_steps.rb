@@ -1,3 +1,5 @@
+require 'forwardable'
+
 # Dictum: A word or series of segments.
 class Dictum < Array
   def <<(segm)
@@ -81,8 +83,66 @@ class Dictum < Array
   end
 end
 
+module PhoneticFeature
+  def vowel?
+    vowels = 'aeioõuyæɑɐəɛɔøœ'
+    neither_vowel_nor_modifier = "^aeioõuyæɑɐəɛɔøœ\u0303"
+    count(vowels) == 1 && count(neither_vowel_nor_modifier).zero?
+  end
+  
+  def diphthong?
+    (count("aeiouyæɑɐəɛɔøœ") > 0 && count("jwɥ\u032fː") > 0 && count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː") == 0) ||
+      %w{au ae oe}.include?(self)
+  end
+
+  def vocalic?
+    vowel? || diphthong?
+  end
+
+  def consonantal?
+    !vocalic?
+  end
+
+  def sonorant?
+    %w(m ɱ ɲ ɳ n ɴ ŋ ʎ r l w j ɥ).include? self
+  end
+
+  def sibilant?
+    %w(ɕ ɧ ʑ ʐ ʂ ʒ z ʃ ʃʃ s).include? self
+  end
+
+  def fricative?
+    %w(h v f ç ʒ z ʃ ʃʃ s ʰ θ).include? self
+  end
+
+  def stop?
+    %w(p b t d k g c).include? self
+  end
+
+  def affricate?
+    %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? self
+  end
+
+  def sonority
+    if vocalic? then 6
+    elsif sonorant? then 4
+    elsif fricative? then 3
+    elsif affricate? then 2
+    elsif stop? then 1
+    else 0
+    end
+  end
+end
+
+class String
+  include PhoneticFeature
+end
+
 # A phonetic segment and its orthographic representation.
 class Segment < Hash
+  extend Forwardable
+  def_delegators :phon, *PhoneticFeature.instance_methods
+
   attr_accessor :dictum, :pos
 
   def initialize
@@ -109,12 +169,14 @@ class Segment < Hash
     nxt.nxt
   end
 
+  # TODO: Don't ever set this to nil.
   def phon
-    fetch(:IPA, '')
+    fetch(:IPA, '') || ''
   end
 
   def orth
     fetch(:orthography, '')
+    # @orth
   end
 
   def delete
@@ -151,69 +213,16 @@ class Segment < Hash
     prev.vocalic? && nxt.vocalic?
   end
 
-  def vocalic?
-    vowel? || diphthong?
-  end
-
-  def vowel?
-    return false unless phon
-
-    vowels = 'aeioõuyæɑɐəɛɔøœ'
-    neither_vowel_nor_modifier = "^aeioõuyæɑɐəɛɔøœ\u0303"
-    phon.count(vowels) == 1 && phon.count(neither_vowel_nor_modifier).zero?
-  end
-
-  def diphthong?
-    return false unless phon
-    
-    (phon.count("aeiouyæɑɐəɛɔøœ") > 0 && phon.count("jwɥ\u032fː") > 0 && phon.count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː") == 0) ||
-      %w{au ae oe}.include?(phon)
-  end
-
   def initial?
     pos.zero? || nxt.phon == ' '
-  end
-
-  def consonantal?
-    !vocalic?
   end
 
   def final?
     pos == @dictum.size - 1 || nxt.phon == ' '
   end
 
-  def sonorant?
-    %w(m ɱ ɲ ɳ n ɴ ŋ ʎ r l w j ɥ).include? phon
-  end
-
-  def sibilant?
-    %w(ɕ ɧ ʑ ʐ ʂ ʒ z ʃ ʃʃ s).include? phon
-  end
-
   def stressed?
     self[:stress]
-  end
-
-  def fricative?
-    %w(h v f ç ʒ z ʃ ʃʃ s ʰ θ).include? phon
-  end
-
-  def stop?
-    %w(p b t d k g c).include? phon
-  end
-
-  def affricate?
-    %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? phon
-  end
-
-  def sonority
-    if vocalic? then 6
-    elsif sonorant? then 4
-    elsif fricative? then 3
-    elsif affricate? then 2
-    elsif stop? then 1
-    else 0
-    end
   end
 
   def in_onset?
