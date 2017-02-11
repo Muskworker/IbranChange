@@ -221,6 +221,7 @@ def takes_stress_mark(segm)
 end
 
 # Upcase doesn't handle the macrons
+# Theoretically 2.4 can do this correctly?
 def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
