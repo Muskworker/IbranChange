@@ -1611,24 +1611,20 @@ end
 
 # Neutralization of voicing in fricatives
 def step_CI3 ary
-  ary.reverse!
-
-  @current = ary.each_with_index do |segm, idx|
+  @current = ary.reverse_each.with_index do |segm, idx|
     if segm.fricative?
       case
-      when is_initial?(idx) #reverse final
+      when is_voiceless?(segm.next) || segm.final?
         devoice!(segm)
-      when ary[idx-1] && is_voiceless?(ary[idx-1])
-        devoice!(segm)
-      when ary[idx-1] && is_voiced?(ary[idx-1])
+      when is_voiced?(segm.next)
         voice!(segm)
 
-        segm[:orthography] = "d" if segm[:orthography] == "th"
+        segm[:orthography] = "d" if segm.orth == "th"
       end
     end
   end
 
-  @current = ary.reverse!
+  @current = ary
 end
 
 # short u(~) > y
