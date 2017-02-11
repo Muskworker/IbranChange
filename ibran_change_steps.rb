@@ -243,11 +243,6 @@ def caps(string)
   string.tr(lc, uc)
 end
 
-# DEPRECATED: TODO: Use Segment.initial?
-def is_initial?(pos)
-  (pos == 0) || (@current[pos-1] && [' ', nil].include?(@current[pos-1][:IPA]))
-end
-
 # DEPRECATED: TODO: use Segment.final?
 def is_final?(pos)
   @current[pos+1].nil? || [' ', nil].include?(@current[pos+1][:IPA])
