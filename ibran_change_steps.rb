@@ -127,6 +127,10 @@ module PhoneticFeature
   def affricate?
     %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? self
   end
+  
+  def dental?
+    %w(dʑ tɕ t n d dʒ dz tʃ ts dz tθ dð θ ð l).include? self
+  end
 
   def sonority
     if vocalic? then 6
@@ -256,10 +260,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_dental?(segment)
-  %w{dʑ tɕ t n d dʒ dz tʃ ts dz tθ dð θ ð l}.include? segment[:IPA]
 end
 
 def is_velar?(segment)
@@ -945,7 +945,7 @@ def step_OI18 ary
         %w{k g l}.include?(segm.next.phon) &&  # next segment is c g l
         # next is L or dental stop or nasal
         ((segm.after_next.phon == 'l') ||
-          ((segm.after_next.stop? || segm.after_next.affricate?) && (is_dental?(segm.after_next))) ||
+          ((segm.after_next.stop? || segm.after_next.affricate?) && segm.after_next.dental?) ||
           is_nasal?(segm.after_next)) &&
         !(segm.next.phon == 'l' && segm.after_next.phon == 'l')  # next two are not both L
       case segm[:IPA]
@@ -981,7 +981,7 @@ def step_OI19 ary
     if segm.vowel? && segm.stressed? && # stressed vowel with two subsequent segments
       # x or dental/velar + sibilant
       (segm.next.phon == 'ks' ||
-        ((is_dental?(segm.next) || is_velar?(segm.next)) && segm.after_next.sibilant?) ||
+        ((segm.next.dental? || is_velar?(segm.next)) && segm.after_next.sibilant?) ||
         segm.next.affricate?)
 
       case segm[:IPA]
@@ -1027,10 +1027,10 @@ def step_OI19 ary
   # 19b: unstressed vowels
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm.prev.vowel? && !segm.stressed?
-      if is_velar?(segm) && (is_dental?(segm.next) || is_nasal?(segm.next))
+      if is_velar?(segm) && (segm.next.dental? || is_nasal?(segm.next))
         segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
         segm[:orthography] = segm.next.final? ? nil : segm.next.orth[0]
-      elsif (is_dental?(segm) || is_velar?(segm)) && segm.next.sibilant?
+      elsif (segm.dental? || is_velar?(segm)) && segm.next.sibilant?
         segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
         segm[:orthography] = segm.next.final? ? nil : 's'
       elsif segm[:IPA] == 'ks'
@@ -1739,7 +1739,7 @@ def step_RI2 ary
     if segm[:IPA][0] == "j" &&
       (Segment[IPA: segm[:IPA][1]].vowel? ||   # front of diphthong
       (!segm[:IPA][1] && segm.next.starts_with.vowel?)) && # isolated segment
-      !(idx > 0 && !(is_dental?(segm.prev) || (segm.prev.phon == 'r' && segm.before_prev.vocalic?) || segm.prev.vocalic?)) &&
+      !(idx > 0 && !(segm.prev.dental? || (segm.prev.phon == 'r' && segm.before_prev.vocalic?) || segm.prev.vocalic?)) &&
       !(idx > 0 && segm.prev.phon == 'l') &&
       !(idx > 0 && ary[0...idx].all?(&:consonantal?))
       # segm[:IPA][0] = 'ʝ'
