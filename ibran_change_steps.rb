@@ -342,25 +342,22 @@ def ultima_cluster?(ary)
   consonants > 1
 end
 
+# Convert Latin character to IPA
+def pronounce_latin(str)
+  orth = %w(qu x  z  ā ă ē ĕ ī ĭ ȳ ȳ y̆ y ō ŏ ū ŭ c ch ph)
+  phon = %w(kw ks dʒ a a e e i i i i i i o o u u k kh f )
+  search = str.downcase
+
+  Hash[orth.zip(phon)].fetch(search, search)
+end
+
 # break up input
 def step_VL0(str)
   @current = str.scan(/[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra[:long] = true if obj.match(/[āēīōūȳ]|ȳ/i)
 
-    phon = case obj
-           when /qu/i then "kw"
-           when /x/i  then "ks"
-           when /z/i  then "dʒ"
-           when /ā|ă/i  then "a"
-           when /ē|ĕ/i  then "e"
-           when /ī|ĭ|ȳ|ȳ|y̆|y/i  then "i"
-           when /ō|ŏ/i  then "o"
-           when /ū|ŭ/i  then "u"
-           when /c/i    then "k"
-           when /ph/i   then 'f'
-           else obj.dup.downcase
-           end
+    phon = pronounce_latin(obj)
 
     orth = case obj
            when /k/i then "c"
