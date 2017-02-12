@@ -249,6 +249,10 @@ class Segment < Hash
     # (where /je/ is a diphthong).
     consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
   end
+
+  def devoice!
+    phon.tr!('vʒzbdg', 'fʃsptk')
+  end
 end
 
 def ipa(dict)
@@ -268,17 +272,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def devoice!(segment)
-  case segment[:IPA]
-  when 'v' then segment[:IPA] = 'f'
-  when 'ʒ' then segment[:IPA] = 'ʃ'
-  when 'z' then segment[:IPA] = 's'
-  when 'b' then segment[:IPA] = 'p'
-  when 'd' then segment[:IPA] = 't'
-  when 'g' then segment[:IPA] = 'k'
-  end
 end
 
 def voice!(segment)
@@ -551,7 +544,7 @@ def step_VL6(ary)
 
         # some assimilation
         if is_voiceless?(segment.next) && is_voiced?(segment.prev)
-          devoice! segment.prev
+          segment.prev.devoice!
         end
       end
     end
@@ -1608,7 +1601,7 @@ def step_CI3 ary
     if segm.fricative?
       case
       when is_voiceless?(segm.next) || segm.final?
-        devoice!(segm)
+        segm.devoice!
       when is_voiced?(segm.next)
         voice!(segm)
 
@@ -1867,7 +1860,7 @@ end
 
 # Devoice final stops
 def step_RI9 ary
-  devoice!(ary.last) if ary.last.stop?
+  ary.last.devoice! if ary.last.stop?
 
   @current = ary
 end
