@@ -90,6 +90,7 @@ module PhoneticFeature
     neither_vowel_nor_modifier = "^aeioõuyæɑɐəɛɔøœ\u0303"
     count(vowels) == 1 && count(neither_vowel_nor_modifier).zero?
   end
+
   def diphthong?
     return true if %w(au ae oe).include?(self)
 
@@ -138,6 +139,7 @@ module PhoneticFeature
   end
 end
 
+# PhoneticFeatures pertain to strings
 class String
   include PhoneticFeature
 end
@@ -254,11 +256,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-# DEPRECATED: TODO: use Segment.final?
-def is_final?(pos)
-  @current[pos+1].nil? || [' ', nil].include?(@current[pos+1][:IPA])
 end
 
 def is_short?(segment)
@@ -1199,11 +1196,13 @@ end
 
 # drop unstressed final vowels except /A/
 def step_OI26 ary
+  ary.compact.renumber #argh
+  
   @current = ary.each_with_index do |segm, idx|
     if !segm.stressed? && segm.vowel? && !(segm[:IPA] == 'ɑ') &&  # unstressed, not A
-        (is_final?(idx) || (segm.next.phon == 's' && segm.next.final?)) && # is final or behind final S
+        (segm.final? || (segm.next.phon == 's' && segm.next.final?)) && # is final or behind final S
         (idx > 0) # not if it's also the initial vowel
-
+      
       # assume sonority hierarchy will be C?V
       stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || segm.before_prev.affricate? ||
         (is_nasal?(segm.before_prev) && !(segm.prev.stop? || segm.prev.affricate?) ) ||
@@ -1591,7 +1590,7 @@ def step_CI2 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? && !%w{j w ɥ œ̯}.include?(segm[:IPA][-1]) &&
         ary[idx+1] && %w{m n ŋ}.include?(segm.next.phon) &&
-        (segm.after_next.phon && segm.after_next.starts_with.consonantal? || is_final?(idx+1))
+        (segm.after_next.phon && segm.after_next.starts_with.consonantal? || segm.next.final?)
 
       segm[:IPA] << "\u0303"
       segm[:orthography] << case #'n'#ary[idx+1][:orthography]
@@ -2540,7 +2539,7 @@ def convert_LL str
     @current.pop(3)
     @current << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
   when /um$/ # not us
-    @current.pop(1)
+    @current.pop
     @current = step_OI26(@current)
   end
 
