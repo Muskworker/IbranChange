@@ -156,6 +156,10 @@ module PhoneticFeature
     %w(o u oe ɑ ɔ).include? self
   end
 
+  def round?
+    %w{w ɥ ɔ o œ ø u ʊ y ʏ}.include? self
+  end
+
   def sonority
     if vocalic? then 6
     elsif sonorant? then 4
@@ -292,15 +296,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_round?(segment)
-  case segment
-  when String
-    %w{w ɥ ɔ o œ ø u ʊ y ʏ}.include? segment
-  when Hash
-    is_round? segment[:IPA]
-  end
 end
 
 # Is labial consonant that turns to /w/ before a consonant per OIx4
@@ -1167,7 +1162,7 @@ end
 # f > h before round vowels
 def step_OI25 ary
   @current = ary.each do |segm|
-    if segm[:IPA] == 'f' && is_round?(segm.next)
+    if segm[:IPA] == 'f' && segm.next.round?
       segm[:IPA] = "h"
       segm[:orthography] = "h"
     end
@@ -1786,14 +1781,14 @@ end
 # w > 0 before round vowels
 def step_RI5 ary
   @current = ary.each do |segm|
-    if segm[:IPA] == "w" && is_round?(segm.next.phon[0])
+    if segm[:IPA] == "w" && segm.next.starts_with.round?
       segm.next[:orthography] = segm[:orthography] << segm.next.orth
 
       segm[:IPA] = nil
       segm[:orthography] = nil
-    elsif segm[:IPA][-1] == 'w' && is_round?(segm.next.phon[0])
+    elsif segm[:IPA][-1] == 'w' && segm.next.starts_with.round?
       segm[:IPA][-1] = ''
-    elsif segm[:IPA][0] == 'w' && segm[:IPA][1] && is_round?(segm[:IPA][1])
+    elsif segm[:IPA][0] == 'w' && segm[:IPA][1] && segm[:IPA][1].round?
       segm[:IPA][0] = ''
     end
   end
