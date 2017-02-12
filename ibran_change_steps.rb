@@ -286,6 +286,8 @@ end
 
 # Methods for converting Latin input into data
 class Latin
+  DIGRAPHS = /[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i
+
   # Convert Latin character to IPA
   def self.to_ipa(str)
     orth = %w(qu x z ā ă ē ĕ ī ĭ ȳ ȳ y̆ y ō ŏ ū ŭ c ch ph)
@@ -293,6 +295,31 @@ class Latin
     search = str.downcase
 
     Hash[orth.zip(phon)].fetch(search, search)
+  end
+
+  # Convert /nguV/ sequences to /ngwV/.
+  # For words like sanguis, unguis, anguilla, etc.
+  def self.gu_to_gw(word)
+    g = { IPA: 'g' }
+    gw = { IPA: 'gw', orthography: 'gu' }
+
+    word.change(g, gw, ->(segm) { segm.next.delete }) do |segm|
+      segm.prev.phon == 'n' && segm.next.phon == 'u' && segm.after_next.vowel?
+    end
+  end
+
+  def self.to_dictum(word)
+    dictum = word.scan(DIGRAPHS).inject(Dictum.new) do |memo, obj|
+      supra = {}
+      supra[:long] = true if obj =~ /[āēīōūȳ]|ȳ/i
+
+      phon = Latin.to_ipa(obj)
+      orth = obj.tr('kzȳy', 'cjīi')
+
+      memo << Segment[IPA: phon, orthography: orth].merge(supra)
+    end
+
+    Latin.gu_to_gw(dictum)
   end
 
   def self.stressed_syllable(word)
@@ -382,30 +409,8 @@ end
 
 # break up input
 def step_VL0(str)
-  dictum = str.scan(/[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i).inject(Dictum.new) do |memo, obj|
-    supra = {}
-    supra[:long] = true if obj.match(/[āēīōūȳ]|ȳ/i)
-
-    phon = Latin.to_ipa(obj)
-
-    orth = case obj
-           when /k/i then 'c'
-           when /z/i then 'j'
-           when /ȳ/i then 'ī'
-           when /y/i then 'i'
-           else obj.dup
-           end
-
-    memo << Segment[IPA: phon, orthography: orth].merge(supra)
-  end
-
-  # /gw/
-  dictum.change({ IPA: 'g' }, { IPA: 'gw', orthography: 'gu' }, ->(segm){segm.next.delete}) do |segm|
-    segm.prev.phon == 'n' &&
-      segm.next.phon == 'u' &&
-      segm.after_next.vowel?
-  end
-
+  dictum = Latin.to_dictum(str)
+  
   # /nf/ acts like /mf/
   dictum.change({ IPA: 'n' }, { IPA: 'm' }) {|segm| segm.next.phon == "f"}
 
