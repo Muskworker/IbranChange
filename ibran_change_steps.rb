@@ -157,7 +157,12 @@ module PhoneticFeature
   end
 
   def round?
-    %w{w ɥ ɔ o œ ø u ʊ y ʏ}.include? self
+    %w(w ɥ ɔ o œ ø u ʊ y ʏ).include? self
+  end
+
+  # Is labial consonant that turns to /w/ before a consonant per OIx4
+  def labial?
+    %w(p m b v f).include? self
   end
 
   def sonority
@@ -296,11 +301,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-# Is labial consonant that turns to /w/ before a consonant per OIx4
-def is_labial?(segment)
-  %w{p m b v f}.include? segment[:IPA]
 end
 
 # use with long vowel test to determine heavy penult
@@ -1423,7 +1423,7 @@ end
 def step_OIx4 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? &&
-        (segm.next.phon == 'l' || is_labial?(segm.next)) &&
+        (segm.next.phon == 'l' || segm.next.labial?) &&
         (segm.after_next.starts_with.consonantal? || segm.next.final?)
 
       (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
@@ -1432,7 +1432,7 @@ def step_OIx4 ary
       segm.next[:orthography] = nil
     elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
           segm.next.sonorant? &&
-          (segm.after_next.phon == 'l' || is_labial?(segm.after_next)) &&
+          (segm.after_next.phon == 'l' || segm.after_next.labial?) &&
           (segm.next.after_next.consonantal? || segm.after_next.final?)
       ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
 
@@ -1570,7 +1570,7 @@ def step_CI2 ary
       segm[:IPA] << "\u0303"
       segm[:orthography] << case #'n'#ary[idx+1][:orthography]
                             when segm.next.final? then segm.next.orth
-                            when is_labial?(segm.after_next) then 'm'
+                            when segm.after_next.labial? then 'm'
                             else 'n'
                             end
       segm.next[:IPA] = nil
