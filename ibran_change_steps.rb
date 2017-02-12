@@ -237,11 +237,11 @@ class Segment < Hash
   end
 
   def starts_with
-    Segment[IPA: phon[0]]
+    Segment[IPA: phon[0], orthography: orth ? orth[0] : '']
   end
 
   def ends_with
-    Segment[IPA: phon ? phon[-1] : '']
+    Segment[IPA: phon ? phon[-1] : '', orthography: orth ? orth[-1] : '']
   end
 
   def to_ipa
@@ -305,7 +305,8 @@ end
 
 # use with long vowel test to determine heavy penult
 def penult_cluster?(ary)
-  vowels, consonants = 0, 0
+  vowels = 0
+  consonants = 0
 
   ary.reverse_each do |seg|
     vowels += 1 if seg.vowel?
@@ -316,16 +317,14 @@ def penult_cluster?(ary)
 end
 
 def respell_velars(ary)
-  ary = ary.each_with_index do |segm, idx|
-    if ary[idx+1] && %w{e i}.include?(ary[idx+1][:orthography][0])
-      case segm[:IPA]
-      when "k"
-        segm[:orthography] = "qu"
-        # segm[:palatalized] = true
-      when "g"
-        segm[:orthography] = "gu"
-        # segm[:palatalized] = true
-      end
+  ary.compact.renumber # ugh
+
+  ary.each do |segm|
+    next unless %w(e i).include?(segm.next.starts_with.orth)
+
+    case segm[:IPA]
+    when 'k' then segm[:orthography] = 'qu'
+    when 'g' then segm[:orthography] = 'gu'
     end
   end
 end
