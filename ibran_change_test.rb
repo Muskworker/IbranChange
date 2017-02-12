@@ -7,24 +7,24 @@ require './ibran_change_steps.rb'
 class IbranChangeTest < Minitest::Test  
   def test_zero
     # work at all
-    quid = step_VL0('quid')
+    quid = step_vl0('quid')
     
     assert_equal "kwid", ipa(quid)
     assert_equal "quid", quid.join
     
     # c = k
-    facere = step_VL0('facēre')
+    facere = step_vl0('facēre')
     
     assert_equal "fakere", ipa(facere)
     
     # y = i
-    hymnum = step_VL0('hymnum')
+    hymnum = step_vl0('hymnum')
     assert_equal 'himnum', ipa(hymnum)
     assert_equal 'himnum', hymnum.join
   end
   
   def to_VL1 str
-    step_VL1(step_VL0 str)
+    step_VL1(step_vl0 str)
   end
   
   def test_one

@@ -302,6 +302,14 @@ class Latin
     Hash[orth.zip(phon)].fetch(search, search)
   end
 
+  # Convert /Vns/ -> /V:s/
+  def self.lengthen_before_ns_cluster(word)
+    word.change(:vowel, { long: true }, lambda do |segm|
+      segm.orth.tr('aeiouy', 'āēīōūȳ')
+      segm.next.delete
+    end) { |segm| segm.next.phon == 'n' && segm.after_next.phon == 's' }
+  end
+
   # Convert /nguV/ sequences to /ngwV/.
   # For words like sanguis, unguis, anguilla, etc.
   def self.gu_to_gw(word)
@@ -324,7 +332,7 @@ class Latin
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
-    Latin.gu_to_gw(dictum)
+    Latin.gu_to_gw(lengthen_before_ns_cluster(dictum))
   end
 
   def self.stressed_syllable(word)
@@ -413,27 +421,18 @@ def ultima_cluster?(ary)
 end
 
 # break up input
-def step_VL0(str)
-  dictum = Latin.to_dictum(str)
-  
-  # /nf/ acts like /mf/
-  dictum.change({ IPA: 'n' }, { IPA: 'm' }) {|segm| segm.next.phon == "f"}
+def step_vl0(lemma)
+  lemma = Latin.to_dictum(lemma)
 
-  # /Vns/ -> /V:s/
-  dictum = dictum.each do |segm|
-    if segm.vowel? && segm.next.phon == "n" && segm.after_next.phon == "s"
-      segm[:long] = true
-      segm[:orthography] = segm[:orthography].tr("aeiouy", "āēīōūȳ")
-      segm.next.delete
-    end
-  end
+  # /nf/ acts like /mf/
+  lemma.change({ IPA: 'n' }, IPA: 'm') { |segm| segm.next.phon == 'f' }
 
   # assign stress to each word
-  dictum.slice_before { |word| word[:IPA] == ' ' }.each do |word|
+  lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
     Latin.assign_stress(word, word.last.orth)
   end
 
-  dictum.compact
+  lemma.compact
 end
 
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
@@ -2589,7 +2588,7 @@ def transform(str, since = "L", plural = false)
   @plural = plural
 
   if since == "L"
-    @steps[0] = deep_dup step_VL0(str)
+    @steps[0] = deep_dup step_vl0(str)
     @steps[1] = step_VL1(deep_dup @steps[0])
     @steps[2] = step_VL2(deep_dup @steps[1])
     @steps[3] = step_VL3(deep_dup @steps[2])
