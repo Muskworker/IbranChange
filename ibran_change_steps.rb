@@ -144,6 +144,10 @@ module PhoneticFeature
     %w(w j m b ɲ ɟʝ n d dʒ g v ʎ ʒ z r l ʝ).include?(self) || vocalic?
   end
 
+  def voiceless?
+    !voiced?
+  end
+
   def sonority
     if vocalic? then 6
     elsif sonorant? then 4
@@ -280,10 +284,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_voiceless?(segment)
-  !segment.voiced?
 end
 
 def is_front_vowel?(segment)
@@ -534,7 +534,7 @@ def step_VL6(ary)
         end
 
         # some assimilation
-        if is_voiceless?(segment.next) && segment.prev.voiced?
+        if segment.next.voiceless? && segment.prev.voiced?
           segment.prev.devoice!
         end
       end
@@ -1591,7 +1591,7 @@ def step_CI3 ary
   @current = ary.reverse_each.with_index do |segm, idx|
     if segm.fricative?
       case
-      when is_voiceless?(segm.next) || segm.final?
+      when segm.next.voiceless? || segm.final?
         segm.devoice!
       when segm.next.voiced?
         segm.voice!
