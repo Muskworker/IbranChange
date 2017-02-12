@@ -140,6 +140,10 @@ module PhoneticFeature
     %w(m ɱ ɲ ɳ n ɴ ŋ).include? self
   end
 
+  def voiced?
+    %w(w j m b ɲ ɟʝ n d dʒ g v ʎ ʒ z r l ʝ).include?(self) || vocalic?
+  end
+
   def sonority
     if vocalic? then 6
     elsif sonorant? then 4
@@ -278,12 +282,8 @@ def caps(string)
   string.tr(lc, uc)
 end
 
-def is_voiced?(segment)
-  %w{w j m b ɲ ɟʝ n d dʒ g v ʎ ʒ z r l ʝ}.include?(segment[:IPA]) || segment.vocalic?
-end
-
 def is_voiceless?(segment)
-  !is_voiced?(segment)
+  !segment.voiced?
 end
 
 def is_front_vowel?(segment)
@@ -534,7 +534,7 @@ def step_VL6(ary)
         end
 
         # some assimilation
-        if is_voiceless?(segment.next) && is_voiced?(segment.prev)
+        if is_voiceless?(segment.next) && segment.prev.voiced?
           segment.prev.devoice!
         end
       end
@@ -639,7 +639,7 @@ def step_OI1(ary)
 
   # { [+stop], [+fric] }[+voice]j > dʒ
   @current = ary.each do |segm|
-    if (segm.stop? || segm.fricative?) && is_voiced?(segm) && segm.next.phon == 'j'
+    if (segm.stop? || segm.fricative?) && segm.voiced? && segm.next.phon == 'j'
       segm[:IPA] = 'dʒ'
       segm.next[:IPA] = nil
 
@@ -654,7 +654,7 @@ end
 # { [+stop], [+fric] }[-voice]j > tʃ
 def step_OI2(ary)
   @current = ary.each do |segm|
-    if (segm.stop? || segm.fricative?) && !is_voiced?(segm) && segm.next.phon == 'j'
+    if (segm.stop? || segm.fricative?) && !segm.voiced? && segm.next.phon == 'j'
       # ssj -> tS also.  But not stj
       if segm.prev.phon == 's' && segm.phon == 's'
         segm.prev[:IPA] = nil
@@ -1593,7 +1593,7 @@ def step_CI3 ary
       case
       when is_voiceless?(segm.next) || segm.final?
         segm.devoice!
-      when is_voiced?(segm.next)
+      when segm.next.voiced?
         segm.voice!
 
         segm[:orthography] = "d" if segm.orth == "th"
@@ -2303,7 +2303,7 @@ def convert_OLF str
         segm.next.consonantal?) || segm.final?) &&
         segm[:IPA] == 'h'
       segm[:orthography] = "gh"  # How's this?
-      segm[:IPA] = is_voiced?(segm.next) ? 'g' : 'k'
+      segm[:IPA] = segm.next.voiced? ? 'g' : 'k'
     end
   end
 
