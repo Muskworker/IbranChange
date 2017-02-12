@@ -23,103 +23,103 @@ class IbranChangeTest < Minitest::Test
     assert_equal 'himnum', hymnum.join
   end
   
-  def to_VL1 str
-    step_VL1(step_vl0 str)
+  def to_vl1 str
+    step_vl1(step_vl0 str)
   end
   
   def test_one
     # Polysyllables
-    causam = to_VL1('causam')
+    causam = to_vl1('causam')
     
     assert_equal "kausa", ipa(causam)
     assert_equal "causa", causam.join
     
     # Monosyllables
-    iam = to_VL1('jam')
+    iam = to_vl1('jam')
     
     assert_equal "jan", ipa(iam)
     assert_equal "jan", iam.join
   end
   
-  def to_VL2 str
-    step_VL2(to_VL1 str)
+  def to_vl2 str
+    step_vl2(to_vl1 str)
   end
   
   def test_two
-    cognoscere = to_VL2('cognoscēre')
+    cognoscere = to_vl2('cognoscēre')
     
     assert_equal "konnoskere", ipa(cognoscere)
     assert_equal "connoscēre", cognoscere.join
   end
   
-  def to_VL3 str
-    step_VL3(to_VL2 str)
+  def to_vl3 str
+    step_vl3(to_vl2 str)
   end
   
   def test_three
-    potit = to_VL3('potit')
+    potit = to_vl3('potit')
     
     assert_equal "poti", ipa(potit)
     assert_equal "poti", potit.join
   end
   
-  def to_VL4 str
-    step_VL4(to_VL3 str)
+  def to_vl4 str
+    step_vl4(to_vl3 str)
   end
   
   def test_four
-    habere = to_VL4('habēre')
+    habere = to_vl4('habēre')
     
     assert_equal "abere", ipa(habere)
     assert_equal "abēre", habere.join
 
-    chorda = to_VL4('chordam')
+    chorda = to_vl4('chordam')
     
     assert_equal "korda", ipa(chorda)
     assert_equal "corda", chorda.join
   end
   
-  def to_VL5 str
-    step_VL5(to_VL4 str)
+  def to_vl5 str
+    step_vl5(to_vl4 str)
   end
   
   def test_five
-    perdiu = to_VL5("perdiū")
+    perdiu = to_vl5("perdiū")
     
     assert_equal "perdju", ipa(perdiu)
     assert_equal "perdjū", perdiu.join
   end
   
-  def to_VL6 str
-    step_VL6(to_VL5 str)
+  def to_vl6 str
+    step_vl6(to_vl5 str)
   end
   
   def test_six
-    generem = to_VL6("generem")  # short penult
+    generem = to_vl6("generem")  # short penult
     assert_equal "genre", ipa(generem)
     assert_equal "genre", generem.join
         
-    alteramente = to_VL6("alterā mente")  # heavy penult
+    alteramente = to_vl6("alterā mente")  # heavy penult
     assert_equal "altra mente", ipa(alteramente)
     assert_equal "altrā mente", alteramente.join
 
-    saeculum = to_VL6("saeculum")  # diphthong bug
+    saeculum = to_vl6("saeculum")  # diphthong bug
     assert_equal "saeklu", ipa(saeculum)
     assert_equal "saeclu", saeculum.join
   end
   
-  def to_VL7 str
-    step_VL7(to_VL6 str)
+  def to_vl7 str
+    step_vl7(to_vl6 str)
   end
   
   def test_seven
-    porticum = to_VL7("porticum")
+    porticum = to_vl7("porticum")
     assert_equal "portʃu", ipa(porticum)
     assert_equal "porçu", porticum.join
   end
   
-  def to_VL8 str
-    step_VL8(to_VL7 str)
+  def to_vl8 str
+    step_vl8(to_vl7 str)
   end
   
   def test_eight
@@ -139,14 +139,14 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_VL8 word[:w]
+      xform = to_vl8 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end
   end
 
-  def to_VL9 str
-    step_VL9(to_VL8 str)
+  def to_vl9 str
+    step_vl9(to_vl8 str)
   end
   
   def test_nine
@@ -159,129 +159,129 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_VL9 word[:w]
+      xform = to_vl9 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end
   end
   
-  def to_OI1 str
-    step_OI1(to_VL9 str)
+  def to_oi1 str
+    step_oi1(to_vl9 str)
   end
   
-  def test_OI_one
-    perdiu = to_OI1("perdiū")
+  def test_oi_one
+    perdiu = to_oi1("perdiū")
     assert_equal "pɛrdʒu", ipa(perdiu)
     assert_equal "perju", perdiu.join    
   end
   
-  def to_OI2 str
-    step_OI2(to_OI1 str)
+  def to_oi2 str
+    step_oi2(to_oi1 str)
   end
   
-  def test_OI_two
-    propium = to_OI2 "propium"
+  def test_oi_two
+    propium = to_oi2 "propium"
     assert_equal "prɔtʃɔ", ipa(propium)
     assert_equal "proço", propium.join
     
-    grassia = to_OI2 "grassiam"
+    grassia = to_oi2 "grassiam"
     assert_equal "grɑtʃɑ", ipa(grassia)
     assert_equal "graça", grassia.join
 
-    bestiola = to_OI2 "bestjōlam"
+    bestiola = to_oi2 "bestjōlam"
     assert_equal "bɛstʃolɑ", ipa(bestiola)
     assert_equal "besçóla", bestiola.join
   end
   
-  def to_OI3 str
-    step_OI3(to_OI2 str)
+  def to_oi3 str
+    step_oi3(to_oi2 str)
   end
   
-  def test_OI_three
-    jocare = to_OI3 "jocāre"
+  def test_oi_three
+    jocare = to_oi3 "jocāre"
     assert_equal "dʒɔkɑrɛ", ipa(jocare)
     assert_equal "jocare", jocare.join
   end
   
-  def to_OI4 str
-    step_OI4(to_OI3 str)
+  def to_oi4 str
+    step_oi4(to_oi3 str)
   end
   
-  def test_OI_four
-    cognoscere = to_OI4 "cognoscēre"
+  def test_oi_four
+    cognoscere = to_oi4 "cognoscēre"
     assert_equal "kɔɲɔskerɛ", ipa(cognoscere)
     assert_equal "conhoscére", cognoscere.join
   end
   
-  def to_OI5 str
-    step_OI5(to_OI4 str)
+  def to_oi5 str
+    step_oi5(to_oi4 str)
   end
   
-  def test_OI_five
-    stella = to_OI5 "stella"
+  def test_oi_five
+    stella = to_oi5 "stella"
     assert_equal "stɛʎɑ", ipa(stella)
     assert_equal "stella", stella.join
   end
   
-  def to_OI6 str
-    step_OI6(to_OI5 str)
+  def to_oi6 str
+    step_oi6(to_oi5 str)
   end
   
-  def test_OI_six
-    videre = to_OI6 "vidēre"
+  def test_oi_six
+    videre = to_oi6 "vidēre"
     assert_equal "vɛerɛ", ipa(videre)
     assert_equal "veére", videre.join
     
-    dicere = to_OI6 "dīcēre"  # was grabbing initial consonants
+    dicere = to_oi6 "dīcēre"  # was grabbing initial consonants
     assert_equal "dikerɛ", ipa(dicere)
     assert_equal "dicére", dicere.join
   end
   
-  def to_OI7 str
-    step_OI7(to_OI6 str)
+  def to_oi7 str
+    step_oi7(to_oi6 str)
   end
   
-  def test_OI_seven
-    habere = to_OI7 "habēre"
+  def test_oi_seven
+    habere = to_oi7 "habēre"
     assert_equal "ɑverɛ", ipa(habere)
     assert_equal "avére", habere.join
   end
   
-  def to_OI8 str
-    step_OI8(to_OI7 str)
+  def to_oi8 str
+    step_oi8(to_oi7 str)
   end
   
-  def test_OI_eight
-    pes = to_OI8 "pedem"
+  def test_oi_eight
+    pes = to_oi8 "pedem"
     assert_equal "pɛj", ipa(pes)
     assert_equal "pei", pes.join
   end
   
-  def to_OI9 str
-    step_OI9(to_OI8 str)
+  def to_oi9 str
+    step_oi9(to_oi8 str)
   end
   
-  def test_OI_nine
-    fides = to_OI9 "fidem"
+  def test_oi_nine
+    fides = to_oi9 "fidem"
     assert_equal "fej", ipa(fides)
     assert_equal "féi", fides.join
   end
   
-  def to_OI10 str
-    step_OI10(to_OI9 str)
+  def to_oi10 str
+    step_oi10(to_oi9 str)
   end
   
-  def test_OI_ten
-    audis = to_OI10 "audīs"
+  def test_oi_ten
+    audis = to_oi10 "audīs"
     assert_equal "ojs", ipa(audis)
     assert_equal "óis", audis.join 
   end
   
-  def to_OI11 str
-    step_OI11(to_OI10 str)
+  def to_oi11 str
+    step_oi11(to_oi10 str)
   end
   
-  def test_OI_eleven
+  def test_oi_eleven
     test_words = [
       { w: "dīcēre",   ipa: "ditʃerɛ", orth: "dicére"   },
       { w: "gentem",   ipa: "dʒɛntɛ",  orth: "gente"    },
@@ -290,18 +290,18 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI11 word[:w]
+      xform = to_oi11 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
       assert_equal word[:full_ipa], xform.to_ipa if word[:full_ipa]
     end    
   end
   
-  def to_OI12 str
-    step_OI12(to_OI11 str)
+  def to_oi12 str
+    step_oi12(to_oi11 str)
   end
   
-  def test_OI_twelve
+  def test_oi_twelve
     test_words = [
       { w: "locālem",  ipa: "lɔkɑlɛ",  orth: "locale"  },
       { w: "galbīnum", ipa: "gɑlbinɔ", orth: "galbino" },
@@ -310,31 +310,31 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI12 word[:w]
+      xform = to_oi12 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
 
-  def to_OI13 str
-    step_OI13(to_OI12 str)
+  def to_oi13 str
+    step_oi13(to_oi12 str)
   end
   
-  def test_OI_thirteen
-    quomodo = to_OI13 'quō modō'
+  def test_oi_thirteen
+    quomodo = to_oi13 'quō modō'
     assert_equal "kɔmɔɔ", ipa(quomodo)
     assert_equal "quomoo", quomodo.join
     
-    exstinguo = to_OI13 'extinguō'
+    exstinguo = to_oi13 'extinguō'
     assert_equal "ɛkstengɔ", ipa(exstinguo)
     assert_equal "exténguo", exstinguo.join
   end
   
-  def to_OI14 str
-    step_OI14(to_OI13 str)
+  def to_oi14 str
+    step_oi14(to_oi13 str)
   end
   
-  def test_OI_fourteen
+  def test_oi_fourteen
     test_words = [
       { w: "sapēre",     ipa: "sɑberɛ",    orth: "sabére"   },
       { w: "prophētam",  ipa: "prɔvelɑ",   orth: "provéla"  },
@@ -349,17 +349,17 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI14 word[:w]
+      xform = to_oi14 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
 
-  def to_OI15 str
-    step_OI15(to_OI14 str)
+  def to_oi15 str
+    step_oi15(to_oi14 str)
   end
   
-  def test_OI_fifteen
+  def test_oi_fifteen
     test_words = [
       { w: "aprīlem", ipa: "ɑbrilɛ", orth: "abrile" },
       { w: "mātrem",  ipa: "mɑdrɛ",  orth: "madre"  },
@@ -367,27 +367,27 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI15 word[:w]
+      xform = to_oi15 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
 
-  def to_OI16 str
-    step_OI16(to_OI15 str)
+  def to_oi16 str
+    step_oi16(to_oi15 str)
   end
   
-  def test_OI_sixteen
-    flor = to_OI16 "flōrem"
+  def test_oi_sixteen
+    flor = to_oi16 "flōrem"
     assert_equal "vlorɛ", ipa(flor)
     assert_equal "vlóre", flor.join 
   end
   
-  def to_OI17 str
-    step_OI17(to_OI16 str)
+  def to_oi17 str
+    step_oi17(to_oi16 str)
   end
   
-  def test_OI_seventeen
+  def test_oi_seventeen
     test_words = [
       { w: "scūppīre", ipa: "skupirɛ", orth: "scupire" },
       { w: "muttum",   ipa: "motɔ",    orth: "móto"    },
@@ -397,17 +397,17 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI17 word[:w]
+      xform = to_oi17 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI18 str
-    step_OI18(to_OI17 str)
+  def to_oi18 str
+    step_oi18(to_oi17 str)
   end
   
-  def test_OI_eighteen
+  def test_oi_eighteen
     test_words = [
       { w: "factum",    ipa: "fɑɛ̯tɔ",   orth: "faeto"   },
       { w: "pectum",    ipa: "pɛjtɔ",   orth: "peito"   },
@@ -417,17 +417,17 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI18 word[:w]
+      xform = to_oi18 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI19 str
-    step_OI19(to_OI18 str)
+  def to_oi19 str
+    step_oi19(to_oi18 str)
   end
   
-  def test_OI_nineteen
+  def test_oi_nineteen
     test_words = [
       { w: "laxum",     ipa: "lɑɛ̯sɔ",    orth: "laesso"   },
       { w: "mixtum",    ipa: "mɛjstɔ",   orth: "meisto"   },
@@ -439,17 +439,17 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI19 word[:w]
+      xform = to_oi19 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI20 str
-    step_OI20(to_OI19 str)
+  def to_oi20 str
+    step_oi20(to_oi19 str)
   end
   
-  def test_OI_twenty
+  def test_oi_twenty
     test_words = [
       { w: "volēre",   ipa: "valerɛ",  orth: "vàlére"   },
       { w: "aucellam", ipa: "ɔʃʃɛʎɑ",  orth: "oscella"   },
@@ -457,17 +457,17 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI20 word[:w]
+      xform = to_oi20 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI21 str
-    step_OI21(to_OI20 str)
+  def to_oi21 str
+    step_oi21(to_oi20 str)
   end
   
-  def test_OI_twenty_one
+  def test_oi_twenty_one
     test_words = [
       { w: "montāneam", ipa: "mɔntaɲɑ", orth: "montànha" },
       { w: "illum",     ipa: "iʎɔ",     orth: "illo"     },
@@ -475,17 +475,17 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI21 word[:w]
+      xform = to_oi21 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI22 str
-    step_OI22(to_OI21 str)
+  def to_oi22 str
+    step_oi22(to_oi21 str)
   end
   
-  def test_OI_twenty_two
+  def test_oi_twenty_two
     test_words = [
       { w: "caldāriam", ipa: "kɑldarɑ", orth: "caldàira" },
       { w: "imperium",  ipa: "ɛmpɛrɔ",  orth: "empeiro"  },
@@ -493,27 +493,27 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI22 word[:w]
+      xform = to_oi22 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI23 str
-    step_OI23(to_OI22 str)
+  def to_oi23 str
+    step_oi23(to_oi22 str)
   end
   
-  def test_OI_twenty_three
-    grandis = to_OI23 "grandem"
+  def test_oi_twenty_three
+    grandis = to_oi23 "grandem"
     assert_equal "grandɛ", ipa(grandis)
     assert_equal "grànde", grandis.join 
   end
   
-  def to_OI24 str
-    step_OI24(to_OI23 str)
+  def to_oi24 str
+    step_oi24(to_oi23 str)
   end
   
-  def test_OI_twenty_four
+  def test_oi_twenty_four
     test_words = [
       { w: "tempus",   ipa: "tjɛmpɔs", orth: "tiempos" },
       { w: "sapēre",   ipa: "sɑbjerɛ", orth: "sabiére" },
@@ -526,164 +526,164 @@ class IbranChangeTest < Minitest::Test
     ]
     
     test_words.each do |word|
-      xform = to_OI24 word[:w]
+      xform = to_oi24 word[:w]
       assert_equal word[:ipa], ipa(xform)
       assert_equal word[:orth], xform.join
     end    
   end  
   
-  def to_OI25 str
-    step_OI25(to_OI24 str)
+  def to_oi25 str
+    step_oi25(to_oi24 str)
   end
   
-  def test_OI_twenty_five
-    furnus = to_OI25 "furnum"
+  def test_oi_twenty_five
+    furnus = to_oi25 "furnum"
     assert_equal "hornɔ", ipa(furnus)
     assert_equal "hórno", furnus.join 
   end
 
-  def to_OI26 str
-    step_OI26(to_OI25 str)
+  def to_oi26 str
+    step_oi26(to_oi25 str)
   end
   
-  def test_OI_twenty_six
-    unus = to_OI26 "ūnum"
+  def test_oi_twenty_six
+    unus = to_oi26 "ūnum"
     assert_equal "un", ipa(unus)
     assert_equal "un", unus.join 
 
-    radix = to_OI26 "rādīcem"
+    radix = to_oi26 "rādīcem"
     assert_equal "raiʃʃə", ipa(radix)
     assert_equal "ràisce", radix.join 
 
-    piscis = to_OI26 "piscem"
+    piscis = to_oi26 "piscem"
     assert_equal "pjestʃə", ipa(piscis)
     assert_equal "piésce", piscis.join 
 
-    aut = to_OI26 "aut"
+    aut = to_oi26 "aut"
     assert_equal "ɔ", ipa(aut)
     assert_equal "o", aut.join 
   end
 
-  def to_OI27 str
-    step_OI27(to_OI26 str)
+  def to_oi27 str
+    step_oi27(to_oi26 str)
   end
   
-  def test_OI_twenty_seven
-    causa = to_OI27 "causam"
+  def test_oi_twenty_seven
+    causa = to_oi27 "causam"
     assert_equal "kuzə", ipa(causa)
     assert_equal "cuose", causa.join 
 
-    bucca = to_OI27 "buccam"
+    bucca = to_oi27 "buccam"
     assert_equal "bukə", ipa(bucca)
     assert_equal "buoque", bucca.join 
   end
 
-  def to_OI28 str
-    step_OI28(to_OI27 str)
+  def to_oi28 str
+    step_oi28(to_oi27 str)
   end
   
-  def test_OI_twenty_eight
-    ornamentum = to_OI28 "ornāmentum"
+  def test_oi_twenty_eight
+    ornamentum = to_oi28 "ornāmentum"
     assert_equal "ɔrnəmjɛnt", ipa(ornamentum)
     assert_equal "ornemient", ornamentum.join 
   end
 
-  def to_OI29 str
-    step_OI29(to_OI28 str)
+  def to_oi29 str
+    step_oi29(to_oi28 str)
   end
   
-  def test_OI_twenty_nine
-    veritas = to_OI29 "veritātem"
+  def test_oi_twenty_nine
+    veritas = to_oi29 "veritātem"
     assert_equal "vɛrlɑd", ipa(veritas)
     assert_equal "verlad", veritas.join 
 
-    placeamus = to_OI29 "placēāmus"
+    placeamus = to_oi29 "placēāmus"
     assert_equal "plɑʃʃɑms", ipa(placeamus)
     assert_equal "plasçams", placeamus.join 
 
-    placessemus = to_OI29 "placēssēmus"
+    placessemus = to_oi29 "placēssēmus"
     assert_equal "plɑʃʃəsems", ipa(placessemus)
     assert_equal "plascesséms", placessemus.join 
 
-    misculatus = to_OI29 "misculātum"
+    misculatus = to_oi29 "misculātum"
     assert_equal "mɛskədɑl", ipa(misculatus)
     assert_equal "mesquedal", misculatus.join 
   end
 
-  def to_OIx2 str
-    step_OIx2(to_OI29 str)  # skipping OIx1 for now
+  def to_oix2 str
+    step_oix2(to_oi29 str)  # skipping OIx1 for now
   end
   
-  def test_OI_ecksty_two
-    historia = to_OIx2 "historiam"
+  def test_oi_ecksty_two
+    historia = to_oix2 "historiam"
     assert_equal "stœr", ipa(historia)
     assert_equal "steur", historia.join 
 
-    infans = to_OIx2 "infantem"
+    infans = to_oix2 "infantem"
     assert_equal "əmfɑnt", ipa(infans)
     assert_equal "enfant", infans.join 
   end
 
-  def to_OIx3 str
-    step_OIx3(to_OIx2 str)  
+  def to_oix3 str
+    step_oix3(to_oix2 str)  
   end
   
-  def test_OI_ecksty_three
-    imperium = to_OIx3 "imperium"
+  def test_oi_ecksty_three
+    imperium = to_oix3 "imperium"
     assert_equal "əw̃pɛr", ipa(imperium)
     assert_equal "eũpeir", imperium.join 
   end
 
-  def to_OIx4 str
-    step_OIx4(to_OIx3 str)  
+  def to_oix4 str
+    step_oix4(to_oix3 str)  
   end
   
-  def test_OI_ecksty_four
-    caldaria = to_OIx4 "caldāriam"
+  def test_oi_ecksty_four
+    caldaria = to_oix4 "caldāriam"
     assert_equal "kɑwdar", ipa(caldaria)
     assert_equal "caudàir", caldaria.join 
 
-    arbor = to_OIx4 "arborem"
+    arbor = to_oix4 "arborem"
     assert_equal "ɑwrrə", ipa(arbor)
     assert_equal "aurre", arbor.join 
 
-    serpens = to_OIx4 "serpentem"
+    serpens = to_oix4 "serpentem"
     assert_equal "sɛrpjɛnt", ipa(serpens)
     assert_equal "serpient", serpens.join 
   end
 
-  def to_OIx5 str
-    step_OIx5(to_OIx4 str)  
+  def to_oix5 str
+    step_oix5(to_oix4 str)  
   end
   
-  def test_OI_ecksty_five
-    caldaria = to_OIx5 "caldāriam"
+  def test_oi_ecksty_five
+    caldaria = to_oix5 "caldāriam"
     assert_equal "kodar", ipa(caldaria)
     assert_equal "caudàir", caldaria.join 
   end
 
-  def to_OIx6 str
-    step_OIx6(to_OIx5 str)  
+  def to_oix6 str
+    step_oix6(to_oix5 str)  
   end
   
-  def test_OI_ecksty_six
-    maritus = to_OIx6 "marītum"
+  def test_oi_ecksty_six
+    maritus = to_oix6 "marītum"
     assert_equal "mɑry", ipa(maritus)
     assert_equal "mariu", maritus.join 
   end
 
-  def to_OIx7 str
-    step_OIx7(to_OIx6 str)  
+  def to_oix7 str
+    step_oix7(to_oix6 str)  
   end
   
-  def test_OI_ecksty_seven
-    tempus = to_OIx7 "tempum"
+  def test_oi_ecksty_seven
+    tempus = to_oix7 "tempum"
     assert_equal "tjɛw̃", ipa(tempus)
     assert_equal "tiew̃", tempus.join 
   end
 
   def to_CI1 str
-    step_CI1(to_OIx7 str)  
+    step_CI1(to_oix7 str)  
   end
 
   def to_CI2 str
@@ -734,155 +734,155 @@ class IbranChangeTest < Minitest::Test
     assert_equal "yerbe", herba.join         
   end
 
-  def to_RI1 str
-    step_RI1(to_CI8 str)  
+  def to_ri1 str
+    step_ri1(to_CI8 str)  
   end
 
-  def to_RI2 str
-    step_RI2(to_RI1 str)  
+  def to_ri2 str
+    step_ri2(to_ri1 str)  
   end
 
-  def test_RI2
-    folia = to_RI2 "foliam"
+  def test_ri2
+    folia = to_ri2 "foliam"
     assert_equal "hœʝə", ipa(folia)
     assert_equal "heulle", folia.join         
   end
 
-  def to_RI3 str
-    step_RI3(to_RI2 str)  
+  def to_ri3 str
+    step_ri3(to_ri2 str)  
   end
 
-  def to_RI4 str
-    step_RI4(to_RI3 str)  
+  def to_ri4 str
+    step_ri4(to_ri3 str)  
   end
 
-  def to_RI5 str
-    step_RI5(to_RI4 str)  
+  def to_ri5 str
+    step_ri5(to_ri4 str)  
   end
 
-  def to_RI6 str
-    step_RI6(to_RI5 str)  
+  def to_ri6 str
+    step_ri6(to_ri5 str)  
   end
 
-  def to_RI7 str
-    step_RI7(to_RI6 str)  
+  def to_ri7 str
+    step_ri7(to_ri6 str)  
   end
 
-  def to_RI8 str
-    step_RI8(to_RI7 str)  
+  def to_ri8 str
+    step_ri8(to_ri7 str)  
   end
 
-  def to_RI9 str
-    step_RI9(to_RI8 str)  
+  def to_ri9 str
+    step_ri9(to_ri8 str)  
   end
 
-  def to_RI10 str
-    step_RI10(to_RI9 str)  
+  def to_ri10 str
+    step_ri10(to_ri9 str)  
   end
   
-  def test_RI10
-    placeant = to_RI10 "placēant"
+  def test_ri10
+    placeant = to_ri10 "placēant"
     assert_equal "plɑʒʒe", ipa(placeant)
     assert_equal "plascéen", placeant.join  
   end
 
-  def to_RI11 str
-    step_RI11(to_RI10 str)  
+  def to_ri11 str
+    step_ri11(to_ri10 str)  
   end
 
-  def to_RI12 str
-    step_RI12(to_RI11 str)  
+  def to_ri12 str
+    step_ri12(to_ri11 str)  
   end
 
-  def to_RI13 str
-    step_RI13(to_RI12 str)  
+  def to_ri13 str
+    step_ri13(to_ri12 str)  
   end
 
-  def to_RI14 str
-    step_RI14(to_RI13 str)  
+  def to_ri14 str
+    step_ri14(to_ri13 str)  
   end
 
-  def to_RI_cyrl str
-    cyrillize(to_RI14 str)
+  def to_ri_cyrl str
+    cyrillize(to_ri14 str)
   end
   
   def test_cyrillic
-    que = to_RI_cyrl("quid")
+    que = to_ri_cyrl("quid")
     assert_equal "ч", que
   end
 
-  def to_PI1 str
-    step_PI1(to_CI8 str)  
+  def to_pi1 str
+    step_pi1(to_CI8 str)  
   end
 
-  def to_PI2 str
-    step_PI2(to_PI1 str)  
+  def to_pi2 str
+    step_pi2(to_pi1 str)  
   end
 
-  def to_PI3 str
-    step_PI3(to_PI2 str)  
+  def to_pi3 str
+    step_pi3(to_pi2 str)  
   end
   
-  def test_PI3 
-    piscis = to_PI3 "piscem"
+  def test_pi3 
+    piscis = to_pi3 "piscem"
     assert_equal "pjɛçə", ipa(piscis)
     assert_equal "piêce", piscis.join
   end
 
-  def to_PI4 str
-    step_PI4(to_PI3 str)  
+  def to_pi4 str
+    step_pi4(to_pi3 str)  
   end
 
-  def test_PI4
-    mulier = to_PI4 "muljērem"
+  def test_pi4
+    mulier = to_pi4 "muljērem"
     assert_equal "mæir", ipa(mulier)
     assert_equal "màyr", mulier.join
   end
 
-  def to_PI5 str
-    step_PI5(to_PI4 str)  
+  def to_pi5 str
+    step_pi5(to_pi4 str)  
   end
   
-  def test_PI5
-    sentire = to_PI5 "sentīre"
+  def test_pi5
+    sentire = to_pi5 "sentīre"
     assert_equal "zə̃tir", ipa(sentire)
     assert_equal "sentir", sentire.join
 
-    placessemus = to_PI5 "placēssēmus"
+    placessemus = to_pi5 "placēssēmus"
     assert_equal "pləʒʒəzøs", ipa(placessemus)
     assert_equal "plascesséũs", placessemus.join
   end  
 
-  def to_PI6 str
-    step_PI6(to_PI5 str)  
+  def to_pi6 str
+    step_pi6(to_pi5 str)  
   end
 
-  def test_PI6
-    que = to_PI6 "quid"
+  def test_pi6
+    que = to_pi6 "quid"
     assert_equal "tʃə", ipa(que)
     assert_equal "che", que.join
   end
 
-  def to_PI7 str
-    step_PI7(to_PI6 str)  
+  def to_pi7 str
+    step_pi7(to_pi6 str)  
   end
 
-  def to_PI8 str
-    step_PI8(to_PI7 str)  
+  def to_pi8 str
+    step_pi8(to_pi7 str)  
   end
 
-  def to_PI9 str
-    step_PI9(to_PI8 str)  
+  def to_pi9 str
+    step_pi9(to_pi8 str)  
   end
   
-  def test_PI9
-    fructus = to_PI9 "frūctum"
+  def test_pi9
+    fructus = to_pi9 "frūctum"
     assert_equal "vrɔjt", ipa(fructus)
     assert_equal "vroit", fructus.join
   end
 
-  def to_PI10 str
-    step_PI10(to_PI9 str)  
+  def to_pi10 str
+    step_pi10(to_pi9 str)  
   end
   
   def test_consistency

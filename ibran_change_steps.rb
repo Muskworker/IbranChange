@@ -436,7 +436,7 @@ def step_vl0(lemma)
 end
 
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
-def step_VL1(ary)
+def step_vl1(ary)
   phrase = ary.slice_before {|word| word[:IPA] == " " }.collect do |word|
     new_final = word.monosyllable? ? {IPA: "n", orthography: "n"} : {}
 
@@ -449,7 +449,7 @@ def step_VL1(ary)
 end
 
 # /m/ and /N/ before /n/ -> n
-def step_VL2(ary)
+def step_vl2(ary)
   @current = ary.each do |segment|
     if %w{g m}.include?(segment[:IPA]) && segment.next.phon == 'n'
       segment[:IPA] = 'n'
@@ -459,7 +459,7 @@ def step_VL2(ary)
 end
 
 # drop final /t k d/
-def step_VL3(ary)
+def step_vl3(ary)
   @current = ary.each_with_index do |segment, idx|
     if ['t', 'k', 'd'].include?(segment[:IPA]) && segment.final?
       segment[:IPA] = nil
@@ -471,7 +471,7 @@ def step_VL3(ary)
 end
 
 # drop /h/
-def step_VL4(ary)
+def step_vl4(ary)
   @current = ary.each do |segment|
     segment[:IPA].gsub!(/h/, '')
     segment[:orthography].gsub!(/h/, '')
@@ -482,7 +482,7 @@ end
 
 # { e, i }[-stress][+penult] > j / __V
 # Changed to { e, i }[-stress][-initial_syllable] > j / __V
-def step_VL5(ary)
+def step_vl5(ary)
   # each word
   ary.slice_before {|word| word[:IPA] == " " }.each do |word|
     # assign stress.
@@ -506,7 +506,7 @@ def step_VL5(ary)
 end
 
 # V[-stress][+penult] > ∅
-def step_VL6(ary)
+def step_vl6(ary)
   posttonic = false
 
   ary.slice_before {|word| word[:IPA] == " " }.each do |word|
@@ -548,7 +548,7 @@ def step_VL6(ary)
 end
 
 # tk |tc| > tS |ç|
-def step_VL7(ary)
+def step_vl7(ary)
   @current = Dictum.new(ary).each do |segment|
     if segment.phon == 't' && segment.next.phon == 'k'
       segment[:IPA] = 'tʃ'
@@ -562,7 +562,7 @@ def step_VL7(ary)
 end
 
 # stressed vowels
-def step_VL8(ary)
+def step_vl8(ary)
   @current = ary.each do |segment|
     if segment.stressed?
       case segment[:orthography]
@@ -594,7 +594,7 @@ def step_VL8(ary)
 end
 
 # unstressed vowels
-def step_VL9(ary)
+def step_vl9(ary)
   @current = ary.each do |segment|
     if !segment.stressed?
       case segment[:orthography]
@@ -620,7 +620,7 @@ def step_VL9(ary)
   end
 end
 
-def step_OI1(ary)
+def step_oi1(ary)
   # combine words
   @current = ary.each do |segm|
     if segm[:IPA] == ' '
@@ -653,7 +653,7 @@ def step_OI1(ary)
 end
 
 # { [+stop], [+fric] }[-voice]j > tʃ
-def step_OI2(ary)
+def step_oi2(ary)
   @current = ary.each do |segm|
     if (segm.stop? || segm.fricative?) && !segm.voiced? && segm.next.phon == 'j'
       # ssj -> tS also.  But not stj
@@ -674,7 +674,7 @@ def step_OI2(ary)
 end
 
 # j > dʒ / { #, V }__V
-def step_OI3 ary
+def step_oi3 ary
   @current = ary.each_with_index do |segm, idx|
     if (segm.initial? || segm.intervocalic?) && segm[:IPA] == 'j'
       segm[:IPA] = 'dʒ'
@@ -684,7 +684,7 @@ def step_OI3 ary
 end
 
 # nn, nj > ɲ
-def step_OI4 ary
+def step_oi4 ary
   @current = ary.each do |segm|
     if segm[:IPA] == 'n' && %w{n j}.include?(segm.next.phon)
       segm[:IPA] = 'ɲ'
@@ -699,7 +699,7 @@ def step_OI4 ary
 end
 
 # ll, lj > ʎ
-def step_OI5 ary
+def step_oi5 ary
   @current = ary.each do |segm|
     if segm[:IPA] == 'l' && %w{l j}.include?(segm.next.phon)
       segm[:IPA] = 'ʎ'
@@ -719,7 +719,7 @@ def step_OI5 ary
 end
 
 # { d, ɡ } > ∅ / V__V
-def step_OI6 ary
+def step_oi6 ary
   @current = ary.each_with_index do |segm, idx|
     if %w{d g ɡ}.include?(segm[:IPA]) && segm.intervocalic?
       segm[:IPA] = nil
@@ -731,7 +731,7 @@ def step_OI6 ary
 end
 
 # b > v / V__V
-def step_OI7 ary
+def step_oi7 ary
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] == "b" && segm.intervocalic?
       segm[:IPA] = "v"
@@ -741,7 +741,7 @@ def step_OI7 ary
 end
 
 # { ɑ, ɛ }{ i, ɛ }[-stress] > ɛj
-def step_OI8 ary
+def step_oi8 ary
   @current = ary.each do |segm|
     if %w{ɑ ɛ}.include?(segm[:IPA]) && %w{i ɛ}.include?(segm.next.phon) && !segm.next.stressed?
       segm[:IPA] = 'ɛj'
@@ -756,7 +756,7 @@ def step_OI8 ary
 end
 
 # { ɛ, i }[-stress] > j / e__
-def step_OI9 ary
+def step_oi9 ary
   @current = ary.each do |segm|
     if segm[:IPA] == 'e' && %w{ɛ i}.include?(segm.next.phon) && !segm.next.stressed?
       segm[:IPA] = 'ej'
@@ -771,7 +771,7 @@ def step_OI9 ary
 end
 
 # { i }[-stress] > j / { ɔ, o }__
-def step_OI10 ary
+def step_oi10 ary
   @current = ary.each do |segm|
     if %w{ɔ o}.include?(segm[:IPA]) && segm.next.phon == "i" && !segm.next.stressed?
       segm[:IPA] << 'j'
@@ -786,7 +786,7 @@ def step_OI10 ary
 end
 
 # Velars before front vowels
-def step_OI11 ary
+def step_oi11 ary
   @current = ary.each do |segm|
     if segm.next.starts_with.front_vowel?
       case segm[:IPA]
@@ -806,7 +806,7 @@ def step_OI11 ary
 end
 
 # Velars before back A
-def step_OI12 ary
+def step_oi12 ary
   @current = ary.each do |segm|
     if segm.next.phon == 'ɑ'
       case segm[:IPA]
@@ -824,7 +824,7 @@ def step_OI12 ary
 end
 
 # Labiovelars before back vowels
-def step_OI13 ary
+def step_oi13 ary
   @current = ary.each do |segm|
     if segm.next.back_vowel?
       case segm[:IPA]
@@ -840,7 +840,7 @@ def step_OI13 ary
 end
 
 # Intervocalic consonants
-def step_OI14 ary
+def step_oi14 ary
   @current = ary.each_with_index do |segm, idx|
     if ary[idx+1] && segm.intervocalic?
       case segm[:IPA]
@@ -875,7 +875,7 @@ def step_OI14 ary
 end
 
 # stops before liquids
-def step_OI15 ary
+def step_oi15 ary
   @current = ary.each_with_index do |segm, idx|
     if %w{r l}.include?(segm.next.phon) && idx > 0 && segm.prev.vowel?
       case segm[:IPA]
@@ -894,7 +894,7 @@ def step_OI15 ary
 end
 
 # f before liquids
-def step_OI16 ary
+def step_oi16 ary
   @current = ary.each do |segm|
     if segm[:IPA] == 'f' && %w{r l}.include?(segm.next.phon)
       segm[:IPA] = 'v'
@@ -904,7 +904,7 @@ def step_OI16 ary
 end
 
 # degemination
-def step_OI17 ary
+def step_oi17 ary
   @current = ary.each do |segm|
     if segm.next.phon == segm[:IPA]
       case segm[:IPA]
@@ -924,7 +924,7 @@ def step_OI17 ary
 end
 
 # Clusters
-def step_OI18 ary
+def step_oi18 ary
   @current = ary.each do |segm|
     if segm.vowel? && segm.stressed? && # stressed vowel
         %w{k g l}.include?(segm.next.phon) &&  # next segment is c g l
@@ -960,7 +960,7 @@ def step_OI18 ary
 end
 
 # Clusters pt 2 (in two parts)
-def step_OI19 ary
+def step_oi19 ary
   # 19: stressed vowels
   @current = ary.each do |segm|
     if segm.vowel? && segm.stressed? && # stressed vowel with two subsequent segments
@@ -1032,7 +1032,7 @@ def step_OI19 ary
 end
 
 # vowel fronting
-def step_OI20 ary
+def step_oi20 ary
   @current = ary.each do |segm|
     if segm.vowel? && !segm.stressed? && segm.next.consonantal? && segm.next.phon.size == 1 && segm.after_next.starts_with.front_vowel?
       case segm[:IPA]
@@ -1056,7 +1056,7 @@ def step_OI20 ary
 end
 
 # vowel fronting: palatal consonants
-def step_OI21 ary
+def step_oi21 ary
   @current = ary.each do |segm|
     if segm.vowel? && %w{ɲ ʎ}.include?(segm.next.phon)
       case segm[:IPA]
@@ -1083,7 +1083,7 @@ def step_OI21 ary
 end
 
 # vowel fronting: umlaut
-def step_OI22 ary
+def step_oi22 ary
   @current = ary.each do |segm|
     if segm.vowel? && segm.next.phon == 'r' && segm.after_next.phon == 'j'
       case segm[:IPA]
@@ -1121,7 +1121,7 @@ def step_OI22 ary
 end
 
 # vowel fronting: r
-def step_OI23 ary
+def step_oi23 ary
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm.prev.phon == 'r' && segm[:IPA] == 'ɑ' &&
       !(segm.next.phon == 'r' || segm.next.velar?)
@@ -1132,7 +1132,7 @@ def step_OI23 ary
 end
 
 # diphthongize
-def step_OI24 ary
+def step_oi24 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.stressed? && !segm[:long]
       case segm[:IPA]
@@ -1166,7 +1166,7 @@ def step_OI24 ary
 end
 
 # f > h before round vowels
-def step_OI25 ary
+def step_oi25 ary
   @current = ary.each do |segm|
     if segm[:IPA] == 'f' && segm.next.round?
       segm[:IPA] = "h"
@@ -1176,7 +1176,7 @@ def step_OI25 ary
 end
 
 # drop unstressed final vowels except /A/
-def step_OI26 ary
+def step_oi26 ary
   ary.compact.renumber #argh
   
   @current = ary.each_with_index do |segm, idx|
@@ -1238,7 +1238,7 @@ def step_OI26 ary
 end
 
 # A > @
-def step_OI27 ary
+def step_oi27 ary
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] == 'ɑ' && !segm.stressed? && segm.final? && !ary.monosyllable?
       segm[:IPA] = 'ə'
@@ -1261,7 +1261,7 @@ def step_OI27 ary
 end
 
 # A > @ (unless it's the only syllable)
-def step_OI28 ary
+def step_oi28 ary
   syllable = 0
 
   @current = ary.each do |segm|
@@ -1277,7 +1277,7 @@ def step_OI28 ary
 end
 
 # reduce unstressed medial syllables
-def step_OI29 ary
+def step_oi29 ary
   syllable = 0
 
   @current = ary.each do |segm|
@@ -1367,7 +1367,7 @@ def step_OI29 ary
 end
 
 # plural /Os As/ to /@s/
-def step_OIx1 ary
+def step_oix1 ary
   if @plural
     ary << (Segment[IPA: 'ə', orthography: 'e']) unless ary[-1][:IPA][-1] == 'ə'
     ary << (Segment[IPA: 's', orthography: 's'])
@@ -1377,7 +1377,7 @@ def step_OIx1 ary
 end
 
 # loss of initial unstressed /E/ and /i/
-def step_OIx2 ary
+def step_oix2 ary
   # Initial letter is E or i && is unstressed && is not the only syllable && sonority
   if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first.stressed? && !ary.monosyllable?
     if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || ary[2].nasal? || ary[2].fricative? || ary[2].affricate?))
@@ -1398,7 +1398,7 @@ def step_OIx2 ary
 end
 
 # /m/ > /w~/ before consonants/finally
-def step_OIx3 ary
+def step_oix3 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? && segm.next.phon == 'm' && # Tried assimilating /n/ to labial, don't like.
         (segm.after_next.starts_with.consonantal? || segm.next.final?)
@@ -1426,7 +1426,7 @@ def step_OIx3 ary
 end
 
 # labials & L > /w/ before consonants/finally
-def step_OIx4 ary
+def step_oix4 ary
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? &&
         (segm.next.phon == 'l' || segm.next.labial?) &&
@@ -1453,7 +1453,7 @@ def step_OIx4 ary
 end
 
 # resolution of diphthongs in /a A @ V/
-def step_OIx5 ary
+def step_oix5 ary
   @current = ary.each do |segm|
     if segm.vocalic? && segm[:IPA][-1] == 'w' && %w{a ɑ ə}.include?(segm[:IPA][-2])
         segm[:IPA][-2..-1] = 'o'
@@ -1469,7 +1469,7 @@ def step_OIx5 ary
 end
 
 # resolution of diphthongs in /E e i/
-def step_OIx6 ary
+def step_oix6 ary
   @current = ary.each do |segm|
     if segm.vocalic? && segm[:IPA][-1] == 'w' && %w{ɛ e i}.include?(segm[:IPA][-2])
         segm[:IPA][-2..-1] = case segm[:IPA][-2]
@@ -1506,7 +1506,7 @@ def step_OIx6 ary
 end
 
 # resolution of diphthongs in /O o u/
-def step_OIx7 ary
+def step_oix7 ary
   @current = ary.each do |segm|
     if segm.vocalic? && segm[:IPA][-1] == 'w' && %w{ɔ o u w}.include?(segm[:IPA][-2])
         segm[:IPA][-2..-1] = case segm[:IPA][-2]
@@ -1697,7 +1697,7 @@ end
 
 #############
 # õ ã > u~ 6~
-def step_RI1 ary
+def step_ri1 ary
   @current = ary.each do |segm|
     segm[:IPA].gsub!(/o\u0303/, "u\u0303")
     segm[:IPA].gsub!(/a\u0303/, "ɐ\u0303")
@@ -1705,7 +1705,7 @@ def step_RI1 ary
 end
 
 # syll-initial /j/
-def step_RI2 ary
+def step_ri2 ary
   @current = ary.each_with_index do |segm, idx|
     if %w{d t s}.include?(segm[:IPA]) && ary[idx+1] && ary[idx+1][:IPA][0] == "j"
       case segm[:IPA]
@@ -1750,7 +1750,7 @@ def step_RI2 ary
 end
 
 # assimilation of /s/
-def step_RI3 ary
+def step_ri3 ary
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] == 's' && !segm[:long] && idx > 0 && segm.prev.vocalic?
       case
@@ -1768,7 +1768,7 @@ def step_RI3 ary
 end
 
 # je wo wø > ji u y in closed syllables
-def step_RI4 ary
+def step_ri4 ary
   @current = ary.each_with_index do |segm, idx|
     if %w{je wo wø}.include?(segm[:IPA]) && segm.next.consonantal? &&
         (segm.next.final? || (ary[idx+2] && segm.next.consonantal?))
@@ -1785,7 +1785,7 @@ def step_RI4 ary
 end
 
 # w > 0 before round vowels
-def step_RI5 ary
+def step_ri5 ary
   @current = ary.each do |segm|
     if segm[:IPA] == "w" && segm.next.starts_with.round?
       segm.next[:orthography] = segm[:orthography] << segm.next.orth
@@ -1802,7 +1802,7 @@ def step_RI5 ary
 end
 
 # k_j g_j > tS dZ
-def step_RI6 ary
+def step_ri6 ary
   @current = ary.each_with_index do |segm, idx|
     if ary[idx+1] && ary[idx+1][:palatalized]
       segm[:IPA] = 't' if segm[:IPA] == 'k' && segm.next.phon == 'k'
@@ -1823,7 +1823,7 @@ def step_RI6 ary
 end
 
 # k g > k_j g_j
-def step_RI7 ary
+def step_ri7 ary
   @current = ary.each do |segm|
     if !segm[:back]
       case segm[:IPA]
@@ -1837,7 +1837,7 @@ def step_RI7 ary
 end
 
 # k- g- > k g
-def step_RI8 ary
+def step_ri8 ary
   @current = ary.each do |segm|
     if segm[:back]
       case segm[:IPA]
@@ -1851,14 +1851,14 @@ def step_RI8 ary
 end
 
 # Devoice final stops
-def step_RI9 ary
+def step_ri9 ary
   ary.last.devoice! if ary.last.stop?
 
   @current = ary
 end
 
 # lose final schwa
-def step_RI10 ary
+def step_ri10 ary
   # We can have words of one character like ч.
   # But don't lose our only segment.
   if (ary.size > 1 && %W{ə ə\u0303}.include?(ary.last[:IPA])) || (ary[-2] && !ary[-2].stressed? && ary.last[:IPA] == "ʰ" && ary[-2][:IPA] == "ə")
@@ -1884,7 +1884,7 @@ def step_RI10 ary
 end
 
 # lose /h/
-def step_RI11 ary
+def step_ri11 ary
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] == 'h'
       if ary[idx+1]
@@ -1907,7 +1907,7 @@ def step_RI11 ary
 end
 
 # OE AE > O: a:
-def step_RI12 ary
+def step_ri12 ary
   @current = ary.each do |segm|
     if segm[:IPA].include?('ɑɛ̯') || segm[:IPA].include?('ɔɛ̯') || segm[:IPA].include?('œ̯')
       segm[:IPA].gsub!(/ɑɛ̯/, 'a')
@@ -1920,7 +1920,7 @@ def step_RI12 ary
 end
 
 # ej > Ej
-def step_RI13 ary
+def step_ri13 ary
   @current = ary.each do |segm, idx|
     if segm[:IPA].include?('ej')
       segm[:IPA].gsub!(/ej/, 'ɛj')
@@ -1929,7 +1929,7 @@ def step_RI13 ary
 end
 
 # oj Oj OH EH > œj
-def step_RI14 ary
+def step_ri14 ary
   @current = ary.each do |segm|
     if segm[:IPA].include?('ɔj') || segm[:IPA].include?('oj')
       segm[:IPA].gsub!(/[oɔ]j/, 'œj')
@@ -1983,7 +1983,7 @@ end
 
 #############
 # i~ o~ y~ > E~ O~ œ~
-def step_PI1 ary
+def step_pi1 ary
   @current = ary.each do |segm|
     segm[:IPA].gsub!(/i\u0303/, "ɛ\u0303")
     segm[:IPA].gsub!(/o\u0303/, "ɔ\u0303")
@@ -1992,14 +1992,14 @@ def step_PI1 ary
 end
 
 # a a~ > æ æ~
-def step_PI2 ary
+def step_pi2 ary
   @current = ary.each do |segm|
     segm[:IPA].gsub!(/a/, "æ")
   end
 end
 
 # assimilation of /s/
-def step_PI3 ary
+def step_pi3 ary
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] == 's' && !segm[:long] && idx > 0 && !segm.final? && segm.prev.vocalic? && segm.next.consonantal?
         segm[:IPA] = nil
@@ -2022,7 +2022,7 @@ def step_PI3 ary
 end
 
 # je wo wø > i u y in closed syllables
-def step_PI4 ary
+def step_pi4 ary
   @current = ary.each_with_index do |segm, idx|
     if (%w{je jẽ wo wõ wø wø̃}.include?(segm[:IPA]) || ((segm.prev.phon == 'w' && (%w{o ø õ ø̃}.include?(segm[:IPA])) || (segm.prev.phon == 'j' && %w{e ẽ}.include?(segm[:IPA]))))) && ary[idx+1] && segm.next.consonantal? &&
         (segm.next.final? || segm.after_next.consonantal?)
@@ -2089,7 +2089,7 @@ def step_PI4 ary
 end
 
 # reduce unstressed vowels
-def step_PI5 ary
+def step_pi5 ary
   posttonic = ary.count(&:stressed?) == 0
   any_breve = false
 
@@ -2158,7 +2158,7 @@ def step_PI5 ary
 end
 
 # k_j g_j > tS dZ
-def step_PI6 ary
+def step_pi6 ary
   @current = ary.each do |segm|
     if segm[:palatalized]
       case segm[:IPA]
@@ -2176,7 +2176,7 @@ def step_PI6 ary
 end
 
 # k- g- > k g
-def step_PI7 ary
+def step_pi7 ary
   @current = ary.each do |segm|
     if segm[:back]
       case segm[:IPA]
@@ -2190,7 +2190,7 @@ def step_PI7 ary
 end
 
 # OE~ AE~ > O:~ a:~
-def step_PI8 ary
+def step_pi8 ary
   @current = ary.each do |segm|
     if segm[:IPA].include?("ɑɛ̯\u0303") || segm[:IPA].include?("ɔɛ̯\u0303")
       segm[:IPA].gsub!(/ɑɛ̯\u0303/, 'æ')
@@ -2202,7 +2202,7 @@ def step_PI8 ary
 end
 
 # OE oj AE > Oj Oj Aj
-def step_PI9 ary
+def step_pi9 ary
   @current = ary.each do |segm|
     if segm[:IPA].include?('ɑɛ̯') || segm[:IPA].include?('ɔɛ̯') || segm[:IPA].include?('oj')
       segm[:IPA].gsub!(/ɑɛ̯/, 'ɑj')
@@ -2214,7 +2214,7 @@ def step_PI9 ary
 end
 
 # g > x
-def step_PI10 ary
+def step_pi10 ary
   @current = ary.each do |segm|
     segm[:IPA].gsub!(/g/, 'x')
   end
@@ -2521,7 +2521,7 @@ def convert_LL str
     @current << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
   when /um$/ # not us
     @current.pop
-    @current = step_OI26(@current)
+    @current = step_oi26(@current)
   end
 
   # duplicate stresses after endings
@@ -2589,56 +2589,56 @@ def transform(str, since = "L", plural = false)
 
   if since == "L"
     @steps[0] = deep_dup step_vl0(str)
-    @steps[1] = step_VL1(deep_dup @steps[0])
-    @steps[2] = step_VL2(deep_dup @steps[1])
-    @steps[3] = step_VL3(deep_dup @steps[2])
-    @steps[4] = step_VL4(deep_dup @steps[3])
-    @steps[5] = step_VL5(deep_dup @steps[4])
-    @steps[6] = step_VL6(deep_dup @steps[5])
-    @steps[7] = step_VL7(deep_dup @steps[6])
-    @steps[8] = step_VL8(deep_dup @steps[7])
-    @steps[9] = step_VL9(deep_dup @steps[8])
+    @steps[1] = step_vl1(deep_dup @steps[0])
+    @steps[2] = step_vl2(deep_dup @steps[1])
+    @steps[3] = step_vl3(deep_dup @steps[2])
+    @steps[4] = step_vl4(deep_dup @steps[3])
+    @steps[5] = step_vl5(deep_dup @steps[4])
+    @steps[6] = step_vl6(deep_dup @steps[5])
+    @steps[7] = step_vl7(deep_dup @steps[6])
+    @steps[8] = step_vl8(deep_dup @steps[7])
+    @steps[9] = step_vl9(deep_dup @steps[8])
 
-    @steps[10] = step_OI1(deep_dup @steps[9])
-    @steps[11] = step_OI2(deep_dup @steps[10])
-    @steps[12] = step_OI3(deep_dup @steps[11])
-    @steps[13] = step_OI4(deep_dup @steps[12])
-    @steps[14] = step_OI5(deep_dup @steps[13])
-    @steps[15] = step_OI6(deep_dup @steps[14])
-    @steps[16] = step_OI7(deep_dup @steps[15])
-    @steps[17] = step_OI8(deep_dup @steps[16])
-    @steps[18] = step_OI9(deep_dup @steps[17])
-    @steps[19] = step_OI10(deep_dup @steps[18])
-    @steps[20] = step_OI11(deep_dup @steps[19])
-    @steps[21] = step_OI12(deep_dup @steps[20])
-    @steps[22] = step_OI13(deep_dup @steps[21])
-    @steps[23] = step_OI14(deep_dup @steps[22])
-    @steps[24] = step_OI15(deep_dup @steps[23])
-    @steps[25] = step_OI16(deep_dup @steps[24])
-    @steps[26] = step_OI17(deep_dup @steps[25])
-    @steps[27] = step_OI18(deep_dup @steps[26])
-    @steps[28] = step_OI19(deep_dup @steps[27])
-    @steps[29] = step_OI20(deep_dup @steps[28])
-    @steps[30] = step_OI21(deep_dup @steps[29])
-    @steps[31] = step_OI22(deep_dup @steps[30])
-    @steps[32] = step_OI23(deep_dup @steps[31])
-    @steps[33] = step_OI24(deep_dup @steps[32])
-    @steps[34] = step_OI25(deep_dup @steps[33])
-    @steps[35] = step_OI26(deep_dup @steps[34])
-    @steps[36] = step_OI27(deep_dup @steps[35])
-    @steps[37] = step_OI28(deep_dup @steps[36])
-    @steps[38] = step_OI29(deep_dup @steps[37])
+    @steps[10] = step_oi1(deep_dup @steps[9])
+    @steps[11] = step_oi2(deep_dup @steps[10])
+    @steps[12] = step_oi3(deep_dup @steps[11])
+    @steps[13] = step_oi4(deep_dup @steps[12])
+    @steps[14] = step_oi5(deep_dup @steps[13])
+    @steps[15] = step_oi6(deep_dup @steps[14])
+    @steps[16] = step_oi7(deep_dup @steps[15])
+    @steps[17] = step_oi8(deep_dup @steps[16])
+    @steps[18] = step_oi9(deep_dup @steps[17])
+    @steps[19] = step_oi10(deep_dup @steps[18])
+    @steps[20] = step_oi11(deep_dup @steps[19])
+    @steps[21] = step_oi12(deep_dup @steps[20])
+    @steps[22] = step_oi13(deep_dup @steps[21])
+    @steps[23] = step_oi14(deep_dup @steps[22])
+    @steps[24] = step_oi15(deep_dup @steps[23])
+    @steps[25] = step_oi16(deep_dup @steps[24])
+    @steps[26] = step_oi17(deep_dup @steps[25])
+    @steps[27] = step_oi18(deep_dup @steps[26])
+    @steps[28] = step_oi19(deep_dup @steps[27])
+    @steps[29] = step_oi20(deep_dup @steps[28])
+    @steps[30] = step_oi21(deep_dup @steps[29])
+    @steps[31] = step_oi22(deep_dup @steps[30])
+    @steps[32] = step_oi23(deep_dup @steps[31])
+    @steps[33] = step_oi24(deep_dup @steps[32])
+    @steps[34] = step_oi25(deep_dup @steps[33])
+    @steps[35] = step_oi26(deep_dup @steps[34])
+    @steps[36] = step_oi27(deep_dup @steps[35])
+    @steps[37] = step_oi28(deep_dup @steps[36])
+    @steps[38] = step_oi29(deep_dup @steps[37])
   end
 
   if ["OLF", "L"].include?(since)
     @steps[38] = convert_OLF(str) if since == "OLF"
-    @steps[39] = step_OIx1(deep_dup @steps[38])
-    @steps[40] = step_OIx2(deep_dup @steps[39])
-    @steps[41] = step_OIx3(deep_dup @steps[40])
-    @steps[42] = step_OIx4(deep_dup @steps[41])
-    @steps[43] = step_OIx5(deep_dup @steps[42])
-    @steps[44] = step_OIx6(deep_dup @steps[43])
-    @steps[45] = step_OIx7(deep_dup @steps[44])
+    @steps[39] = step_oix1(deep_dup @steps[38])
+    @steps[40] = step_oix2(deep_dup @steps[39])
+    @steps[41] = step_oix3(deep_dup @steps[40])
+    @steps[42] = step_oix4(deep_dup @steps[41])
+    @steps[43] = step_oix5(deep_dup @steps[42])
+    @steps[44] = step_oix6(deep_dup @steps[43])
+    @steps[45] = step_oix7(deep_dup @steps[44])
 
     @steps[46] = step_CI1(deep_dup @steps[45])
     @steps[47] = step_CI2(deep_dup @steps[46])
@@ -2653,31 +2653,31 @@ def transform(str, since = "L", plural = false)
   if ["LL", "OLF", "L"].include?(since)
     @steps[53] = convert_LL(str) if since == "LL"
 
-    @roesan_steps[0] = step_RI1(deep_dup @steps[53])
-    @roesan_steps[1] = step_RI2(deep_dup @roesan_steps[0])
-    @roesan_steps[2] = step_RI3(deep_dup @roesan_steps[1])
-    @roesan_steps[3] = step_RI4(deep_dup @roesan_steps[2])
-    @roesan_steps[4] = step_RI5(deep_dup @roesan_steps[3])
-    @roesan_steps[5] = step_RI6(deep_dup @roesan_steps[4])
-    @roesan_steps[6] = step_RI7(deep_dup @roesan_steps[5])
-    @roesan_steps[7] = step_RI8(deep_dup @roesan_steps[6])
-    @roesan_steps[8] = step_RI9(deep_dup @roesan_steps[7])
-    @roesan_steps[9] = step_RI10(deep_dup @roesan_steps[8])
-    @roesan_steps[10] = step_RI11(deep_dup @roesan_steps[9])
-    @roesan_steps[11] = step_RI12(deep_dup @roesan_steps[10])
-    @roesan_steps[12] = step_RI13(deep_dup @roesan_steps[11])
-    @roesan_steps[13] = step_RI14(deep_dup @roesan_steps[12])
+    @roesan_steps[0] = step_ri1(deep_dup @steps[53])
+    @roesan_steps[1] = step_ri2(deep_dup @roesan_steps[0])
+    @roesan_steps[2] = step_ri3(deep_dup @roesan_steps[1])
+    @roesan_steps[3] = step_ri4(deep_dup @roesan_steps[2])
+    @roesan_steps[4] = step_ri5(deep_dup @roesan_steps[3])
+    @roesan_steps[5] = step_ri6(deep_dup @roesan_steps[4])
+    @roesan_steps[6] = step_ri7(deep_dup @roesan_steps[5])
+    @roesan_steps[7] = step_ri8(deep_dup @roesan_steps[6])
+    @roesan_steps[8] = step_ri9(deep_dup @roesan_steps[7])
+    @roesan_steps[9] = step_ri10(deep_dup @roesan_steps[8])
+    @roesan_steps[10] = step_ri11(deep_dup @roesan_steps[9])
+    @roesan_steps[11] = step_ri12(deep_dup @roesan_steps[10])
+    @roesan_steps[12] = step_ri13(deep_dup @roesan_steps[11])
+    @roesan_steps[13] = step_ri14(deep_dup @roesan_steps[12])
 
-    @paysan_steps[0] = step_PI1(deep_dup @steps[53])
-    @paysan_steps[1] = step_PI2(deep_dup @paysan_steps[0])
-    @paysan_steps[2] = step_PI3(deep_dup @paysan_steps[1])
-    @paysan_steps[3] = step_PI4(deep_dup @paysan_steps[2])
-    @paysan_steps[4] = step_PI5(deep_dup @paysan_steps[3])
-    @paysan_steps[5] = step_PI6(deep_dup @paysan_steps[4])
-    @paysan_steps[6] = step_PI7(deep_dup @paysan_steps[5])
-    @paysan_steps[7] = step_PI8(deep_dup @paysan_steps[6])
-    @paysan_steps[8] = step_PI9(deep_dup @paysan_steps[7])
-    @paysan_steps[9] = step_PI10(deep_dup @paysan_steps[8])
+    @paysan_steps[0] = step_pi1(deep_dup @steps[53])
+    @paysan_steps[1] = step_pi2(deep_dup @paysan_steps[0])
+    @paysan_steps[2] = step_pi3(deep_dup @paysan_steps[1])
+    @paysan_steps[3] = step_pi4(deep_dup @paysan_steps[2])
+    @paysan_steps[4] = step_pi5(deep_dup @paysan_steps[3])
+    @paysan_steps[5] = step_pi6(deep_dup @paysan_steps[4])
+    @paysan_steps[6] = step_pi7(deep_dup @paysan_steps[5])
+    @paysan_steps[7] = step_pi8(deep_dup @paysan_steps[6])
+    @paysan_steps[8] = step_pi9(deep_dup @paysan_steps[7])
+    @paysan_steps[9] = step_pi10(deep_dup @paysan_steps[8])
   end
 
   [@steps[53], @roesan_steps[-1], @paysan_steps[-1]]
