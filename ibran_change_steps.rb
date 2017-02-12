@@ -346,7 +346,7 @@ end
 def step_VL0(str)
   @current = str.scan(/[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
-    supra.merge!({ long: true }) if obj.match(/[āēīōūȳ]|ȳ/i)
+    supra[:long] = true if obj.match(/[āēīōūȳ]|ȳ/i)
 
     phon = case obj
            when /qu/i then "kw"
