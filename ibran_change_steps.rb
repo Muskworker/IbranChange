@@ -127,9 +127,13 @@ module PhoneticFeature
   def affricate?
     %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? self
   end
-  
+
   def dental?
     %w(dʑ tɕ t n d dʒ dz tʃ ts dz tθ dð θ ð l).include? self
+  end
+
+  def velar?
+    %w(k g ɡ ɠ ŋ kx gɣ ɣ x ʟ).include? self
   end
 
   def sonority
@@ -260,10 +264,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_velar?(segment)
-  %w{k g ɡ ɠ ŋ kx gɣ ɣ x ʟ}.include? segment[:IPA]
 end
 
 def is_nasal?(segment)
@@ -981,7 +981,7 @@ def step_OI19 ary
     if segm.vowel? && segm.stressed? && # stressed vowel with two subsequent segments
       # x or dental/velar + sibilant
       (segm.next.phon == 'ks' ||
-        ((segm.next.dental? || is_velar?(segm.next)) && segm.after_next.sibilant?) ||
+        ((segm.next.dental? || segm.next.velar?) && segm.after_next.sibilant?) ||
         segm.next.affricate?)
 
       case segm[:IPA]
@@ -1027,10 +1027,10 @@ def step_OI19 ary
   # 19b: unstressed vowels
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm.prev.vowel? && !segm.stressed?
-      if is_velar?(segm) && (segm.next.dental? || is_nasal?(segm.next))
+      if segm.velar? && (segm.next.dental? || is_nasal?(segm.next))
         segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
         segm[:orthography] = segm.next.final? ? nil : segm.next.orth[0]
-      elsif (segm.dental? || is_velar?(segm)) && segm.next.sibilant?
+      elsif (segm.dental? || segm.velar?) && segm.next.sibilant?
         segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
         segm[:orthography] = segm.next.final? ? nil : 's'
       elsif segm[:IPA] == 'ks'
@@ -1139,7 +1139,7 @@ end
 def step_OI23 ary
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm.prev.phon == 'r' && segm[:IPA] == 'ɑ' &&
-      !(segm.next.phon == 'r' || is_velar?(segm.next))
+      !(segm.next.phon == 'r' || segm.next.velar?)
         segm[:IPA] = 'a'
         segm[:orthography] = 'à'
     end
