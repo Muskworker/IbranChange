@@ -83,6 +83,7 @@ class Dictum < Array
   end
 end
 
+# Determine if a string has certain linguistic features.
 module PhoneticFeature
   def vowel?
     vowels = 'aeioõuyæɑɐəɛɔøœ'
