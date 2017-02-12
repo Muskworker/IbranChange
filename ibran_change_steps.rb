@@ -284,6 +284,44 @@ class Segment < Hash
   end
 end
 
+# Methods for converting Latin input into data
+class Latin
+  # Convert Latin character to IPA
+  def self.to_ipa(str)
+    orth = %w(qu x z ā ă ē ĕ ī ĭ ȳ ȳ y̆ y ō ŏ ū ŭ c ch ph)
+    phon = %w(kw ks dʒ a a e e i i i i i i o o u u k kh f)
+    search = str.downcase
+
+    Hash[orth.zip(phon)].fetch(search, search)
+  end
+
+  def self.stressed_syllable(word)
+    vowels = word.find_all(&:vocalic?)
+    vowels[-2][:long] || penult_cluster?(word) || vowels.length == 2 ? -2 : -3
+  end
+
+  # Assign Latin stress to +word+.
+  # Exceptions:
+  # '-' - don't assign stress
+  # '!' - force final stress
+  # '<' - move stress one syllable left
+  # '>' - move stress one syllable right
+  def self.assign_stress(word, exception = nil)
+    vowels = word.find_all(&:vocalic?)
+
+    if %w(! - > <).include? exception
+      word.last.merge!(IPA: nil, orthography: nil)
+    end
+
+    if exception == '!'
+      vowels[-1][:stress] = true
+    elsif vowels.length > 1 && exception != '-'
+      modifier = { '>' => 1, '<' => -1 }.fetch(exception, 0)
+      vowels[Latin.stressed_syllable(word) + modifier][:stress] = true
+    end
+  end
+end
+
 def ipa(dict)
   dict.join :IPA
 end
@@ -342,28 +380,19 @@ def ultima_cluster?(ary)
   consonants > 1
 end
 
-# Convert Latin character to IPA
-def pronounce_latin(str)
-  orth = %w(qu x  z  ā ă ē ĕ ī ĭ ȳ ȳ y̆ y ō ŏ ū ŭ c ch ph)
-  phon = %w(kw ks dʒ a a e e i i i i i i o o u u k kh f )
-  search = str.downcase
-
-  Hash[orth.zip(phon)].fetch(search, search)
-end
-
 # break up input
 def step_VL0(str)
-  @current = str.scan(/[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i).inject(Dictum.new) do |memo, obj|
+  dictum = str.scan(/[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra[:long] = true if obj.match(/[āēīōūȳ]|ȳ/i)
 
-    phon = pronounce_latin(obj)
+    phon = Latin.to_ipa(obj)
 
     orth = case obj
-           when /k/i then "c"
-           when /z/i then "j"
-           when /ȳ/i then "ī"
-           when /y/i then "i"
+           when /k/i then 'c'
+           when /z/i then 'j'
+           when /ȳ/i then 'ī'
+           when /y/i then 'i'
            else obj.dup
            end
 
@@ -371,17 +400,17 @@ def step_VL0(str)
   end
 
   # /gw/
-  @current.change({IPA: "g"}, {IPA: "gw", orthography: "gu"}, ->(segm){segm.next.delete}) do |segm|
+  dictum.change({ IPA: 'g' }, { IPA: 'gw', orthography: 'gu' }, ->(segm){segm.next.delete}) do |segm|
     segm.prev.phon == 'n' &&
-    segm.next.phon == 'u' &&
-    segm.after_next.vowel?
+      segm.next.phon == 'u' &&
+      segm.after_next.vowel?
   end
 
   # /nf/ acts like /mf/
-  @current.change({IPA: "n"}, {IPA: "m"}) {|segm| segm.next.phon == "f"}
+  dictum.change({ IPA: 'n' }, { IPA: 'm' }) {|segm| segm.next.phon == "f"}
 
   # /Vns/ -> /V:s/
-  @current = @current.each do |segm|
+  dictum = dictum.each do |segm|
     if segm.vowel? && segm.next.phon == "n" && segm.after_next.phon == "s"
       segm[:long] = true
       segm[:orthography] = segm[:orthography].tr("aeiouy", "āēīōūȳ")
@@ -390,40 +419,11 @@ def step_VL0(str)
   end
 
   # assign stress to each word
-  @current.slice_before {|word| word[:IPA] == " " }.each do |word|
-    vowels = word.find_all{|segment| segment.vocalic? }
-
-    if word[-1][:orthography] == "!" # Manual override for final stress
-      vowels[-1][:stress] = true
-      word[-1][:IPA] = nil
-      word[-1][:orthography] = nil
-    elsif word[-1][:orthography] == "-" #Manual override for unstressed
-      word[-1][:IPA] = nil
-      word[-1][:orthography] = nil
-    else
-      modifier = 0
-      if word[-1][:orthography] == ">" # stress to the right
-        modifier = 1
-        word[-1][:IPA] = nil
-        word[-1][:orthography] = nil
-      elsif word[-1][:orthography] == "<" # stress to the left
-        modifier = -1
-        word[-1][:IPA] = nil
-        word[-1][:orthography] = nil
-      end
-
-      case vowels.length
-      when 0, 1
-        # no stress
-      when 2
-        vowels[-2][:stress] = true
-      else
-        (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2+modifier][:stress] = true : vowels[-3+modifier][:stress] = true
-      end
-    end
+  dictum.slice_before { |word| word[:IPA] == ' ' }.each do |word|
+    Latin.assign_stress(word, word.last.orth)
   end
 
-  @current.compact
+  dictum.compact
 end
 
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
