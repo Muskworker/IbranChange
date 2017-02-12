@@ -148,6 +148,10 @@ module PhoneticFeature
     !voiced?
   end
 
+  def front_vowel?
+    %w(e i ae y æ ɛ œ ej).include? self
+  end
+
   def sonority
     if vocalic? then 6
     elsif sonorant? then 4
@@ -284,10 +288,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_front_vowel?(segment)
-  %w{e i ae y æ ɛ œ ej}.include? segment.phon[0]
 end
 
 def is_back_vowel?(segment)
@@ -787,7 +787,7 @@ end
 # Velars before front vowels
 def step_OI11 ary
   @current = ary.each do |segm|
-    if is_front_vowel?(segm.next)
+    if segm.next.starts_with.front_vowel?
       case segm[:IPA]
       when 'k'
         segm[:IPA] = 'tʃ'
@@ -1033,7 +1033,7 @@ end
 # vowel fronting
 def step_OI20 ary
   @current = ary.each do |segm|
-    if segm.vowel? && !segm.stressed? && segm.next.consonantal? && segm.next.phon.size == 1 && is_front_vowel?(segm.after_next)
+    if segm.vowel? && !segm.stressed? && segm.next.consonantal? && segm.next.phon.size == 1 && segm.after_next.starts_with.front_vowel?
       case segm[:IPA]
       when 'ɔ'
         segm[:IPA] = 'a'
@@ -2285,7 +2285,7 @@ def convert_OLF str
 
   # velar before front vowels
   @current = @current.each do |segm|
-    if is_front_vowel?(segm.next)
+    if segm.next.starts_with.front_vowel?
       case segm[:IPA]
       when "k"
         segm[:orthography] = "qu"
@@ -2536,7 +2536,7 @@ def convert_LL str
   @current = @current.each_with_index do |segm, idx|
     case segm[:IPA]
     when "k"
-      if @current[idx+1] && is_front_vowel?(segm.next) && segm.next[:orthography] != "u" # /y/ is a front vowel
+      if @current[idx+1] && segm.next.starts_with.front_vowel? && segm.next[:orthography] != "u" # /y/ is a front vowel
         if segm[:orthography] == "ch"
           segm[:orthography] = "qu"
           segm[:palatalized] = true
@@ -2545,7 +2545,7 @@ def convert_LL str
         end
       end
     when "g"
-      if is_front_vowel?(segm.next) && segm.next[:orthography] != "u"
+      if segm.next.starts_with.front_vowel? && segm.next[:orthography] != "u"
         if segm[:orthography] == "gh"
           segm[:orthography] = "gu"
           segm[:palatalized] = true
