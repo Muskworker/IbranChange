@@ -331,11 +331,12 @@ end
 
 # use with long vowel test to determine heavy ultima
 def ultima_cluster?(ary)
-  vowels, consonants = 0, 0
+  vowels = 0
+  consonants = 0
 
   ary.reverse_each do |seg|
     vowels += 1 if seg.vowel?
-    consonants += 1 if vowels == 0 && seg.consonantal? && seg[:IPA]
+    consonants += 1 if vowels.zero? && seg.consonantal? && seg[:IPA]
   end
 
   consonants > 1
