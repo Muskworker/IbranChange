@@ -253,6 +253,10 @@ class Segment < Hash
   def devoice!
     phon.tr!('vʒzbdg', 'fʃsptk')
   end
+
+  def voice!
+    phon.tr!('fçʃsptθk', 'vʝʒzbddg')
+  end
 end
 
 def ipa(dict)
@@ -272,19 +276,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def voice!(segment)
-  case segment[:IPA]
-  when 'f' then segment[:IPA] = 'v'
-  when 'ç' then segment[:IPA] = 'ʝ'
-  when 'ʃ' then segment[:IPA] = 'ʒ'
-  when 'ʃʃ' then segment[:IPA] = 'ʒʒ'
-  when 's' then segment[:IPA] = 'z'
-  when 'p' then segment[:IPA] = 'b'
-  when 't', 'θ' then segment[:IPA] = 'd'
-  when 'k' then segment[:IPA] = 'g'
-  end
 end
 
 def is_voiced?(segment)
@@ -1603,7 +1594,7 @@ def step_CI3 ary
       when is_voiceless?(segm.next) || segm.final?
         segm.devoice!
       when is_voiced?(segm.next)
-        voice!(segm)
+        segm.voice!
 
         segm[:orthography] = "d" if segm.orth == "th"
       end
