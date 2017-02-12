@@ -258,10 +258,6 @@ def caps(string)
   string.tr(lc, uc)
 end
 
-def is_short?(segment)
-  !segment[:long]
-end
-
 def is_dental?(segment)
   %w{dʑ tɕ t n d dʒ dz tʃ ts dz tθ dð θ ð l}.include? segment[:IPA]
 end
