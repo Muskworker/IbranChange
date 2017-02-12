@@ -231,8 +231,13 @@ class Segment < Hash
   end
 
   def match(segm)
-    segm.all? do |k, _|
-      self[k] == segm[k]
+    case segm
+    when Hash
+      segm.all? do |k, _|
+        self[k] == segm[k]
+      end
+    when Symbol
+      send "#{segm}?"
     end
   end
 
