@@ -152,6 +152,10 @@ module PhoneticFeature
     %w(e i ae y æ ɛ œ ej).include? self
   end
 
+  def back_vowel?
+    %w(o u oe ɑ ɔ).include? self
+  end
+
   def sonority
     if vocalic? then 6
     elsif sonorant? then 4
@@ -288,10 +292,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_back_vowel?(segment)
-  %w{o u oe ɑ ɔ}.include? segment[:IPA]
 end
 
 def is_round?(segment)
@@ -825,7 +825,7 @@ end
 # Labiovelars before back vowels
 def step_OI13 ary
   @current = ary.each do |segm|
-    if is_back_vowel?(segm.next)
+    if segm.next.back_vowel?
       case segm[:IPA]
       when 'kw'
         segm[:IPA] = 'k'
