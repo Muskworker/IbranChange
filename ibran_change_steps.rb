@@ -90,10 +90,13 @@ module PhoneticFeature
     neither_vowel_nor_modifier = "^aeioõuyæɑɐəɛɔøœ\u0303"
     count(vowels) == 1 && count(neither_vowel_nor_modifier).zero?
   end
-  
   def diphthong?
-    (count("aeiouyæɑɐəɛɔøœ") > 0 && count("jwɥ\u032fː") > 0 && count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː") == 0) ||
-      %w{au ae oe}.include?(self)
+    return true if %w(au ae oe).include?(self)
+
+    vowel_count = count('aeiouyæɑɐəɛɔøœ')
+    modifier_count = count("jwɥ\u032fː")
+    neither_count = count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː")
+    vowel_count > 0 && modifier_count > 0 && neither_count.zero?
   end
 
   def vocalic?
