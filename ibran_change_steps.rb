@@ -136,6 +136,10 @@ module PhoneticFeature
     %w(k g ɡ ɠ ŋ kx gɣ ɣ x ʟ).include? self
   end
 
+  def nasal?
+    %w(m ɱ ɲ ɳ n ɴ ŋ).include? self
+  end
+
   def sonority
     if vocalic? then 6
     elsif sonorant? then 4
@@ -264,10 +268,6 @@ def caps(string)
   lc = 'aābcdeéēfghiījklmnoōpqrstuũūvwxyȳz'
   uc = 'AĀBCDEÉĒFGHIĪJKLMNOŌPQRSTUŨŪVWXYȲZ'
   string.tr(lc, uc)
-end
-
-def is_nasal?(segment)
-  %w{m ɱ ɲ ɳ n ɴ ŋ}.include? segment[:IPA]
 end
 
 def devoice!(segment)
@@ -946,7 +946,7 @@ def step_OI18 ary
         # next is L or dental stop or nasal
         ((segm.after_next.phon == 'l') ||
           ((segm.after_next.stop? || segm.after_next.affricate?) && segm.after_next.dental?) ||
-          is_nasal?(segm.after_next)) &&
+          segm.after_next.nasal?) &&
         !(segm.next.phon == 'l' && segm.after_next.phon == 'l')  # next two are not both L
       case segm[:IPA]
       when 'a', 'ɑ'
@@ -1027,7 +1027,7 @@ def step_OI19 ary
   # 19b: unstressed vowels
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm.prev.vowel? && !segm.stressed?
-      if segm.velar? && (segm.next.dental? || is_nasal?(segm.next))
+      if segm.velar? && (segm.next.dental? || segm.next.nasal?)
         segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
         segm[:orthography] = segm.next.final? ? nil : segm.next.orth[0]
       elsif (segm.dental? || segm.velar?) && segm.next.sibilant?
@@ -1201,7 +1201,7 @@ def step_OI26 ary
       
       # assume sonority hierarchy will be C?V
       stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || segm.before_prev.affricate? ||
-        (is_nasal?(segm.before_prev) && !(segm.prev.stop? || segm.prev.affricate?) ) ||
+        (segm.before_prev.nasal? && !(segm.prev.stop? || segm.prev.affricate?) ) ||
         segm.before_prev.phon == "s" && (segm.prev.sonorant? || segm.prev.affricate?)) ||
         (segm.next.phon == "s")
 
@@ -1395,7 +1395,7 @@ end
 def step_OIx2 ary
   # Initial letter is E or i && is unstressed && is not the only syllable && sonority
   if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first.stressed? && !ary.monosyllable?
-    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || is_nasal?(ary[2]) || ary[2].fricative? || ary[2].affricate?))
+    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || ary[2].nasal? || ary[2].fricative? || ary[2].affricate?))
       ary.first[:IPA] = nil
       ary.first[:orthography] = nil
 
