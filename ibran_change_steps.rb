@@ -477,27 +477,15 @@ end
 
 # { e, i }[-stress][+penult] > j / __V
 # Changed to { e, i }[-stress][-initial_syllable] > j / __V
-def step_vl5(ary)
-  # each word
-  ary.slice_before {|word| word[:IPA] == " " }.each do |word|
-    # assign stress.
-     syllables_from_end = word.syllable_count
-
-    # 5.
-    word.each do |segment|
-      if syllables_from_end < word.syllable_count && # non-initial syllable
-        %w{e i}.include?(segment[:IPA]) &&
-        !segment.stressed? &&
-        segment.next.vocalic?
-          segment[:IPA] = "j"
-          segment[:orthography] = "j"
-      end
-
-      if segment.vocalic? then syllables_from_end -= 1 end
+def step_vl5(lemma)
+  lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
+    word.change(%w(e i), IPA: 'j', orthography: 'j') do |segm|
+      prior_vowel = word[0...segm.pos].find(&:vocalic?)
+      !segm.stressed? && segm.next.vocalic? && prior_vowel
     end
   end
 
-  @current = ary
+  lemma
 end
 
 # V[-stress][+penult] > ∅
