@@ -230,12 +230,10 @@ class Segment < Hash
 
   def match(segm)
     case segm
-    when Hash
-      segm.all? do |k, _|
-        self[k] == segm[k]
-      end
-    when Symbol
-      send "#{segm}?"
+    when Hash then segm.all? { |k, _| self[k] == segm[k] }
+    when Symbol then send "#{segm}?"
+    when String then phon == segm
+    when Array then segm.any? { |s| match(s) }
     end
   end
 
