@@ -33,9 +33,7 @@ class Dictum < Array
 
   def slice_before
     super.collect do |sl|
-      sl.inject(Dictum.new) do |dict, segm|
-        dict << segm
-      end
+      Dictum.new(sl)
     end
   end
 
