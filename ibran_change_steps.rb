@@ -434,16 +434,17 @@ def step_vl0(lemma)
 end
 
 # Final /m/: to /n/ in monosyllables, to 0 elsewhere
-def step_vl1(ary)
-  phrase = ary.slice_before {|word| word[:IPA] == " " }.collect do |word|
-    new_final = word.monosyllable? ? {IPA: "n", orthography: "n"} : {}
+def step_vl1(lemma)
+  ary = lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
+    new_final = word.monosyllable? ? { IPA: 'n', orthography: 'n' } : {}
 
-    word.change({IPA: 'm'}, new_final, word.monosyllable? ? nil : ->(segm){segm.delete}) do |segm|
-      segm.final?
-    end
+    word.change({ IPA: 'm' },
+                new_final,
+                word.monosyllable? ? nil : ->(segm) { segm.delete },
+                &:final?)
   end
 
-  Dictum.new(phrase.flatten)
+  Dictum.new(ary.flatten)
 end
 
 # /m/ and /N/ before /n/ -> n
