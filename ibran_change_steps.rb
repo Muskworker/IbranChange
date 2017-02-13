@@ -447,8 +447,8 @@ end
 
 # /m/ and /N/ before /n/ -> n
 def step_vl2(ary)
-  @current = ary.each do |segment|
-    if %w{g m}.include?(segment[:IPA]) && segment.next.phon == 'n'
+  ary.each do |segment|
+    if %w(g m).include?(segment[:IPA]) && segment.next.phon == 'n'
       segment[:IPA] = 'n'
       segment[:orthography] = 'n'
     end
@@ -457,24 +457,22 @@ end
 
 # drop final /t k d/
 def step_vl3(ary)
-  @current = ary.each_with_index do |segment, idx|
-    if ['t', 'k', 'd'].include?(segment[:IPA]) && segment.final?
+  ary.each do |segment|
+    if %w(t k d).include?(segment[:IPA]) && segment.final?
       segment[:IPA] = nil
       segment[:orthography] = nil
     end
-  end
-
-  @current.compact
+  end.compact
 end
 
 # drop /h/
 def step_vl4(ary)
-  @current = ary.each do |segment|
-    segment[:IPA].gsub!(/h/, '')
-    segment[:orthography].gsub!(/h/, '')
+  ary.each do |segment|
+    segment[:IPA].delete! 'h'
+    segment[:orthography].delete! 'h'
   end
 
-  @current.delete_if {|segment| segment[:IPA] == '' }
+  ary.delete_if { |segment| segment[:IPA] == '' }
 end
 
 # { e, i }[-stress][+penult] > j / __V
