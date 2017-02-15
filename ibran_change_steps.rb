@@ -246,6 +246,10 @@ class Segment < Hash
     Segment[IPA: phon ? phon[-1] : '', orthography: orth ? orth[-1] : '']
   end
 
+  def between?(fore, aft)
+    prev.match(fore) && nxt.match(aft)
+  end
+
   def to_ipa
     output = "#{phon}#{"\u0320" if self[:back]}#{'ʲ' if self[:palatalized]}"
     # /o:w/, not /ow:/
@@ -270,11 +274,23 @@ class Segment < Hash
     self[:stress]
   end
 
+  def posttonic?
+    @dictum[0...pos].any?(&:stressed?)
+  end
+
   def in_onset?
     next_more_sonorous = ends_with.sonority < nxt.starts_with.sonority
     # We explicitly check for nxt.vocalic because of things like /erje/
     # (where /je/ is a diphthong).
     consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
+  end
+
+  def in_penult?
+    final = @dictum[pos + 1...@dictum.size].find(&:final?) || @dictum.last
+    vowels_from_end = @dictum[pos + 1..final.pos].count(&:vocalic?)
+
+    # [CV]CVC - two vowels from end if onset consonant, one vowel otherwise
+    vowels_from_end == (in_onset? ? 2 : 1)
   end
 
   def devoice!
@@ -489,46 +505,22 @@ def step_vl5(lemma)
   lemma
 end
 
-# V[-stress][+penult] > ∅
-def step_vl6(ary)
-  posttonic = false
-
-  ary.slice_before {|word| word[:IPA] == " " }.each do |word|
-
-    syllables_from_end = word.syllable_count
-
-    word.each do |segment|
-      if segment.vocalic?
-         syllables_from_end -= 1
-         posttonic = true if segment.stressed?
-      end
-      if syllables_from_end == 1 && !segment.stressed? && segment.vowel? && posttonic
-        if segment.before_prev.stop? && segment.prev.sonorant? && segment.next.consonantal?
-          # putridum > puterdum
-          segment[:IPA], segment.prev[:IPA] = segment.prev[:IPA], "e"
-          segment[:orthography], segment.prev[:orthography] = segment.prev[:orthography], "e"
-        else
-          segment[:IPA] = nil
-          segment[:orthography] = nil
-        end
-
-        # t'l > tr
-        if segment.prev.phon == 't' && segment.next.phon == "l"
-          segment.next[:IPA] = 'r'
-          segment.next[:orthography] = 'r'
-        end
-
-        # some assimilation
-        if segment.next.voiceless? && segment.prev.voiced?
-          segment.prev.devoice!
-        end
-      end
+# V[-stress][+penult] > 0
+def step_vl6(lemma)
+  lemma.change(:vowel, { IPA: nil, orthography: nil }, lambda do |seg|
+    if seg.before_prev.stop? && seg.between?(:sonorant, :consonantal)
+      # putridum > puterdum
+      seg.update(seg.prev)
+      seg.prev.update(IPA: 'e', orthography: 'e')
     end
-  end
+    # t'l > tr
+    seg.next.update(IPA: 'r', orthography: 'r') if seg.between? 't', 'l'
 
-  @current = ary
+    # Devoice previous if the next is voiceless
+    seg.prev.devoice! if seg.next.voiceless?
+  end) { |s| s.posttonic? && s.in_penult? }
 
-  @current.compact
+  lemma.compact
 end
 
 # tk |tc| > tS |ç|
