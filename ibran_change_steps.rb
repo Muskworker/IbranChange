@@ -1353,7 +1353,7 @@ end
 # plural /Os As/ to /@s/
 def step_oix1 ary
   if @plural
-    ary << (Segment[IPA: 'ə', orthography: 'e']) unless ary[-1][:IPA][-1] == 'ə'
+    ary << (Segment[IPA: 'ə', orthography: 'e']) unless ary.last.ends_with.phon == 'ə'
     ary << (Segment[IPA: 's', orthography: 's'])
   end
 
