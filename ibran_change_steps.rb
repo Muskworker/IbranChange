@@ -294,8 +294,10 @@ class Segment < Hash
     vowels_from_end == (in_onset? ? 2 : 1)
   end
 
-  def devoice!
-    phon.tr!('vʒzbdg', 'fʃsptk')
+  # Devoice a segment.  If +target+ is given, only devoice if +target+ is also
+  # voiceless.
+  def devoice!(target = '')
+    phon.tr!('vʒzbdg', 'fʃsptk') if target.voiceless?
   end
 
   def voice!
@@ -521,7 +523,7 @@ def step_vl6(lemma)
     nxt.update(IPA: 'r', orthography: 'r') if seg.between? 't', 'l'
 
     # Devoice previous if the next is voiceless
-    seg.prev.devoice! if seg.next.voiceless?
+    prev.devoice!(nxt)
   end) { |s| s.posttonic? && s.in_penult? }
 
   lemma.compact
