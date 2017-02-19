@@ -509,13 +509,16 @@ end
 # V[-stress][+penult] > 0
 def step_vl6(lemma)
   lemma.change(:vowel, { IPA: nil, orthography: nil }, lambda do |seg|
-    if seg.before_prev.stop? && seg.between?(:sonorant, :consonantal)
+    prev = seg.prev
+    nxt = seg.next
+
+    if seg.between?(:sonorant, :consonantal) && seg.before_prev.stop?
       # putridum > puterdum
-      seg.update(seg.prev)
-      seg.prev.update(IPA: 'e', orthography: 'e')
+      seg.update(prev)
+      prev.update(IPA: 'e', orthography: 'e')
     end
     # t'l > tr
-    seg.next.update(IPA: 'r', orthography: 'r') if seg.between? 't', 'l'
+    nxt.update(IPA: 'r', orthography: 'r') if seg.between? 't', 'l'
 
     # Devoice previous if the next is voiceless
     seg.prev.devoice! if seg.next.voiceless?
