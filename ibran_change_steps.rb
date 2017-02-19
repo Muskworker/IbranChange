@@ -303,6 +303,14 @@ class Segment < Hash
   def voice!
     phon.tr!('fçʃsptθk', 'vʝʒzbddg')
   end
+
+  # Set the value of this segment to another,
+  # and set the value of the other segment to this
+  # (or to +new_other+ if specified)
+  def metathesize(other, new_other = dup)
+    update(other)
+    other.update(new_other)
+  end
 end
 
 # Methods for converting Latin input into data
@@ -514,11 +522,11 @@ def step_vl6(lemma)
     prev = seg.prev
     nxt = seg.next
 
+    # putridum > puterdum
     if seg.between?(:sonorant, :consonantal) && seg.before_prev.stop?
-      # putridum > puterdum
-      seg.update(prev)
-      prev.update(IPA: 'e', orthography: 'e')
+      seg.metathesize(prev, IPA: 'e', orthography: 'e')
     end
+
     # t'l > tr
     nxt.update(IPA: 'r', orthography: 'r') if seg.between? 't', 'l'
 
@@ -1160,12 +1168,12 @@ end
 # drop unstressed final vowels except /A/
 def step_oi26 ary
   ary.compact.renumber #argh
-  
+
   @current = ary.each_with_index do |segm, idx|
     if !segm.stressed? && segm.vowel? && !(segm[:IPA] == 'ɑ') &&  # unstressed, not A
         (segm.final? || (segm.next.phon == 's' && segm.next.final?)) && # is final or behind final S
         (idx > 0) # not if it's also the initial vowel
-      
+
       # assume sonority hierarchy will be C?V
       stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || segm.before_prev.affricate? ||
         (segm.before_prev.nasal? && !(segm.prev.stop? || segm.prev.affricate?) ) ||
