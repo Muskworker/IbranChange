@@ -274,6 +274,7 @@ class Segment < Hash
     self[:stress]
   end
 
+  # TODO: Make sure this is appropriate for multi-word dictums
   def posttonic?
     @dictum[0...pos].any?(&:stressed?)
   end
