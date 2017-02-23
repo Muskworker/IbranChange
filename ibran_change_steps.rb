@@ -394,6 +394,8 @@ def takes_stress_mark(segm)
   return true if segm.stressed?
 
   dictum = segm.dictum
+
+  return false unless dictum.any?(&:stressed?)
   dictum[segm.pos...dictum.index(&:stressed?)].all?(&:in_onset?)
 end
 
