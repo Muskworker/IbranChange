@@ -186,9 +186,10 @@ class Segment < Hash
 
   attr_accessor :dictum, :pos
 
-  def initialize
+  def initialize(*args)
     @dictum ||= Dictum.new(self)
     @pos ||= 0
+    update(IPA: args[0], orthography: args[1] || args[0])
   end
 
   def prev
