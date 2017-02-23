@@ -542,16 +542,9 @@ end
 
 # tk |tc| > tS |ç|
 def step_vl7(ary)
-  @current = Dictum.new(ary).each do |segment|
-    if segment.phon == 't' && segment.next.phon == 'k'
-      segment[:IPA] = 'tʃ'
-      segment.next[:IPA] = nil
-      segment[:orthography] = 'ç'
-      segment.next[:orthography] = nil
-    end
+  ary.change('t', Segment.new('tʃ', 'ç'), ->(s) { s.next.delete }) do |segm|
+    segm.next.phon == 'k'
   end
-
-  @current.compact
 end
 
 # stressed vowels
