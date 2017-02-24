@@ -1910,7 +1910,7 @@ end
 
 # rough, cleanup
 def cyrillize ary
-  cyrl = ary.to_ipa.tr("ɑbvgdɛfʒzeijklmn\u0303ɲɔœøprstuwɥyoʃəɐaʰː", "абвгдевжзиіјклмннњоөөпрстууүүѡшъъя’\u0304")
+  cyrl = ary.to_ipa.tr("ɑbvgdɛfʒzeijklmn\u0303ɲɔœøprstθuwɥyoʃəɐaʰː", "абвгдевжзиіјклмннњоөөпрсттууүүѡшъъя’\u0304")
   cyrl.gsub!(/н\u0304/, "\u0304н")  # ũː > ун̄ > ӯн
   cyrl.gsub!(/н’/, "’н")            # w̃ʰ > н’ > ’н
   cyrl.sub!(/н$/, 'н’') if ary[-1][:final_n] && cyrl != "н" && %W{а е и і ј о ө у ү ѡ ъ я \u0304}.include?(cyrl[-2]) # && !(cyrl[-2] == "н") # no need for нн' or н' solo
@@ -1931,6 +1931,7 @@ def neocyrillize ary
   cyrl.gsub!(/\u0304/, '')
   cyrl.gsub!(/тш/, "ч")
   cyrl.gsub!(/дж/, "џ")
+  cyrl.gsub!(/θ/, "т́")
   cyrl.gsub!(/gʲ/, "г")
   cyrl.gsub!(/kʲ/, "к")
   cyrl.gsub!(/g/, "гъ")
