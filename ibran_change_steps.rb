@@ -540,7 +540,7 @@ def step_vl6(lemma)
   lemma.compact
 end
 
-# tk |tc| > tS |ç|
+# tk |tc| > tS |c-cedilla|
 def step_vl7(ary)
   ary.change('t', Segment.new('tʃ', 'ç'), ->(s) { s.next.delete }) do |segm|
     segm.next.phon == 'k'
