@@ -1931,7 +1931,7 @@ def neocyrillize ary
   cyrl.gsub!(/\u0304/, '')
   cyrl.gsub!(/тш/, "ч")
   cyrl.gsub!(/дж/, "џ")
-  cyrl.gsub!(/θ/, "т́")
+  cyrl.gsub!(/θ/, "ћ")
   cyrl.gsub!(/gʲ/, "г")
   cyrl.gsub!(/kʲ/, "к")
   cyrl.gsub!(/g/, "гъ")
