@@ -24,7 +24,7 @@ class Dictum < Array
 
   def change(origin, target, consequence = nil)
     each do |segm|
-      next unless segm.match(origin) && yield(segm)
+      next unless segm.match(origin) && (block_given? ? yield(segm) : true)
 
       segm.merge!(target)
       consequence.call(segm) if consequence
