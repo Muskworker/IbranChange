@@ -549,34 +549,17 @@ end
 
 # stressed vowels
 def step_vl8(ary)
-  @current = ary.each do |segment|
-    if segment.stressed?
-      case segment[:orthography]
-      when 'a', 'ā'
-        segment[:IPA] = 'ɑ'
-        segment[:orthography] = 'a'
-      when 'ae', 'e'
-        segment[:IPA] = 'ɛ'
-        segment[:orthography] = 'e'
-      when 'ē', 'oe', 'i'
-        segment[:IPA] = 'e'
-        segment[:orthography] = 'é'
-      when 'ī'
-        segment[:IPA] = 'i'
-        segment[:orthography] = 'i'
-      when 'o'
-        segment[:IPA] = 'ɔ'
-      when 'u', 'ō', 'au'
-        segment[:IPA] = 'o'
-        segment[:orthography] = 'ó'
-      when 'ū'
-        segment[:IPA] = 'u'
-        segment[:orthography] = 'u'
-      end
+  e_acute = Segment.new('e', 'é')
+  o_acute = Segment.new('o', 'ó')
 
-      segment[:long] = false
-    end
-  end
+  outcomes = { 'ā' => Segment.new('ɑ', 'a'), 'a' => { IPA: 'ɑ' },
+               'ae' => Segment.new('ɛ', 'e'), 'e' => { IPA: 'ɛ' },
+               'ē' => e_acute, 'oe' => e_acute, 'i' => e_acute,
+               'ī' => Segment.new('i', 'i'), 'o' => { IPA: 'ɔ' },
+               'u' => o_acute, 'ō' => o_acute, 'au' => o_acute,
+               'ū' => Segment.new('u', 'u') }
+
+  ary.change(:stressed, { long: false }, ->(s) { s.update(outcomes[s.orth]) })
 end
 
 # unstressed vowels
