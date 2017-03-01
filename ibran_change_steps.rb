@@ -585,34 +585,20 @@ end
 
 def step_oi1(ary)
   # combine words
-  @current = ary.each do |segm|
-    if segm[:IPA] == ' '
-      segm[:IPA] = nil
-      segm[:orthography] = nil
-    end
+  ary.change(' ', IPA: nil, orthography: nil)
+
+  # Assign stress when none
+  # Monosyllables don't get stress till end of OI.
+  # But monosyllables that combined, like 'de post', get final accent.
+  unless ary.stressed? || ary.monosyllable?
+    ary.select(&:vocalic?).last[:stress] = true
   end
 
-  # assign stress when none
-  if ary.count(&:stressed?).zero?
-    # Monosyllables don't get stress till end of OI.
-    # But monosyllables that combined, like 'de post', get final accent.
-    ary.select(&:vowel?).last[:stress] = true unless ary.monosyllable?
+  # { [+stop], [+fric] }[+voice]j > dZ
+  yod = Segment.new('dʒ', 'j')
+  ary.change([:stop, :fricative], yod, ->(s) { s.next.delete }) do |segm|
+    segm.voiced? && segm.next.phon == 'j'
   end
-
-  @current.compact!
-
-  # { [+stop], [+fric] }[+voice]j > dʒ
-  @current = ary.each do |segm|
-    if (segm.stop? || segm.fricative?) && segm.voiced? && segm.next.phon == 'j'
-      segm[:IPA] = 'dʒ'
-      segm.next[:IPA] = nil
-
-      segm[:orthography] = 'j'
-      segm.next[:orthography] = nil
-    end
-  end
-
-  @current.compact
 end
 
 # { [+stop], [+fric] }[-voice]j > tʃ
