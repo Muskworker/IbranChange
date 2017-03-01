@@ -193,7 +193,7 @@ class Segment < Hash
   def initialize(*args)
     @dictum ||= Dictum.new(self)
     @pos ||= 0
-    update(IPA: args[0], orthography: args[1] || args[0])
+    update(IPA: args[0], orthography: args[1] || args[0].dup) if args.any?
   end
 
   def prev
