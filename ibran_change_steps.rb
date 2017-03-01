@@ -68,6 +68,10 @@ class Dictum < Array
     syllable_count == 1
   end
 
+  def stressed?
+    any?(&:stressed?)
+  end
+
   def to_ipa
     renumber # Ugh
 
