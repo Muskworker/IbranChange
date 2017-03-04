@@ -403,9 +403,10 @@ def takes_stress_mark(segm)
   return true if segm.stressed?
 
   dictum = segm.dictum
+  stressed = dictum.index(&:stressed?)
 
-  return false unless dictum.any?(&:stressed?)
-  dictum[segm.pos...dictum.index(&:stressed?)].all?(&:in_onset?)
+  return false unless stressed && stressed > segm.pos
+  dictum[segm.pos...stressed].all?(&:in_onset?)
 end
 
 # Upcase doesn't handle the macrons
