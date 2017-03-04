@@ -602,25 +602,20 @@ def step_oi1(ary)
   end
 end
 
-# { [+stop], [+fric] }[-voice]j > tʃ
+# { [+stop], [+fric] }[-voice]j > tS
 def step_oi2(ary)
-  @current = ary.each do |segm|
-    if (segm.stop? || segm.fricative?) && !segm.voiced? && segm.next.phon == 'j'
-      # ssj -> tS also.  But not stj
-      if segm.prev.phon == 's' && segm.phon == 's'
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      end
+  ary.each do |segm|
+    prev = segm.prev
+    nxt = segm.next
 
-      segm[:IPA] = 'tʃ'
-      segm.next[:IPA] = nil
+    next unless (segm.sonority <= 3) && segm.voiceless? && nxt.phon == 'j'
 
-      segm[:orthography] = 'ç'
-      segm.next[:orthography] = nil
-    end
+    # ssj -> tS also.  But not stj
+    prev.delete if [prev, segm].all? { |s| s.phon == 's' }
+
+    segm.update(IPA: 'tʃ', orthography: 'ç')
+    nxt.delete
   end
-
-  @current.compact
 end
 
 # j > dʒ / { #, V }__V
