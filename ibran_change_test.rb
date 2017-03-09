@@ -1446,6 +1446,7 @@ class IbranChangeTest < Minitest::Test
       { w: "existēre", RI_IPA: "ɛksicˈcçer", RI_Cyrl: "ексіттјир", RI_Latn: "existiér", PI_IPA: "əksəˈtir", PI: "exîtir" },
       { w: "existiée", RI_IPA: "ɛksicˈcçe", RI_Cyrl: "ексіттји", RI_Latn: "existiée", PI_IPA: "əksəˈtjeə", PI: "exîtiéa" },
       { w: "existiéũs!", RI_IPA: "ɛksicˈcçøːʰ", RI_Cyrl: "ексіттјө̄’", RI_Latn: "existiéũs", PI_IPA: "əksəˈtjøːs", PI: "exîtiéus" },
+      { w: "explosionem", RI_IPA: "ɛksplɔˈʒʒũː", RI_Cyrl: "експложжӯн", RI_Latn: "explosçuon", PI_IPA: "əkspləˈʒʒũː", PI: "explosçuon" },
       { w: "fenugrecum>", RI_IPA: "vɛnyˈgʲrekʲ", RI_Cyrl: "венүгрик", RI_Latn: "fenugréc", PI_IPA: "vənəˈxrek", PI: "fenugréc" },
       { w: "forma", RI_IPA: "vorm", RI_Cyrl: "вѡрм", RI_Latn: "fórme", PI_IPA: "ˈvormə", PI: "fórmă" },
       { w: "furaducensis", RI_IPA: "vyrɑdyˈçeʰ", RI_Cyrl: "вүрадүши’", RI_Latn: "furaducés", PI_IPA: "vərədəˈçes", PI: "furaducés" },

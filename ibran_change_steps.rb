@@ -2465,6 +2465,9 @@ def convert_LL str
   when /(sin|sis)$/
     @current.pop(3)
     @current << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
+  when /sionem$/
+    @current.pop(5)
+    @current << Segment.new('ʒʒ', 'sç') << Segment[IPA: 'ũ', orthography: 'uon', long: true, stress: true]
   when /um$/ # not us
     @current.pop
     @current = step_oi26(@current)
