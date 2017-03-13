@@ -239,7 +239,7 @@ class Segment < Hash
     when Symbol then send "#{segm}?"
     when String then phon == segm
     when Array then segm.any? { |s| match(s) }
-    when Proc then segm.call
+    when Proc then segm.call(self)
     end
   end
 
