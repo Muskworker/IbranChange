@@ -625,18 +625,10 @@ def step_oi3(ary)
 end
 
 # nn, nj > ɲ
-def step_oi4 ary
-  @current = ary.each do |segm|
-    if segm[:IPA] == 'n' && %w{n j}.include?(segm.next.phon)
-      segm[:IPA] = 'ɲ'
-      segm.next[:IPA] = nil
-
-      segm[:orthography] = 'nh'
-      segm.next[:orthography] = nil
-    end
+def step_oi4(ary)
+  ary.change('n', Segment.new('ɲ', 'nh'), ->(s) { s.next.delete }) do |s|
+    %w(n j).include? s.next.phon
   end
-
-  @current.compact
 end
 
 # ll, lj > ʎ
