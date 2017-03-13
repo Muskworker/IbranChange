@@ -650,7 +650,7 @@ end
 
 # { d, ɡ } > ∅ / V__V
 def step_oi6(ary)
-  ary.change(%w(d g ɡ), {}, ->(s) { s.delete }) { |s| s.intervocalic? }
+  ary.change(%w(d g ɡ), {}, ->(s) { s.delete }, &:intervocalic?)
 end
 
 # b > v / V__V
