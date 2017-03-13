@@ -619,13 +619,9 @@ def step_oi2(ary)
 end
 
 # j > dʒ / { #, V }__V
-def step_oi3 ary
-  @current = ary.each_with_index do |segm, idx|
-    if (segm.initial? || segm.intervocalic?) && segm[:IPA] == 'j'
-      segm[:IPA] = 'dʒ'
-      segm[:orthography] = 'j'
-    end
-  end
+def step_oi3(ary)
+  ary.change(->(s) { (s.initial? || s.intervocalic?) && s.phon == 'j' },
+             Segment.new('dʒ', 'j'))
 end
 
 # nn, nj > ɲ
