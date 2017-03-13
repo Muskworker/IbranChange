@@ -654,14 +654,8 @@ def step_oi6(ary)
 end
 
 # b > v / V__V
-def step_oi7 ary
-  ary.compact
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == "b" && segm.intervocalic?
-      segm[:IPA] = "v"
-      segm[:orthography] = "v"
-    end
-  end
+def step_oi7(ary)
+  ary.change('b', Segment.new('v'), nil, &:intervocalic?)
 end
 
 # { ɑ, ɛ }{ i, ɛ }[-stress] > ɛj
