@@ -1882,7 +1882,7 @@ def cyrillize ary
 end
 
 def neocyrillize ary
-  cyrl = ary.to_ipa.tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐ", "абвджзилмннњоөпрсстуүфѡшыюяя")
+  cyrl = ary.to_ipa.tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐcɟ", "абвджзилмннњоөпрсстуүфѡшыюяятд")
   cyrl.gsub!(/\u0304/, '')
   cyrl.gsub!(/тш/, "ч")
   cyrl.gsub!(/дж/, "џ")
