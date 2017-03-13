@@ -1907,6 +1907,75 @@ def neocyrillize ary
   cyrl.gsub(/[ˈː]/, '')
 end
 
+def neolatinize(ary)
+  neo = deep_dup ary
+  neo.change('ɑ', orthography: 'a') { |segm| !segm[:long] }
+  neo.change('ɑj', orthography: 'ae')
+  neo.change('b', orthography: 'b')
+  neo.change('v', orthography: 'f') { |segm| segm.final? }
+  neo.change('d', orthography: 'd')
+  neo.change('ʒ', orthography: 'sç')
+  neo.change('ʒ', orthography: 'sc') { |segm| segm.next.starts_with.orth.front_vowel? }
+  neo.change('z', orthography: 's')
+  neo.change('e', orthography: 'é') { |segm| !segm[:long] }
+  neo.change('l', orthography: 'l')
+  neo.change('m', orthography: 'm')
+  neo.change('n', orthography: 'n')
+  neo.change('ɲ', orthography: 'nh')
+  neo.change('ɔ', orthography: 'o') { |segm| !segm[:long] }
+  neo.change('ɔj', orthography: 'oe')
+  neo.change('œ', orthography: 'eu') { |segm| !segm[:long] }
+  neo.change('œ̃', orthography: 'un') { |segm| !segm[:long] }
+  neo.change('p', orthography: 'p')
+  neo.change('r', orthography: 'r')
+  neo.change('s', orthography: 's')
+  neo.change('t', orthography: 't')
+  neo.change('u', orthography: 'uo') { |segm| segm[:long] }
+  neo.change('y', orthography: 'u') { |segm| !segm[:long] }
+  neo.change('y', orthography: 'iu') { |segm| segm[:long] }
+  neo.change('f', orthography: 'f')
+  neo.change('o', orthography: 'ó') { |segm| !segm[:long] }
+  neo.change('ʃ', orthography: 'z')
+  neo.change('ʃ', orthography: 'ç') { |segm| segm.final? }
+  neo.change('ə', orthography: 'e') { |segm| segm.final? || (@plural && segm.next.final?) }
+  neo.change('ə', orthography: 'ë') { |segm| segm.prev.vocalic? && (segm.final? || (@plural && segm.next.final?))}
+  neo.change('ø', orthography: 'éu') { |segm| !segm[:long] }
+  neo.change('a', orthography: 'à') { |segm| !segm[:long] }
+  neo.change('ɐ', orthography: 'ă') { |segm| !segm[:long] }
+  neo.change('tʃ', orthography: 'ch')
+  neo.change('dʒ', orthography: 'dj')
+  neo.change('x', orthography: 'g')
+  neo.change('x', orthography: 'gu') { |segm| segm.next.starts_with.orth.front_vowel? }
+  neo.change('k', orthography: 'c')
+  neo.change('k', orthography: 'qu') { |segm| segm.next.starts_with.orth.front_vowel? }
+  neo.change('ç', orthography: 'ç')
+  neo.change('ç', orthography: 'z') { |segm| segm.final? }
+  neo.change('ç', orthography: 'c') { |segm| segm.next.starts_with.orth.front_vowel? }
+  neo.change('ŋ', orthography: 'ng')
+  neo.change('jɛ', orthography: 'ye')
+  neo.change('jɛ', orthography: 'ie') { |segm| puts segm.prev; p segm.prev.consonantal? }
+  neo.change('ʝɛ', orthography: 'ge')
+  neo.change(['je', 'ji', 'ʝe', 'ʝi'], orthography: 'y')
+  neo.change('ʝ', orthography: 'j')
+  neo.change('ʝ', orthography: 'g') { |segm| segm.next.starts_with.orth.front_vowel? }
+  neo.change('ɛ', orthography: 'e') { |segm| !segm[:long] }
+  neo.change('i', orthography: 'i') { |segm| !segm[:long] }
+  neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = segm.orth[0..-2] << 'i' }) { |segm| segm.ends_with == 'j' }
+  neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = segm.orth[0..-2] << 'w' }) { |segm| segm.ends_with == 'w' }
+  neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = 'y' << segm.orth[1..-1] }) { |segm| segm.starts_with == 'j' }
+  neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = 'w' << segm.orth[1..-1] }) { |segm| segm.starts_with == 'w' }
+  neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = 'i' << segm.orth[1..-1] }) do |segm| 
+    segm.starts_with == 'j' && segm.prev.consonantal? 
+  end
+  neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = 'u' << segm.orth[1..-1] }) do |segm| 
+    segm.starts_with == 'w' && segm.prev.consonantal? 
+  end
+  
+  neo.join
+#  ~ 
+#  n 
+end
+
 #############
 # i~ o~ y~ > E~ O~ œ~
 def step_pi1 ary
