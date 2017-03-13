@@ -644,15 +644,14 @@ def step_oi5(ary)
 end
 
 # { d, ɡ } > ∅ / V__V
-def step_oi6 ary
-  @current = ary.each_with_index do |segm, idx|
-    if %w{d g ɡ}.include?(segm[:IPA]) && segm.intervocalic?
-      segm[:IPA] = nil
-      segm[:orthography] = nil
-    end
+def step_oi6(ary)
+  ary.each do |segm|
+    next unless %w{d g ɡ}.include?(segm[:IPA]) && segm.intervocalic?
+    
+    segm.delete
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  ary.compact
 end
 
 # b > v / V__V
