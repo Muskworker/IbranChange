@@ -632,23 +632,15 @@ def step_oi4(ary)
 end
 
 # ll, lj > ʎ
-def step_oi5 ary
-  @current = ary.each do |segm|
-    if segm[:IPA] == 'l' && %w{l j}.include?(segm.next.phon)
-      segm[:IPA] = 'ʎ'
-      segm.next[:IPA] = nil
-
-      segm[:orthography] = 'll'
-      segm.next[:orthography] = nil
-
-      if segm.after_next.phon == 'j' # lli
-        segm.after_next[:IPA] = 'ʎ'
-        segm.after_next[:orthography] = 'i'
-      end
-    end
+def step_oi5(ary)
+  delete_next_and_handle_lli = lambda do |s|
+    s.next.delete
+    s.next.update(IPA: 'ʎ', orthography: 'i') if s.next.phon == 'j'
   end
 
-  @current.compact
+  ary.change('l', Segment.new('ʎ', 'll'), delete_next_and_handle_lli) do |s|
+    %w(l j).include? s.next.phon
+  end
 end
 
 # { d, ɡ } > ∅ / V__V
