@@ -645,17 +645,12 @@ end
 
 # { d, ɡ } > ∅ / V__V
 def step_oi6(ary)
-  ary.each do |segm|
-    next unless %w{d g ɡ}.include?(segm[:IPA]) && segm.intervocalic?
-    
-    segm.delete
-  end
-
-  ary.compact
+  ary.change(%w(d g ɡ), {}, ->(s) { s.delete }) { |s| s.intervocalic? }
 end
 
 # b > v / V__V
 def step_oi7 ary
+  ary.compact
   @current = ary.each_with_index do |segm, idx|
     if segm[:IPA] == "b" && segm.intervocalic?
       segm[:IPA] = "v"
