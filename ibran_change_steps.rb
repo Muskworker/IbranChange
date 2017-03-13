@@ -107,7 +107,7 @@ module PhoneticFeature
   end
 
   def consonantal?
-    !vocalic?
+    !empty? && !vocalic?
   end
 
   def sonorant?
@@ -1492,6 +1492,7 @@ end
 
 # New nasals from /n/ before consonants/finally
 def step_CI2 ary
+  @current.compact
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? && !%w{j w ɥ œ̯}.include?(segm[:IPA][-1]) &&
         ary[idx+1] && %w{m n ŋ}.include?(segm.next.phon) &&
