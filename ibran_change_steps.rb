@@ -83,6 +83,11 @@ class Dictum < Array
       output << segm.to_ipa
     end
   end
+
+  # Remove spaces
+  def combine_words
+    change(' ', {}, ->(s) { s.delete })
+  end
 end
 
 # Determine if a string has certain linguistic features.
@@ -586,7 +591,7 @@ end
 
 def step_oi1(ary)
   # combine words
-  ary.change(' ', IPA: nil, orthography: nil)
+  ary.combine_words
 
   # Assign stress when none
   # Monosyllables don't get stress till end of OI.
