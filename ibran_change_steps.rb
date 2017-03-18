@@ -673,18 +673,14 @@ def step_oi9(ary)
 end
 
 # { i }[-stress] > j / { ɔ, o }__
-def step_oi10 ary
-  @current = ary.each do |segm|
-    if %w{ɔ o}.include?(segm[:IPA]) && segm.next.phon == "i" && !segm.next.stressed?
-      segm[:IPA] << 'j'
-      segm.next[:IPA] = nil
-
-      segm[:orthography] << 'i'
-      segm.next[:orthography] = nil
-    end
+def step_oi10(ary)
+  yod = lambda do |s|
+    s[:IPA] << 'j'
+    s[:orthography] << 'i'
+    s.next.delete
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  ary.change(%w(ɔ o), {}, yod) { |s| s.next.phon == 'i' && s.next.unstressed? }
 end
 
 # Velars before front vowels
