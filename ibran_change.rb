@@ -279,5 +279,5 @@ if ARGV.include?("-t")
   puts "{ w: \"#{input}\", RI_IPA: \"#{@roesan_steps[-1].to_ipa}\", RI_Cyrl: \"#{cyrillize(@roesan_steps[-1])}\", RI_Latn: \"#{@roesan_steps[-1].join}\", PI_IPA: \"#{@paysan_steps[-1].to_ipa}\", PI: \"#{@paysan_steps[-1].join}\" },"
 end
 
-p "NeoRI: #{neocyrillize(@roesan_steps[-1])}"
-p "NeoPI: #{neolatinize(@paysan_steps[-1])}"
+puts "NeoRI: #{neocyrillize(@roesan_steps[-1])}"
+puts "NeoPI: #{neolatinize(@paysan_steps[-1])}"
