@@ -666,18 +666,10 @@ def step_oi8(ary)
 end
 
 # { ɛ, i }[-stress] > j / e__
-def step_oi9 ary
-  @current = ary.each do |segm|
-    if segm[:IPA] == 'e' && %w{ɛ i}.include?(segm.next.phon) && !segm.next.stressed?
-      segm[:IPA] = 'ej'
-      segm.next[:IPA] = nil
-
-      segm[:orthography] = 'éi'
-      segm.next[:orthography] = nil
-    end
+def step_oi9(ary)
+  ary.change('e', Segment.new('ej', 'éi'), ->(s) { s.next.delete }) do |s|
+    s.next.match(%w(ɛ i)) && s.next.unstressed?
   end
-
-  @current.compact
 end
 
 # { i }[-stress] > j / { ɔ, o }__
