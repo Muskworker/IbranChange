@@ -684,23 +684,17 @@ def step_oi10(ary)
 end
 
 # Velars before front vowels
-def step_oi11 ary
-  @current = ary.each do |segm|
-    if segm.next.starts_with.front_vowel?
-      case segm[:IPA]
-      when 'k'
-        segm[:IPA] = 'tʃ'
-      when 'g'
-        segm[:IPA] = 'dʒ'
-      when 'kw'
-        segm[:IPA] = 'k'
-        segm[:palatalized] = true
-      when 'gw'
-        segm[:IPA] = 'g'
-        segm[:palatalized] = true
-      end
-    end
+def step_oi11(ary)
+  outcomes = { 'k' => { IPA: 'tʃ' },
+               'g' => { IPA: 'dʒ' },
+               'kw' => { IPA: 'k', palatalized: true },
+               'gw' => { IPA: 'g', palatalized: true } }
+
+  outcomes.each do |prior, post| 
+    ary.change(prior, post) { |s| s.next.starts_with.front_vowel? }
   end
+
+  ary
 end
 
 # Velars before back A
