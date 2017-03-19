@@ -711,19 +711,15 @@ def step_oi12(ary)
 end
 
 # Labiovelars before back vowels
-def step_oi13 ary
-  @current = ary.each do |segm|
-    if segm.next.back_vowel?
-      case segm[:IPA]
-      when 'kw'
-        segm[:IPA] = 'k'
-        segm[:back] = true
-      when 'gw'
-        segm[:IPA] = 'g'
-        segm[:back] = true
-      end
-    end
+def step_oi13(ary)
+  outcomes = { 'kw' => { IPA: 'k', back: true },
+               'gw' => { IPA: 'g', back: true } }
+
+  outcomes.each do |prior, post|
+    ary.change(prior, post) { |s| s.next.starts_with.back_vowel? }
   end
+
+  ary
 end
 
 # Intervocalic consonants
