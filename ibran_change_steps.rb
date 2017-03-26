@@ -1912,7 +1912,7 @@ def neolatinize(ary)
   neo.change('ç', orthography: 'c') { |segm| segm.next.starts_with.orth.front_vowel? }
   neo.change('ŋ', orthography: 'ng')
   neo.change('jɛ', orthography: 'ye')
-  neo.change('jɛ', orthography: 'ie') { |segm| puts segm.prev; p segm.prev.consonantal? }
+  neo.change('jɛ', orthography: 'ie') { |segm| segm.prev.consonantal? }
   neo.change('ʝɛ', orthography: 'ge')
   neo.change(['je', 'ji', 'ʝe', 'ʝi'], orthography: 'y')
   neo.change('ʝ', orthography: 'j')
