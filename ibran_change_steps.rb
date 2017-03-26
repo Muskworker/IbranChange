@@ -2454,6 +2454,12 @@ def convert_LL str
   when /atio$/
     @current.pop(3)
     @current << Segment[:IPA=>"ɑ", :orthography=>"a", :long=>false] << Segment[:IPA=>"ʒʒ", :orthography=>"sç", :long=>false] << Segment[:IPA=>"ũ", :orthography=>"uon", :long=>true, :stress=>true]
+  when /ator$/
+    @current.pop(4)
+    @current << Segment.new('ə', 'e') << Segment.new('l') << Segment[IPA: 'u', orthography: 'uo', long: true, stress: true] << Segment.new('r')
+  when /atorium$/
+    @current.pop(7)
+    @current << Segment.new('ə', 'e') << Segment.new('l') << Segment[IPA: 'œ', orthography: 'eu', long: true, stress: true] << Segment.new('r')
   when /illum$/
     @current.pop(3)
     @current << Segment[IPA: "i", orthography: "ill", stress: true, long: true]
@@ -2473,7 +2479,7 @@ def convert_LL str
   when /(sin|sis)$/
     @current.pop(3)
     @current << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
-  when /sionem$/
+  when /(t|s)ionem$/
     @current.pop(5)
     @current << Segment.new('ʒʒ', 'sç') << Segment[IPA: 'ũ', orthography: 'uon', long: true, stress: true]
   when /um$/ # not us
