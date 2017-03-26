@@ -1866,6 +1866,7 @@ def neocyrillize ary
   cyrl.gsub(/[ˈː]/, '')
 end
 
+# This doesn't really introduce any good changes other than ă$ > e
 def neolatinize(ary)
   neo = deep_dup ary
   neo.change('ɑ', orthography: 'a') { |segm| !segm[:long] }
