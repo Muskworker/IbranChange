@@ -901,6 +901,7 @@ class IbranChangeTest < Minitest::Test
       { w: "anellum", RI_IPA: "ɑˈniː", RI_Cyrl: "ані̄", RI_Latn: "anill", PI_IPA: "əˈniː", PI: "any" },
       { w: "anīsum", RI_IPA: "ɑˈniʰ", RI_Cyrl: "ані’", RI_Latn: "anis", PI_IPA: "əˈnis", PI: "anis" },
       { w: "annum", RI_IPA: "aɲ", RI_Cyrl: "яњ", RI_Latn: "ành", PI_IPA: "æɲ", PI: "ành" },
+      { w: "aperīre", RI_IPA: "oːˈrir", RI_Cyrl: "ѡ̄рір", RI_Latn: "aurir", PI_IPA: "oːˈrir", PI: "aurir" },
       { w: "apertūram", RI_IPA: "ɑbərˈtyr", RI_Cyrl: "абъртүр", RI_Latn: "abertur", PI_IPA: "əbərˈtyr", PI: "abertur" },
       { w: "aquam", RI_IPA: "ɑgʲ", RI_Cyrl: "аг", RI_Latn: "ague", PI_IPA: "ˈɑxə", PI: "agă" },
       { w: "arausiōnem", RI_IPA: "ɑrəˈʒʒũː", RI_Cyrl: "аръжжӯн", RI_Latn: "aresçuon", PI_IPA: "ərəˈʒʒũː", PI: "aresçuon" },
