@@ -156,7 +156,7 @@ module PhoneticFeature
   end
 
   def front_vowel?
-    %w(e i ae y æ ɛ œ ej).include? self
+    %w(e i ae y æ ɛ œ ej é).include? self
   end
 
   def back_vowel?
