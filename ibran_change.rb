@@ -281,3 +281,20 @@ end
 
 puts "NeoRI: #{neocyrillize(@roesan_steps[-1])}"
 puts "NeoPI: #{neolatinize(@paysan_steps[-1])}"
+
+# HTML for Lexicon.html
+puts
+puts "<dt><dfn class=\"paysan\">#{@paysan_steps[-1].join}</dfn>, <dfn class=\"roesan\">#{cyrillize(@roesan_steps[-1])}#{" (#{@roesan_steps[-1].join})" if @roesan_steps[-1].join != @paysan_steps[-1].join}</dfn></dt>"
+if @paysan_steps[-1].to_ipa != @roesan_steps[-1].to_ipa
+  puts "<dd class=\"pronunciation\"><span class=\"paysan\">/#{@paysan_steps[-1].to_ipa}/</span> <span class=\"roesan\">/#{@roesan_steps[-1].to_ipa}/</span></dd>"
+else
+  puts "<dd class=\"pronunciation\">/#{@roesan_steps[-1].to_ipa}/</dd>"
+end
+puts "<dd class=\"part-of-speech\"><!-- PART OF SPEECH --></dd>"
+puts "<dd class=\"definition\"><!-- DEFINITION --></dd>"
+lang = since == "OLF" ? "Old Dutch" : "Latin"
+puts "<dd class=\"etymology\">#{lang} <i>#{input}</i>.</dd>"
+
+# CSV for Anki
+puts
+puts [@paysan_steps[-1].join, cyrillize(@roesan_steps[-1]), @roesan_steps[-1].join, @paysan_steps[-1].to_ipa, @roesan_steps[-1].to_ipa, "DEFINITION"].join(";")
