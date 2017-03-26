@@ -249,7 +249,7 @@ class Segment < Hash
   end
 
   def starts_with
-    Segment[IPA: phon[0], orthography: orth.chars.fetch(0, '')]
+    Segment[IPA: phon[0], orthography: (orth || '').chars.fetch(0, '')]
   end
 
   def ends_with
