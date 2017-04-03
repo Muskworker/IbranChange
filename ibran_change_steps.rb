@@ -249,6 +249,9 @@ class Segment < Hash
   end
   alias =~ match
 
+  def match_all(*ary)
+    ary.all? { |criterion| match(criterion) }
+  end
 
   def starts_with
     Segment[IPA: phon[0], orthography: (orth || '').chars.fetch(0, '')]
