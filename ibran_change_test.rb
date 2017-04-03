@@ -1480,6 +1480,7 @@ class IbranChangeTest < Minitest::Test
       { w: "philosophum", RI_IPA: "viˈlɔzɔf", RI_Cyrl: "вілозов", RI_Latn: "filosof", PI_IPA: "vəˈlɔzəf", PI: "filosăf" },
       { w: "pimentum", RI_IPA: "piˈmẽt", RI_Cyrl: "піминт", RI_Latn: "pimént", PI_IPA: "pəˈmẽt", PI: "pimént" },
       { w: "planum", RI_IPA: "plɑ̃", RI_Cyrl: "план", RI_Latn: "plan", PI_IPA: "plɑ̃", PI: "plan" },
+      { w: "porcellana>", RI_IPA: "pɔrçɛlˈlɑn", RI_Cyrl: "поршеллан’", RI_Latn: "porcellane", PI_IPA: "pərçəlˈlɑnə", PI: "porcellană" },
       { w: "pulsum", RI_IPA: "pyls", RI_Cyrl: "пүлс", RI_Latn: "puls", PI_IPA: "pyls", PI: "puls" },
       { w: "pyramide", RI_IPA: "piˈrɑmid", RI_Cyrl: "пірамід", RI_Latn: "piramide", PI_IPA: "pəˈrɑmədə", PI: "piramăda" },
       { w: "rationalis", RI_IPA: "rɑʒʒɔˈnoː", RI_Cyrl: "ражжонѡ̄", RI_Latn: "rationau", PI_IPA: "rəʒʒəˈnoː", PI: "rationau" },
