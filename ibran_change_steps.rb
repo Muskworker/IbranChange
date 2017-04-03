@@ -409,13 +409,13 @@ end
 class OldIbran
   # Intervocalic T becomes L, generally.
   # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
+  # (In other words, T becomes D after intervocalic T
+  # and L becomes D before intervocalic T.)
   def self.intervocalic_t_changes(word)
     word.change('t', Segment.new('l'), lambda do |t|
-      next_c = t.after_next
-      next_c.update(Segment.new('d')) if next_c.match_all('t', :intervocalic)
-
-      prev_c = t.before_prev
-      prev_c.update(Segment.new('d')) if prev_c.match_all('l', :intervocalic)
+      { 't' => t.after_next, 'l' => t.before_prev }.each do |match, cons|
+        cons.update(Segment.new('d')) if cons.match_all(match, :intervocalic)
+      end
     end, &:intervocalic?)
   end
 end
