@@ -405,6 +405,21 @@ class Latin
   end
 end
 
+# Complex exceptions to regular Ibran changes
+class OldIbran
+  # Intervocalic T becomes L, generally.
+  # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
+  def self.intervocalic_t_changes(word)
+    word.change('t', Segment.new('l'), lambda do |t|
+      next_c = t.after_next
+      next_c.update(Segment.new('d')) if next_c.match_all('t', :intervocalic)
+
+      prev_c = t.before_prev
+      prev_c.update(Segment.new('d')) if prev_c.match_all('l', :intervocalic)
+    end, &:intervocalic?)
+  end
+end
+
 def ipa(dict)
   dict.join :IPA
 end
@@ -729,38 +744,14 @@ def step_oi13(ary)
 end
 
 # Intervocalic consonants
-def step_oi14 ary
-  @current = ary.each_with_index do |segm, idx|
-    if ary[idx+1] && segm.intervocalic?
-      case segm[:IPA]
-      when 'p'
-        segm[:IPA] = 'b'
-        segm[:orthography] = 'b'
-      when 'f'
-        segm[:IPA] = 'v'
-        segm[:orthography] = 'v'
-      when 'l'
-        if segm.after_next.phon == 't' && segm.after_next.intervocalic?
-          segm[:IPA] = 'd'
-          segm[:orthography] = 'd'
-        end
-      when 't'
-        if segm.before_prev.phon == 'l' && segm.before_prev.intervocalic? && segm.before_prev[:was_t]
-          segm[:IPA] = 'd'
-          segm[:orthography] = 'd'
-        else
-          segm[:IPA] = 'l'
-          segm[:orthography] = 'l'
-          segm[:was_t] = true
-        end
-      when 's'
-        segm[:IPA] = 'z'
-      when 'k'
-        segm[:IPA] = 'g'
-        segm[:back] ? segm[:orthography] = 'gu' : segm[:orthography] = 'g'
-      end
-    end
-  end
+def step_oi14(ary)
+  OldIbran.intervocalic_t_changes(ary)
+
+  ary.change('s', IPA: 'z', &:intervocalic?)
+  ary.change({ back: true }, { IPA: 'g', orthography: 'gu' }, &:intervocalic?)
+  ary.change(%w(p f k), {}, lambda do |s|
+    s.update(Segment.new(s.voice!))
+  end, &:intervocalic?)
 end
 
 # stops before liquids
