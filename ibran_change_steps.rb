@@ -247,6 +247,8 @@ class Segment < Hash
     when Proc then segm.call(self)
     end
   end
+  alias =~ match
+
 
   def starts_with
     Segment[IPA: phon[0], orthography: (orth || '').chars.fetch(0, '')]
