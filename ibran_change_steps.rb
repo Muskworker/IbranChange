@@ -755,21 +755,9 @@ def step_oi14(ary)
 end
 
 # stops before liquids
-def step_oi15 ary
-  @current = ary.each_with_index do |segm, idx|
-    if %w{r l}.include?(segm.next.phon) && idx > 0 && segm.prev.vowel?
-      case segm[:IPA]
-      when 'p'
-        segm[:IPA] = 'b'
-        segm[:orthography] = 'b'
-      when 't'
-        segm[:IPA] = 'd'
-        segm[:orthography] = 'd'
-      when 'k'
-        segm[:IPA] = 'g'
-        segm[:orthography] = 'g'
-      end
-    end
+def step_oi15(ary)
+  ary.change(%w(p t k), {}, ->(s) { s.update(Segment.new(s.voice!)) }) do |s|
+    s.next =~ %w(r l) && !s.initial? && s.prev.vowel?
   end
 end
 
