@@ -762,13 +762,8 @@ def step_oi15(ary)
 end
 
 # f before liquids
-def step_oi16 ary
-  @current = ary.each do |segm|
-    if segm[:IPA] == 'f' && %w{r l}.include?(segm.next.phon)
-      segm[:IPA] = 'v'
-      segm[:orthography] = 'v'
-    end
-  end
+def step_oi16(ary)
+  ary.change('f', Segment.new('v')) { |s| s.next =~ %w(r l) }
 end
 
 # degemination
