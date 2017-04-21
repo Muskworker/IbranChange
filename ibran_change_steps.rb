@@ -2325,7 +2325,7 @@ end
 
 # INCOMPLETE
 def convert_LL str
-  @current = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|./i).inject(Dictum.new) do |memo, obj|
+  @current = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|lj|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra.merge!({ long: true }) if obj.match(/aũ|éũ|eũ|éu|eu|iũ/i)
     #supra.merge!({ originally_long: true }) if obj.match(/[āēīōūȳ]/i)
@@ -2351,6 +2351,7 @@ def convert_LL str
            when /z/i      then "ʃ"
            when /ph/i     then 'f'
            when /th/      then 'θ'
+           when /lj/      then 'ʎ'
           #when /ng/i     then 'ng'
            when /j/       then 'ʝ'
            else obj.dup.downcase
@@ -2360,6 +2361,7 @@ def convert_LL str
            when /k/i  then "c"
            when /ī/i  then "i"
            when /y/i  then "i"
+           when /lj/i then 'll'
            when /ph/i then 'f'
            else obj.dup
            end
@@ -2491,6 +2493,7 @@ def convert_LL str
   @current = step_CI2(@current)
   @current = step_CI3(@current)
   @current = step_CI4(@current)
+  @current = step_CI5(@current)
   @current = step_CI8(@current)
 
   posttonic = false
