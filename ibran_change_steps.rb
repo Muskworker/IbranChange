@@ -767,23 +767,13 @@ def step_oi16(ary)
 end
 
 # degemination
-def step_oi17 ary
-  @current = ary.each do |segm|
-    if segm.next.phon == segm[:IPA]
-      case segm[:IPA]
-      when 'p', 't', 'k', 'r'
-        segm.next[:IPA] = nil
-        segm.next[:orthography] = nil
-        segm[:palatalized] = segm.next[:palatalized]
-      when 's'
-        segm.next[:IPA] = nil
-        segm.next[:orthography] = nil
-        segm[:orthography] = 'ss'
-      end
-    end
-  end
+def step_oi17(ary)
+  ary.change(%w(p t k r s), {}, lambda do |s|
+    s[:palatalized] = s.next[:palatalized]
+    s.next.delete
 
-  @current.compact
+    s[:orthography] = 'ss' if s =~ 's'
+  end) { |s| s.next =~ s.phon }
 end
 
 # Clusters
