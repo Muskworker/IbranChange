@@ -547,7 +547,7 @@ def step_vl5(lemma)
   lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
     word.change(%w(e i), IPA: 'j', orthography: 'j') do |segm|
       prior_vowel = word[0...segm.pos].find(&:vocalic?)
-      !segm.stressed? && segm.next.vocalic? && prior_vowel
+      !segm.stressed? && !segm[:long] && segm.next.vocalic? && prior_vowel
     end
   end
 
