@@ -407,6 +407,16 @@ end
 
 # Complex exceptions to regular Ibran changes
 class OldIbran
+  # Outcomes of /k g l/ before dentals and nasals
+  def self.cluster_change(ipa)
+    orig = %w(a ɑ e ɛ o ɔ i u)
+    phon = %w(ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj)
+    orth = %w(ae ae ei ei oe oe éi ói)
+    outcomes = Hash[orig.zip(phon.zip(orth))]
+
+    Segment.new(*outcomes[ipa])
+  end
+
   # Intervocalic T becomes L, generally.
   # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
   # (In other words, T becomes D after intervocalic T
@@ -777,39 +787,18 @@ def step_oi17(ary)
 end
 
 # Clusters
-def step_oi18 ary
-  @current = ary.each do |segm|
-    if segm.vowel? && segm.stressed? && # stressed vowel
-        %w{k g l}.include?(segm.next.phon) &&  # next segment is c g l
-        # next is L or dental stop or nasal
-        ((segm.after_next.phon == 'l') ||
-          ((segm.after_next.stop? || segm.after_next.affricate?) && segm.after_next.dental?) ||
-          segm.after_next.nasal?) &&
-        !(segm.next.phon == 'l' && segm.after_next.phon == 'l')  # next two are not both L
-      case segm[:IPA]
-      when 'a', 'ɑ'
-        segm[:IPA] = 'ɑɛ̯'
-        segm[:orthography] = 'ae'
-      when 'e', 'ɛ'
-        segm[:IPA] = 'ɛj'
-        segm[:orthography] = 'ei'
-      when 'i'
-        segm[:IPA] = 'ej'
-        segm[:orthography] = 'éi'
-      when 'o', 'ɔ'
-        segm[:IPA] = 'ɔɛ̯'
-        segm[:orthography] = 'oe'
-      when 'u'
-        segm[:IPA] = 'oj'
-        segm[:orthography] = 'ói'
-      end
+def step_oi18(ary)
+  ary.change(:stressed, {}, lambda do |s|
+    s.update(OldIbran.cluster_change(s.phon))
+    s.next.delete
+  end) do |s|
+    nxt = s.next
+    after_next = s.after_next
 
-      segm.next[:IPA] = nil
-      segm.next[:orthography] = nil
-    end
+    nxt =~ %w(k g l)                   \
+    && after_next =~ [:dental, :nasal] \
+    && !(nxt =~ after_next)
   end
-
-  @current.compact
 end
 
 # Clusters pt 2 (in two parts)
