@@ -475,6 +475,7 @@ def respell_velars(ary)
     when 'k' then segm[:orthography] = 'qu'
     when 'ç' then segm[:orthography] = 'c'
     when 'g' then segm[:orthography] = 'gu'
+    when 'ʝ' then segm[:orthography] = 'g'
     end
   end
 end
@@ -2479,6 +2480,7 @@ def convert_LL str
           segm[:palatalized] = true
         else
           segm[:IPA] = "ʝ"
+          respell_velars(@current)
         end
       end
     when "œ"
