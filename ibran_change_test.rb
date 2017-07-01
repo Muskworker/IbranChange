@@ -903,6 +903,7 @@ class IbranChangeTest < Minitest::Test
       { w: "annum", RI_IPA: "aɲ", RI_Cyrl: "яњ", RI_Latn: "ành", PI_IPA: "æɲ", PI: "ành" },
       { w: "aperīre", RI_IPA: "oːˈrir", RI_Cyrl: "ѡ̄рір", RI_Latn: "aurir", PI_IPA: "oːˈrir", PI: "aurir" },
       { w: "apertūram", RI_IPA: "ɑbərˈtyr", RI_Cyrl: "абъртүр", RI_Latn: "abertur", PI_IPA: "əbərˈtyr", PI: "abertur" },
+      { w: "apicula", RI_IPA: "ɑˈbɛjl", RI_Cyrl: "абејл", RI_Latn: "abeile", PI_IPA: "əˈbɛjlə", PI: "abeilă" },
       { w: "aquam", RI_IPA: "ɑgʲ", RI_Cyrl: "аг", RI_Latn: "ague", PI_IPA: "ˈɑxə", PI: "agă" },
       { w: "arausiōnem", RI_IPA: "ɑrəˈʒʒũː", RI_Cyrl: "аръжжӯн", RI_Latn: "aresçuon", PI_IPA: "ərəˈʒʒũː", PI: "aresçuon" },
       { w: "aut", RI_IPA: "ɔ", RI_Cyrl: "о", RI_Latn: "o", PI_IPA: "ɔ", PI: "o" },
@@ -1422,6 +1423,7 @@ class IbranChangeTest < Minitest::Test
     late_latin_words = [
       { w: "abominatio", RI_IPA: "ɑbɔminɑˈʒʒũː", RI_Cyrl: "абомінажжӯн", RI_Latn: "abominasçuon", PI_IPA: "əbəmənəˈʒʒũː", PI: "abominasçuon" },
       { w: "albanensem", RI_IPA: "ɑlbɑˈneʰ", RI_Cyrl: "албани’", RI_Latn: "albanés", PI_IPA: "əlbəˈnes", PI: "albanés" },
+      { w: "allergīa>", RI_IPA: "ɑllɛrˈʝi", RI_Cyrl: "аллержі", RI_Latn: "allergie", PI_IPA: "əllərˈʝiə", PI: "allergiă" },
       { w: "america", RI_IPA: "ɑˈmɛrikʲ", RI_Cyrl: "амерік", RI_Latn: "amerique", PI_IPA: "əˈmɛrəkə", PI: "amerăca" },
       { w: "americanum>", RI_IPA: "ɑmɛriˈkʲɑ̃", RI_Cyrl: "амерікан", RI_Latn: "american", PI_IPA: "əmərəˈkɑ̃", PI: "american" },
       { w: "andorranum>", RI_IPA: "ɑ̃dɔrˈrɑ̃", RI_Cyrl: "андорран", RI_Latn: "andorran", PI_IPA: "ə̃dərˈrɑ̃", PI: "andorran" },
