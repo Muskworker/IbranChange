@@ -2464,7 +2464,7 @@ def convert_LL str
   @current = @current.each_with_index do |segm, idx|
     case segm[:IPA]
     when "k"
-      if @current[idx+1] && segm.next.starts_with.front_vowel? && segm.next[:orthography] != "u" # /y/ is a front vowel
+      if @current[idx+1] && (segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j' ) && segm.next[:orthography] != "u" # /y/ is a front vowel
         if segm[:orthography] == "ch"
           segm[:orthography] = "qu"
           segm[:palatalized] = true

@@ -1488,6 +1488,7 @@ class IbranChangeTest < Minitest::Test
       { w: "pyramide", RI_IPA: "piˈrɑmid", RI_Cyrl: "пірамід", RI_Latn: "piramide", PI_IPA: "pəˈrɑmədə", PI: "piramăda" },
       { w: "rationalis", RI_IPA: "rɑʒʒɔˈnoː", RI_Cyrl: "ражжонѡ̄", RI_Latn: "rationau", PI_IPA: "rəʒʒəˈnoː", PI: "rationau" },
       { w: "rectangulum", RI_IPA: "rɛkʲˈtɑ̃gʲyl", RI_Cyrl: "ректангүл", RI_Latn: "rectangul", PI_IPA: "rəkˈtɑ̃xəl", PI: "rectangăl" },
+      { w: "reproducēre", RI_IPA: "rɛprɔdyˈçjir", RI_Cyrl: "репродүшјір", RI_Latn: "reproduciér", PI_IPA: "rəprədəˈçir", PI: "reproducir" },
       { w: "respīrāre", RI_IPA: "rɛppiˈrɑr", RI_Cyrl: "реппірар", RI_Latn: "respirar", PI_IPA: "rəpəˈrɑr", PI: "rêpirar" },
       { w: "safranum>", RI_IPA: "zɑˈvrɑ̃", RI_Cyrl: "завран", RI_Latn: "safran", PI_IPA: "zəˈvrɑ̃", PI: "safran" },
       { w: "sassafras", RI_IPA: "zɑˈzɑvr", RI_Cyrl: "зазавр", RI_Latn: "sassafres", PI_IPA: "zəˈzɑvrəs", PI: "sassafrăs" },
