@@ -1279,6 +1279,7 @@ class IbranChangeTest < Minitest::Test
     olf_words = [
       { w: "ahtig", RI_IPA: "ˈɑkʲtəkʲ", RI_Cyrl: "актък", RI_Latn: "aghteg", PI_IPA: "ˈɑktəx", PI: "aghtăg" },
       { w: "antlutti", RI_IPA: "ˈɑ̃tlətt", RI_Cyrl: "антлътт", RI_Latn: "antlette", PI_IPA: "ˈɑ̃tləttə", PI: "antlătta" },
+      { w: "antlūciéus!", RI_IPA: "ɑ̃tluːtʃjeˈyʰ", RI_Cyrl: "антлӯчјиү’", RI_Latn: "antluquiéus", PI_IPA: "ə̃tluːtʃjəˈys", PI: "antluchiéus" },
       { w: "armēnjarium", RI_IPA: "ɑrmeːˈɲaːr", RI_Cyrl: "армӣњя̄р", RI_Latn: "arméinhàir", PI_IPA: "ərmeːˈɲæːr", PI: "arméinhàir" },
       { w: "aska", RI_IPA: "ɑkʲkʲ", RI_Cyrl: "акк", RI_Latn: "asque", PI_IPA: "ˈɑkə", PI: "âcă" },
       { w: "bēn", RI_IPA: "bẽː", RI_Cyrl: "бӣн", RI_Latn: "béin", PI_IPA: "bẽː", PI: "béin" },

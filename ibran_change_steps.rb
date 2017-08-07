@@ -2201,7 +2201,7 @@ def convert_OLF str
 
   # velar before front vowels
   @current = @current.each do |segm|
-    if segm.next.starts_with.front_vowel?
+    if segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j'
       case segm[:IPA]
       when "k"
         segm[:orthography] = "qu"
