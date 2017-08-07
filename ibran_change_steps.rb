@@ -803,7 +803,7 @@ def step_oi18(ary)
 end
 
 # Clusters pt 2 (in two parts)
-def step_oi19 ary
+def step_oi19(ary)
   # 19: stressed vowels
   @current = ary.each do |segm|
     if segm.vowel? && segm.stressed? && # stressed vowel with two subsequent segments
@@ -824,7 +824,7 @@ def step_oi19 ary
         segm[:orthography] = 'oe'
       end
 
-      if %w{i u}.include?(segm[:IPA])
+      if %w(i u).include?(segm[:IPA])
         case segm.next.phon
         when 'ks'
           segm.next[:IPA] = 'ss'
@@ -842,8 +842,8 @@ def step_oi19 ary
           segm.next[:IPA] = 's'
           segm.next[:orthography] = segm.after_next.vowel? ? 'ss' : 's'
         when 'dʒ', 'tʃ'
-          segm.next[:IPA] = "#{segm.next.phon[1]}"
           #ary[idx+1][:orthography] = "s#{ary[idx+1][:orthography]}"
+          segm.next[:IPA] = segm.next.phon[1]
         else
           segm.next[:IPA] = nil
           segm.next[:orthography] = nil
@@ -865,13 +865,13 @@ def step_oi19 ary
         segm[:IPA] = 'ss'
         segm[:orthography] = segm.next.vowel? ? 'ss' : 's'
       elsif segm.affricate?
-        segm[:IPA] = "#{segm[:IPA][1] * 2}"
+        segm[:IPA] = segm[:IPA][1] * 2
         segm[:orthography] = "s#{segm[:orthography]}"
       end
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  @current.delete_if { |segment| segment[:IPA].nil? }
 end
 
 # vowel fronting
