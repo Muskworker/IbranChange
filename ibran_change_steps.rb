@@ -2424,7 +2424,7 @@ def convert_LL str
     @current.pop(7)
     @current << Segment.new('ə', 'e') << Segment.new('l') << Segment[IPA: 'œ', orthography: 'eu', long: true, stress: true] << Segment.new('r')
   when /illum$/
-    @current.pop(3)
+    @current.pop(5)
     @current << Segment[IPA: "i", orthography: "ill", stress: true, long: true]
   when /illa$/
     @current.pop(4)
