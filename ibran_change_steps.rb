@@ -2445,7 +2445,7 @@ def convert_LL str
   when /(t|s)ionem$/
     @current.pop(5)
     @current << Segment.new('ʒʒ', 'sç') << Segment[IPA: 'ũ', orthography: 'uon', long: true, stress: true]
-  when /um$/ # not us
+  when /(e|u)m$/ # not us
     @current.pop
     @current = step_oi26(@current)
   end

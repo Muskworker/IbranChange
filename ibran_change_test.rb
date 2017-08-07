@@ -1431,6 +1431,7 @@ class IbranChangeTest < Minitest::Test
       { w: "astrum", RI_IPA: "ɑttr", RI_Cyrl: "аттр", RI_Latn: "astre", PI_IPA: "ˈɑtrə", PI: "âtră" },
       { w: "augmentāre", RI_IPA: "ogʲmɛ̃ˈtɑr", RI_Cyrl: "ѡгментар", RI_Latn: "augmentar", PI_IPA: "əxmə̃ˈtɑr", PI: "augmentar" },
       { w: "basilicum", RI_IPA: "bɑˈzilikʲ", RI_Cyrl: "базілік", RI_Latn: "basilic", PI_IPA: "bəˈzilək", PI: "basilăc" },
+      { w: "bottonem>", RI_IPA: "bɔtˈtũ", RI_Cyrl: "боттун", RI_Latn: "bottón", PI_IPA: "bətˈtɔ̃", PI: "bottón" },
       { w: "caienna", RI_IPA: "kʲɑˈʝɛ̃n", RI_Cyrl: "каженн", RI_Latn: "cayenne", PI_IPA: "kəˈjɛ̃nə", PI: "cayennă" },
       { w: "canella", RI_IPA: "kʲɑˈnell", RI_Cyrl: "канилл", RI_Latn: "canélle", PI_IPA: "kəˈnellə", PI: "canéllă" },
       { w: "capitulum", RI_IPA: "kʲɑˈpityl", RI_Cyrl: "капітүл", RI_Latn: "capitul", PI_IPA: "kəˈpitəl", PI: "capităl" },
