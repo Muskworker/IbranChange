@@ -2345,7 +2345,7 @@ def convert_LL str
     end
 
     # |tiV|
-    if %w{t s}.include?(segment[:IPA]) &&
+    if segment.ends_with =~ %w{t s} &&
       segment.next.phon == 'i' &&
       segment.after_next.vowel?
         # do the thing
