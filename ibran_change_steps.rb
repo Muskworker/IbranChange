@@ -407,7 +407,7 @@ end
 
 # Complex exceptions to regular Ibran changes
 class OldIbran
-  # Outcomes of /k g l/ before dentals and nasals
+  # Outcomes of vowels before /k g l/ before dentals and nasals
   def self.cluster_change(ipa)
     orig = %w(a ɑ e ɛ o ɔ i u)
     phon = %w(ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj)
