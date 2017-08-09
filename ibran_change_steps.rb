@@ -817,11 +817,11 @@ end
 def step_oi19(ary)
   # 19: stressed vowels
   @current = ary.each do |segm|
-    if segm.vowel? && segm.stressed? && # stressed vowel with two subsequent segments
+    # stressed vowel with two subsequent segments, or
+    next unless segm.match_all(:vowel, :stressed) && 
       # x or dental/velar + sibilant
-      (segm.next.phon == 'ks' ||
-        ((segm.next.dental? || segm.next.velar?) && segm.after_next.sibilant?) ||
-        segm.next.affricate?)
+      (segm.next =~ ['ks', :affricate] ||
+        ((segm.next =~ [:dental, :velar]) && segm.after_next.sibilant?))
 
     OldIbran.post_stress_cluster_changes(segm.next, (segm.next.ends_with.phon if %w(i u).include?(segm[:IPA])))
     segm.update(OldIbran.cluster_change(segm.phon)) unless segm =~ %w(i u)
