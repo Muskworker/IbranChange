@@ -417,6 +417,17 @@ class OldIbran
     Segment.new(*outcomes[ipa])
   end
 
+  # Outcome of clusters following stressed vowels
+  def self.post_stress_cluster_changes(segm, assim = nil)
+    outcomes = { 'ks' => %W(#{assim}s #{segm.next.vowel? ? 'ss' : 's'}),
+                 'dʒ' => %W(#{assim}ʒ #{'s' if assim}#{segm.orth}),
+                 'tʃ' => %W(#{assim}ʃ #{'s' if assim}#{segm.orth}) }
+
+    outcomes.default = %W(#{segm.next.phon if assim} #{assim})
+
+    segm.update(Segment.new(*outcomes[segm.phon]))
+  end
+
   # Intervocalic T becomes L, generally.
   # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
   # (In other words, T becomes D after intervocalic T
@@ -812,44 +823,8 @@ def step_oi19(ary)
         ((segm.next.dental? || segm.next.velar?) && segm.after_next.sibilant?) ||
         segm.next.affricate?)
 
-      case segm[:IPA]
-      when 'a', 'ɑ'
-        segm[:IPA] = 'ɑɛ̯'
-        segm[:orthography] = 'ae'
-      when 'e', 'ɛ'
-        segm[:IPA] = 'ɛj'
-        segm[:orthography] = 'ei'
-      when 'o', 'ɔ'
-        segm[:IPA] = 'ɔɛ̯'
-        segm[:orthography] = 'oe'
-      end
-
-      if %w(i u).include?(segm[:IPA])
-        case segm.next.phon
-        when 'ks'
-          segm.next[:IPA] = 'ss'
-          segm.next[:orthography] = segm.after_next.vowel? ? 'ss' : 's'
-        when 'dʒ', 'tʃ'
-          segm.next[:IPA] = "#{segm.next.phon[1]}#{segm.next.phon[1]}"
-          segm.next[:orthography] = "s#{segm.next.orth}"
-        else
-          segm.next[:IPA] = segm.after_next.phon
-          segm.next[:orthography] = 's'
-        end
-      else
-        case segm.next.phon
-        when 'ks'
-          segm.next[:IPA] = 's'
-          segm.next[:orthography] = segm.after_next.vowel? ? 'ss' : 's'
-        when 'dʒ', 'tʃ'
-          #ary[idx+1][:orthography] = "s#{ary[idx+1][:orthography]}"
-          segm.next[:IPA] = segm.next.phon[1]
-        else
-          segm.next[:IPA] = nil
-          segm.next[:orthography] = nil
-        end
-      end
-    end
+    OldIbran.post_stress_cluster_changes(segm.next, (segm.next.ends_with.phon if %w(i u).include?(segm[:IPA])))
+    segm.update(OldIbran.cluster_change(segm.phon)) unless segm =~ %w(i u)
   end
 
   # 19b: unstressed vowels
