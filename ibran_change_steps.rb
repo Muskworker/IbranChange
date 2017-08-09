@@ -1392,8 +1392,8 @@ def step_CI2 ary
         ary[idx+1] && %w{m n ŋ}.include?(segm.next.phon) &&
         (segm.after_next.phon && segm.after_next.starts_with.consonantal? || segm.next.final?)
 
-      segm[:IPA] << "\u0303"
-      segm[:orthography] << case #'n'#ary[idx+1][:orthography]
+      segm[:IPA] += "\u0303"
+      segm[:orthography] += case #'n'#ary[idx+1][:orthography]
                             when segm.next.final? then segm.next.orth
                             when segm.after_next.labial? then 'm'
                             else 'n'
