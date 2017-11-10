@@ -2325,8 +2325,7 @@ def convert_LL str
       idx > 0 && segment.prev.phon == 'n'
         segment[:IPA] = 'gw'
         segment[:orthography] = 'gu'
-        segment.next.phon = nil
-        segment.next.orth = nil
+        segment.next.delete
     end
 
     # |tiV|
