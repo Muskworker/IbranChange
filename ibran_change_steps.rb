@@ -853,7 +853,7 @@ def step_oi18(ary)
 
     nxt =~ %w[k g l]                      \
         && after_next =~ %i[dental nasal] \
-        && !(nxt =~ after_next)
+        && nxt !~ after_next
   end
 end
 
