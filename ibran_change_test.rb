@@ -1499,6 +1499,7 @@ class IbranChangeTest < Minitest::Test
       { w: "rectangulum", RI_IPA: "rɛkʲˈtɑ̃gʲyl", RI_Cyrl: "ректангүл", RI_Latn: "rectangul", PI_IPA: "rəkˈtɑ̃xəl", PI: "rectangăl" },
       { w: "reproducēre", RI_IPA: "rɛprɔdyˈçjir", RI_Cyrl: "репродүшјір", RI_Latn: "reproduciér", PI_IPA: "rəprədəˈçir", PI: "reproducir" },
       { w: "respīrāre", RI_IPA: "rɛppiˈrɑr", RI_Cyrl: "реппірар", RI_Latn: "respirar", PI_IPA: "rəpəˈrɑr", PI: "rêpirar" },
+      { w: "rudbeckia", RI_IPA: "rydˈbɛkʲkʲi", RI_Cyrl: "рүдбеккі", RI_Latn: "rudbecquie", PI_IPA: "rədˈbɛkkiːə", PI: "rudbecquiă" },
       { w: "safranum>", RI_IPA: "zɑˈvrɑ̃", RI_Cyrl: "завран", RI_Latn: "safran", PI_IPA: "zəˈvrɑ̃", PI: "safran" },
       { w: "sassafras", RI_IPA: "zɑˈzɑvr", RI_Cyrl: "зазавр", RI_Latn: "sassafres", PI_IPA: "zəˈzɑvrəs", PI: "sassafrăs" },
       { w: "scandalum", RI_IPA: "ˈʰkʲɑ̃dɑl", RI_Cyrl: "’кандал", RI_Latn: "scandal", PI_IPA: "ˈskɑ̃dəl", PI: "scandăl" },
