@@ -90,6 +90,45 @@ class Dictum < Array
   end
 end
 
+# Determine the properties of a segment that depend on its surroundings.
+module PhoneticEnvironment
+  def intervocalic?
+    prev.vocalic? && nxt.vocalic?
+  end
+
+  def initial?
+    pos.zero? || nxt.phon == ' '
+  end
+
+  def final?
+    pos == @dictum.size - 1 || nxt.phon == ' '
+  end
+
+  def between?(fore, aft)
+    prev.match(fore) && nxt.match(aft)
+  end
+
+  # TODO: Make sure this is appropriate for multi-word dictums
+  def posttonic?
+    @dictum[0...pos].any?(&:stressed?)
+  end
+
+  def in_onset?
+    next_more_sonorous = ends_with.sonority < nxt.starts_with.sonority
+    # We explicitly check for nxt.vocalic because of things like /erje/
+    # (where /je/ is a diphthong).
+    consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
+  end
+
+  def in_penult?
+    final = @dictum[pos + 1...@dictum.size].find(&:final?) || @dictum.last
+    vowels_from_end = @dictum[pos + 1..final.pos].count(&:vocalic?)
+
+    # [CV]CVC - two vowels from end if onset consonant, one vowel otherwise
+    vowels_from_end == (in_onset? ? 2 : 1)
+  end
+end
+
 # Determine if a string has certain linguistic features.
 module PhoneticFeature
   def vowel?
@@ -190,6 +229,7 @@ end
 
 # A phonetic segment and its orthographic representation.
 class Segment < Hash
+  include PhoneticEnvironment
   extend Forwardable
   def_delegators :phon, *PhoneticFeature.instance_methods
 
@@ -261,10 +301,6 @@ class Segment < Hash
     Segment[IPA: phon ? phon[-1] : '', orthography: orth ? orth[-1] : '']
   end
 
-  def between?(fore, aft)
-    prev.match(fore) && nxt.match(aft)
-  end
-
   def to_ipa
     output = "#{phon}#{"\u0320" if self[:back]}#{'ʲ' if self[:palatalized]}"
     # /o:w/, not /ow:/
@@ -273,18 +309,6 @@ class Segment < Hash
   end
 
   ### Linguistic functions
-  def intervocalic?
-    prev.vocalic? && nxt.vocalic?
-  end
-
-  def initial?
-    pos.zero? || nxt.phon == ' '
-  end
-
-  def final?
-    pos == @dictum.size - 1 || nxt.phon == ' '
-  end
-
   def stressed?
     self[:stress]
   end
@@ -293,25 +317,6 @@ class Segment < Hash
     vocalic? && !self[:stress]
   end
 
-  # TODO: Make sure this is appropriate for multi-word dictums
-  def posttonic?
-    @dictum[0...pos].any?(&:stressed?)
-  end
-
-  def in_onset?
-    next_more_sonorous = ends_with.sonority < nxt.starts_with.sonority
-    # We explicitly check for nxt.vocalic because of things like /erje/
-    # (where /je/ is a diphthong).
-    consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
-  end
-
-  def in_penult?
-    final = @dictum[pos + 1...@dictum.size].find(&:final?) || @dictum.last
-    vowels_from_end = @dictum[pos + 1..final.pos].count(&:vocalic?)
-
-    # [CV]CVC - two vowels from end if onset consonant, one vowel otherwise
-    vowels_from_end == (in_onset? ? 2 : 1)
-  end
 
   # Devoice a segment.  If +target+ is given, only devoice if +target+ is also
   # voiceless.
