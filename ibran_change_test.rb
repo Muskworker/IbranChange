@@ -1476,6 +1476,7 @@ class IbranChangeTest < Minitest::Test
       { w: "mechlinensem", RI_IPA: "mɛkʲliˈneʰ", RI_Cyrl: "мекліни’", RI_Latn: "meclinés", PI_IPA: "məkləˈnes", PI: "meclinés" },
       { w: "multiplicāre", RI_IPA: "myltipliˈkʲɑr", RI_Cyrl: "мүлтіплікар", RI_Latn: "multiplicar", PI_IPA: "məltəpləˈkɑr", PI: "multiplicar" },
       { w: "muscada>", RI_IPA: "mykʲˈkʲɑd", RI_Cyrl: "мүккад", RI_Latn: "muscade", PI_IPA: "məˈkɑdə", PI: "mûcadă" },
+      { w: "njamum", RI_IPA: "ɲɑ̃", RI_Cyrl: "њан", RI_Latn: "nham", PI_IPA: "ɲɑ̃", PI: "nham" },
       { w: "objectum", RI_IPA: "ɔbˈʝekʲt", RI_Cyrl: "обжикт", RI_Latn: "objécte", PI_IPA: "əbˈʝektə", PI: "objéctă" },
       { w: "origanum", RI_IPA: "ɔˈrigʲɑ̃", RI_Cyrl: "оріган", RI_Latn: "origan", PI_IPA: "əˈrixə̃", PI: "origăn" },
       { w: "paprika", RI_IPA: "ˈpɑprikʲ", RI_Cyrl: "папрік", RI_Latn: "paprique", PI_IPA: "ˈpɑprəkə", PI: "paprăca" },
