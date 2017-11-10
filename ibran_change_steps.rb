@@ -326,7 +326,6 @@ class Segment < Hash
     vocalic? && !self[:stress]
   end
 
-
   # Devoice a segment.  If +target+ is given, only devoice if +target+ is also
   # voiceless.
   def devoice!(target = '')
