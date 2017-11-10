@@ -2034,13 +2034,13 @@ def step_pi5 ary
             any_breve = true
           end
 
-          if %w{ʃ ʒ ç k g}.include?(segm.prev.phon[-1]) &&
+          if %w{ʃ ʒ ç ʝ k g}.include?(segm.prev.phon[-1]) &&
               %w{a à o ó u ă}.include?(segm[:orthography][0]) &&
               !%w{i j}.include?(segm.prev.orth[-1]) # LL |tiV|; pluvia > plusja
             case segm.prev.phon[-1]
             when 'ʃ', 'ç'
               segm.prev.orth[-1] = 'ç'
-            when 'ʒ'
+            when 'ʒ', 'ʝ'
               segm.prev.orth[-1] = 'ç'
             when 'g' # gu
               segm.prev[:orthography] = 'g'

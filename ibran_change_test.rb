@@ -1488,6 +1488,7 @@ class IbranChangeTest < Minitest::Test
       { w: "patronum>", RI_IPA: "pɑˈtrũ", RI_Cyrl: "патрун", RI_Latn: "patrón", PI_IPA: "pəˈtrɔ̃", PI: "patrón" },
       { w: "pellicula", RI_IPA: "pɛlˈlikʲyl", RI_Cyrl: "пеллікүл", RI_Latn: "pellicule", PI_IPA: "pəlˈlikələ", PI: "pellicăla" },
       { w: "pensāre", RI_IPA: "pɛ̃ˈzɑr", RI_Cyrl: "пензар", RI_Latn: "pensar", PI_IPA: "pə̃ˈzɑr", PI: "pensar" },
+      { w: "phellogenum", RI_IPA: "vɛlˈlɔʝɛ̃", RI_Cyrl: "велложен", RI_Latn: "fellogen", PI_IPA: "vəlˈlɔʝə̃", PI: "felloçăn" },
       { w: "philosophum", RI_IPA: "viˈlɔzɔf", RI_Cyrl: "вілозов", RI_Latn: "filosof", PI_IPA: "vəˈlɔzəf", PI: "filosăf" },
       { w: "pimentum", RI_IPA: "piˈmẽt", RI_Cyrl: "піминт", RI_Latn: "pimént", PI_IPA: "pəˈmẽt", PI: "pimént" },
       { w: "planum", RI_IPA: "plɑ̃", RI_Cyrl: "план", RI_Latn: "plan", PI_IPA: "plɑ̃", PI: "plan" },
