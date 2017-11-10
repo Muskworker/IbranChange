@@ -860,7 +860,7 @@ def step_oi19(ary)
 
   # 19b: unstressed vowels
   @current = ary.each_with_index do |segm, idx|
-    if idx > 0 && segm.prev.vowel? && !segm.stressed?
+    if idx > 0 && segm.prev.vowel? && !segm.prev.stressed?
       OldIbran.unstressed_cluster_changes(segm)
       OldIbran.unstressed_affricate_changes(segm)
     end
