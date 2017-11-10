@@ -846,27 +846,19 @@ end
 
 # Clusters pt 2 (in two parts)
 def step_oi19(ary)
-  @current = ary.each do |segm|
-    # stressed vowel with two subsequent segments, or
-    next unless segm.match_all(:vowel, :stressed) && 
-      # x or dental/velar + sibilant
-      (segm.next =~ ['ks', :affricate] ||
-        ((segm.next =~ [:dental, :velar]) && segm.after_next.sibilant?))
-
   # 19: stressed vowels [not diphthongs]
+  ary.change(:stressed, {}, lambda do |segm|
     OldIbran.post_stress_cluster_changes(segm.next, (segm.next.ends_with.phon if %w(i u).include?(segm[:IPA])))
     segm.update(OldIbran.cluster_change(segm.phon)) unless segm =~ %w(i u)
+  end) do |segm|
+    segm.vowel? && (segm.before?(['ks', :affricate]) || (segm.before?([:dental, :velar]) && segm.after_next.sibilant?))
   end
 
   # 19b: unstressed vowels [not diphthongs]
-  @current = ary.each_with_index do |segm, idx|
-    if idx > 0 && segm.prev.vowel? && !segm.prev.stressed?
-      OldIbran.unstressed_cluster_changes(segm)
-      OldIbran.unstressed_affricate_changes(segm)
-    end
-  end
-
-  @current.delete_if { |segment| segment[:IPA].nil? }
+  ary.change(:unstressed, {}, lambda do |segm|
+    OldIbran.unstressed_cluster_changes(segm.next)
+    OldIbran.unstressed_affricate_changes(segm.next)
+  end) {|segm| segm.vowel?}
 end
 
 # vowel fronting
