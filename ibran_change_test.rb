@@ -1479,6 +1479,7 @@ class IbranChangeTest < Minitest::Test
       { w: "muscada>", RI_IPA: "mykʲˈkʲɑd", RI_Cyrl: "мүккад", RI_Latn: "muscade", PI_IPA: "məˈkɑdə", PI: "mûcadă" },
       { w: "njamum", RI_IPA: "ɲɑ̃", RI_Cyrl: "њан", RI_Latn: "nham", PI_IPA: "ɲɑ̃", PI: "nham" },
       { w: "objectum", RI_IPA: "ɔbˈʝekʲt", RI_Cyrl: "обжикт", RI_Latn: "objécte", PI_IPA: "əbˈʝektə", PI: "objéctă" },
+      { w: "orchidea>", RI_IPA: "ɔrkʲiˈde", RI_Cyrl: "оркіди", RI_Latn: "orquidée", PI_IPA: "ərkəˈdeə", PI: "orquidéa" },
       { w: "origanum", RI_IPA: "ɔˈrigʲɑ̃", RI_Cyrl: "оріган", RI_Latn: "origan", PI_IPA: "əˈrixə̃", PI: "origăn" },
       { w: "ovarium", RI_IPA: "ɔˈvaːr", RI_Cyrl: "овя̄р", RI_Latn: "ovàir", PI_IPA: "əˈvæːr", PI: "ovàir" },
       { w: "paprika", RI_IPA: "ˈpɑprikʲ", RI_Cyrl: "папрік", RI_Latn: "paprique", PI_IPA: "ˈpɑprəkə", PI: "paprăca" },

@@ -2273,6 +2273,7 @@ def convert_LL str
   @current = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|[ln]j|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra.merge!({ long: true }) if obj.match(/aũ|éũ|eũ|éu|eu|iũ/i)
+    supra.merge!({ was_k: true }) if obj.match(/k|ch/)
     #supra.merge!({ originally_long: true }) if obj.match(/[āēīōūȳ]/i)
 
     phon = case obj
@@ -2304,7 +2305,7 @@ def convert_LL str
            end
 
     orth = case obj
-           when /k/i  then "c"
+           #when /k/i  then "c"
            when /ī/i  then "i"
            when /y/i  then "i"
            when /lj/i then 'll'
@@ -2455,7 +2456,7 @@ def convert_LL str
         if segm[:orthography] == "ch"
           segm[:orthography] = "qu"
           segm[:palatalized] = true
-        else
+        elsif !segm[:was_k]
           segm[:IPA] = "ç"
           respell_velars(@current)
         end
