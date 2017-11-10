@@ -2296,6 +2296,7 @@ def convert_LL str
            when /c/i      then "k"
            when /z/i      then "ʃ"
            when /ph/i     then 'f'
+           when /rh/i     then 'r'
            when /th/      then 'θ'
            when /lj/      then 'ʎ'
            when /nj/      then 'ɲ'
