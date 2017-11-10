@@ -1907,6 +1907,8 @@ def step_pi3 ary
         when 'o'
           segm.prev.phon[-1] = "ɔ"
           segm.prev[:long] ? segm.prev.orth[-([2, segm.prev.orth.length].min)..-1] = "oû" : segm.prev.orth[-1] = "ô"
+        when 'æ' # avoid à̂
+          segm.prev[:long] ? segm.prev.orth[-([2, segm.prev.orth.length].min)..-1] = "àî" : segm.prev.orth[-1] = "àî"
         else
           segm.prev[:orthography] << "\u0302"
         end

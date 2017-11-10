@@ -1178,6 +1178,7 @@ class IbranChangeTest < Minitest::Test
       { w: "quōmo", RI_IPA: "kuː", RI_Cyrl: "кӯ", RI_Latn: "cuoũ", PI_IPA: "kuː", PI: "cuo" },
       { w: "rādīcem", RI_IPA: "raˈʝiʒʒ", RI_Cyrl: "ряжіжж", RI_Latn: "ràysce", PI_IPA: "rəˈjiʒʒə", PI: "ràysçă" },
       { w: "rasicāre", RI_IPA: "razˈdʒɑr", RI_Cyrl: "рязџар", RI_Latn: "ràsgar", PI_IPA: "rəzˈdʒɑr", PI: "ràsdjar" },
+      { w: "rastellum", RI_IPA: "ratˈtiː", RI_Cyrl: "рятті̄", RI_Latn: "ràstill", PI_IPA: "rəˈtiː", PI: "ràîty" },
       { w: "rhōdium", RI_IPA: "rɔːʃ", RI_Cyrl: "ро̄ш", RI_Latn: "roez", PI_IPA: "rɔjʃ", PI: "roez" },
       { w: "rīdēre", RI_IPA: "riˈer", RI_Cyrl: "ріир", RI_Latn: "riér", PI_IPA: "rəˈer", PI: "riér" },
       { w: "riquilitia", RI_IPA: "rɛlˈlɛjʒ", RI_Cyrl: "реллејж", RI_Latn: "regleiçe", PI_IPA: "rəlˈlɛjʒə", PI: "relleiçă" },
