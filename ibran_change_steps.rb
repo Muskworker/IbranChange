@@ -433,13 +433,18 @@ class OldIbran
 
   # Outcome of clusters following stressed vowels
   def self.post_stress_cluster_changes(segm)
-    assim = segm.ends_with.phon if segm.after? %w(i u)
+    prev = segm.prev
+    nxt = segm.next
 
-    outcomes = { 'ks' => %W(#{assim}s #{segm.next.vowel? ? 'ss' : 's'}),
+    if prev =~ %w[i u] then assim = segm.ends_with.phon
+    else OldIbran.cluster_change(prev)
+    end
+
+    outcomes = { 'ks' => %W(#{assim}s #{nxt.vowel? ? 'ss' : 's'}),
                  'dʒ' => %W(#{assim}ʒ #{'s' if assim}#{segm.orth}),
                  'tʃ' => %W(#{assim}ʃ #{'s' if assim}#{segm.orth}) }
 
-    outcomes.default = %W(#{segm.next.phon if assim} #{assim})
+    outcomes.default = %W(#{nxt.phon if assim} #{assim})
 
     segm.update(Segment.new(*outcomes[segm.phon]))
   end
@@ -858,7 +863,6 @@ def step_oi19(ary)
     elsif segm.before?(['ks', :affricate]) \
        || (segm.before?([:dental, :velar]) && segm.after_next.sibilant?)
       OldIbran.post_stress_cluster_changes(nxt)
-      OldIbran.cluster_change(segm) unless segm =~ %w(i u)
     end
   end)
 end
