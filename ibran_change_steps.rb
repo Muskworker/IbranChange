@@ -148,7 +148,7 @@ module PhoneticFeature
   end
 
   def diphthong?
-    return true if %w(au ae oe).include?(self)
+    return true if %w[au ae oe].include?(self)
 
     vowel_count = count('aeiouyæɑɐəɛɔøœ')
     modifier_count = count("jwɥ\u032fː")
@@ -165,39 +165,39 @@ module PhoneticFeature
   end
 
   def sonorant?
-    %w(m ɱ ɲ ɳ n ɴ ŋ ʎ r l w j ɥ).include? self
+    %w[m ɱ ɲ ɳ n ɴ ŋ ʎ r l w j ɥ].include? self
   end
 
   def sibilant?
-    %w(ɕ ɧ ʑ ʐ ʂ ʒ z ʃ ʃʃ s).include? self
+    %w[ɕ ɧ ʑ ʐ ʂ ʒ z ʃ ʃʃ s].include? self
   end
 
   def fricative?
-    %w(h v f ç ʒ z ʃ ʃʃ s ʰ θ).include? self
+    %w[h v f ç ʒ z ʃ ʃʃ s ʰ θ].include? self
   end
 
   def stop?
-    %w(p b t d k g c).include? self
+    %w[p b t d k g c].include? self
   end
 
   def affricate?
-    %w(pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ).include? self
+    %w[pf bv pɸ bβ dʑ tɕ cç ɟʝ dʒ dz tʃ ts tθ dð kx gɣ qχ ɢʁ ʡʢ].include? self
   end
 
   def dental?
-    %w(dʑ tɕ t n d dʒ dz tʃ ts dz tθ dð θ ð l).include? self
+    %w[dʑ tɕ t n d dʒ dz tʃ ts dz tθ dð θ ð l].include? self
   end
 
   def velar?
-    %w(k g ɡ ɠ ŋ kx gɣ ɣ x ʟ).include? self
+    %w[k g ɡ ɠ ŋ kx gɣ ɣ x ʟ].include? self
   end
 
   def nasal?
-    %w(m ɱ ɲ ɳ n ɴ ŋ).include? self
+    %w[m ɱ ɲ ɳ n ɴ ŋ].include? self
   end
 
   def voiced?
-    %w(w j m b ɲ ɟʝ n d dʒ g v ʎ ʒ z r l ʝ).include?(self) || vocalic?
+    %w[w j m b ɲ ɟʝ n d dʒ g v ʎ ʒ z r l ʝ].include?(self) || vocalic?
   end
 
   def voiceless?
@@ -205,20 +205,20 @@ module PhoneticFeature
   end
 
   def front_vowel?
-    %w(e i ae y æ ɛ œ ej é).include? self
+    %w[e i ae y æ ɛ œ ej é].include? self
   end
 
   def back_vowel?
-    %w(o u oe ɑ ɔ).include? self
+    %w[o u oe ɑ ɔ].include? self
   end
 
   def round?
-    %w(w ɥ ɔ o œ ø u ʊ y ʏ).include? self
+    %w[w ɥ ɔ o œ ø u ʊ y ʏ].include? self
   end
 
   # Is labial consonant that turns to /w/ before a consonant per OIx4
   def labial?
-    %w(p m b v f).include? self
+    %w[p m b v f].include? self
   end
 
   def sonority
@@ -356,8 +356,8 @@ class Latin
 
   # Convert Latin character to IPA
   def self.to_ipa(str)
-    orth = %w(qu x z ā ă ē ĕ ī ĭ ȳ ȳ y̆ y ō ŏ ū ŭ c ch ph)
-    phon = %w(kw ks dʒ a a e e i i i i i i o o u u k kh f)
+    orth = %w[qu x z ā ă ē ĕ ī ĭ ȳ ȳ y̆ y ō ŏ ū ŭ c ch ph]
+    phon = %w[kw ks dʒ a a e e i i i i i i o o u u k kh f]
     search = str.downcase
 
     Hash[orth.zip(phon)].fetch(search, search)
@@ -410,7 +410,7 @@ class Latin
   def self.assign_stress(word, exception = nil)
     vowels = word.find_all(&:vocalic?)
 
-    if %w(! - > <).include? exception
+    if %w[! - > <].include? exception
       word.last.merge!(IPA: nil, orthography: nil)
     end
 
@@ -428,9 +428,9 @@ class OldIbran
   # Outcomes of vowels before /k g l/ before dentals and nasals
   def self.cluster_change(segm)
     ipa = segm.phon
-    orig = %w(a ɑ e ɛ o ɔ i u)
-    phon = %w(ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj)
-    orth = %w(ae ae ei ei oe oe éi ói)
+    orig = %w[a ɑ e ɛ o ɔ i u]
+    phon = %w[ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj]
+    orth = %w[ae ae ei ei oe oe éi ói]
     outcomes = Hash[orig.zip(phon.zip(orth))]
 
     segm.replace!(outcomes[ipa])
@@ -445,11 +445,11 @@ class OldIbran
     else OldIbran.cluster_change(prev)
     end
 
-    outcomes = { 'ks' => %W(#{assim}s #{nxt.vowel? ? 'ss' : 's'}),
-                 'dʒ' => %W(#{assim}ʒ #{'s' if assim}#{segm.orth}),
-                 'tʃ' => %W(#{assim}ʃ #{'s' if assim}#{segm.orth}) }
+    outcomes = { 'ks' => %W[#{assim}s #{nxt.vowel? ? 'ss' : 's'}],
+                 'dʒ' => %W[#{assim}ʒ #{'s' if assim}#{segm.orth}],
+                 'tʃ' => %W[#{assim}ʃ #{'s' if assim}#{segm.orth}] }
 
-    outcomes.default = %W(#{nxt.phon if assim} #{assim})
+    outcomes.default = %W[#{nxt.phon if assim} #{assim}]
 
     segm.replace!(outcomes[segm.phon])
   end
@@ -522,7 +522,7 @@ def respell_velars(ary)
   ary.compact.renumber # ugh
 
   ary.each do |segm|
-    next unless %w(e i).include?(segm.next.starts_with.orth)
+    next unless %w[e i].include?(segm.next.starts_with.orth)
 
     case segm[:IPA]
     when 'k' then segm[:orthography] = 'qu'
@@ -578,7 +578,7 @@ end
 # /m/ and /N/ before /n/ -> n
 def step_vl2(ary)
   ary.each do |segment|
-    if %w(g m).include?(segment[:IPA]) && segment.next.phon == 'n'
+    if %w[g m].include?(segment[:IPA]) && segment.next.phon == 'n'
       segment[:IPA] = 'n'
       segment[:orthography] = 'n'
     end
@@ -588,7 +588,7 @@ end
 # drop final /t k d/
 def step_vl3(ary)
   ary.each do |segment|
-    if %w(t k d).include?(segment[:IPA]) && segment.final?
+    if %w[t k d].include?(segment[:IPA]) && segment.final?
       segment[:IPA] = nil
       segment[:orthography] = nil
     end
@@ -609,7 +609,7 @@ end
 # Changed to { e, i }[-stress][-initial_syllable] > j / __V
 def step_vl5(lemma)
   lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
-    word.change(%w(e i), IPA: 'j', orthography: 'j') do |segm|
+    word.change(%w[e i], IPA: 'j', orthography: 'j') do |segm|
       prior_vowel = word[0...segm.pos].find(&:vocalic?)
       !segm.stressed? && !segm[:long] && segm.next.vocalic? && prior_vowel
     end
@@ -716,10 +716,10 @@ end
 
 # nn, nj > ɲ
 def step_oi4(ary)
-  delete_following = ->(s) { s.next.delete while s.next =~ %w(n j) }
+  delete_following = ->(s) { s.next.delete while s.next =~ %w[n j] }
 
   ary.change('n', Segment.new('ɲ', 'nh'), delete_following) do |s|
-    %w(n j).include? s.next.phon
+    %w[n j].include? s.next.phon
   end
 end
 
@@ -731,13 +731,13 @@ def step_oi5(ary)
   end
 
   ary.change('l', Segment.new('ʎ', 'll'), delete_next_and_handle_lli) do |s|
-    %w(l j).include? s.next.phon
+    %w[l j].include? s.next.phon
   end
 end
 
 # { d, ɡ } > ∅ / V__V
 def step_oi6(ary)
-  ary.change(%w(d g ɡ), {}, ->(s) { s.delete }, &:intervocalic?)
+  ary.change(%w[d g ɡ], {}, ->(s) { s.delete }, &:intervocalic?)
 end
 
 # b > v / V__V
@@ -747,15 +747,15 @@ end
 
 # { ɑ, ɛ }{ i, ɛ }[-stress] > ɛj
 def step_oi8(ary)
-  ary.change(%w(ɑ ɛ), Segment.new('ɛj', 'ei'), ->(s) { s.next.delete }) do |s|
-    s.next.match(%w(i ɛ)) && s.next.unstressed?
+  ary.change(%w[ɑ ɛ], Segment.new('ɛj', 'ei'), ->(s) { s.next.delete }) do |s|
+    s.next.match(%w[i ɛ]) && s.next.unstressed?
   end
 end
 
 # { ɛ, i }[-stress] > j / e__
 def step_oi9(ary)
   ary.change('e', Segment.new('ej', 'éi'), ->(s) { s.next.delete }) do |s|
-    s.next.match(%w(ɛ i)) && s.next.unstressed?
+    s.next.match(%w[ɛ i]) && s.next.unstressed?
   end
 end
 
@@ -767,7 +767,7 @@ def step_oi10(ary)
     s.next.delete
   end
 
-  ary.change(%w(ɔ o), {}, yod) { |s| s.next.phon == 'i' && s.next.unstressed? }
+  ary.change(%w[ɔ o], {}, yod) { |s| s.next.phon == 'i' && s.next.unstressed? }
 end
 
 # Velars before front vowels
@@ -786,7 +786,7 @@ end
 
 # Velars before back A
 def step_oi12(ary)
-  outcomes = { %w(k g) => { palatalized: true },
+  outcomes = { %w[k g] => { palatalized: true },
                'kw' => { IPA: 'k' },
                'gw' => { IPA: 'g' } }
 
@@ -815,26 +815,26 @@ def step_oi14(ary)
 
   ary.change('s', IPA: 'z', &:intervocalic?)
   ary.change({ back: true }, { IPA: 'g', orthography: 'gu' }, &:intervocalic?)
-  ary.change(%w(p f k), {}, lambda do |s|
+  ary.change(%w[p f k], {}, lambda do |s|
     s.update(Segment.new(s.voice!))
   end, &:intervocalic?)
 end
 
 # stops before liquids
 def step_oi15(ary)
-  ary.change(%w(p t k), {}, ->(s) { s.update(Segment.new(s.voice!)) }) do |s|
-    s.next =~ %w(r l) && !s.initial? && s.prev.vowel?
+  ary.change(%w[p t k], {}, ->(s) { s.update(Segment.new(s.voice!)) }) do |s|
+    s.next =~ %w[r l] && !s.initial? && s.prev.vowel?
   end
 end
 
 # f before liquids
 def step_oi16(ary)
-  ary.change('f', Segment.new('v')) { |s| s.next =~ %w(r l) }
+  ary.change('f', Segment.new('v')) { |s| s.next =~ %w[r l] }
 end
 
 # degemination
 def step_oi17(ary)
-  ary.change(%w(p t k r s), {}, lambda do |s|
+  ary.change(%w[p t k r s], {}, lambda do |s|
     s[:palatalized] = s.next[:palatalized]
     s.next.delete
 
@@ -851,7 +851,7 @@ def step_oi18(ary)
     nxt = s.next
     after_next = s.after_next
 
-    nxt =~ %w(k g l)                   \
+    nxt =~ %w[k g l]                   \
     && after_next =~ [:dental, :nasal] \
     && !(nxt =~ after_next)
   end
