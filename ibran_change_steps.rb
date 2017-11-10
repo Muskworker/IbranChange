@@ -704,13 +704,10 @@ end
 
 # nn, nj > ɲ
 def step_oi4(ary)
-  ary.change('n', Segment.new('ɲ', 'nh'), ->(s) { s.next.delete }) do |s|
+  delete_following = ->(s) { s.next.delete while s.next =~ %w(n j) }
+
+  ary.change('n', Segment.new('ɲ', 'nh'), delete_following) do |s|
     %w(n j).include? s.next.phon
-  end
-  
-  # so nnj doesn't become nhj
-  ary.change('ɲ', Segment.new('ɲ', 'nh'), ->(s) { s.next.delete }) do |s|
-    s.next.phon == 'j'
   end
 end
 
