@@ -1106,6 +1106,7 @@ class IbranChangeTest < Minitest::Test
       { w: "movēre", RI_IPA: "moːˈʝer", RI_Cyrl: "мѡ̄жир", RI_Latn: "màuyér", PI_IPA: "moːˈir", PI: "mauyr" },
       { w: "muljērem", RI_IPA: "maˈʝer", RI_Cyrl: "мяжир", RI_Latn: "màllér", PI_IPA: "məˈir", PI: "màyr" },
       { w: "multum", RI_IPA: "mɔːt", RI_Cyrl: "мо̄т", RI_Latn: "moet", PI_IPA: "mɔjt", PI: "moet" },
+      { w: "munniōnem", RI_IPA: "mœˈɲũː", RI_Cyrl: "мөњӯн", RI_Latn: "meunhuon", PI_IPA: "məˈɲũː", PI: "meunhuon" },
       { w: "natāre", RI_IPA: "nɑˈlɑr", RI_Cyrl: "налар", RI_Latn: "nalar", PI_IPA: "nəˈlɑr", PI: "nalar" },
       { w: "nāsum", RI_IPA: "nɑʰ", RI_Cyrl: "на’", RI_Latn: "nas", PI_IPA: "nɑs", PI: "nas" }, # 
       { w: "nec", RI_IPA: "n", RI_Cyrl: "н", RI_Latn: "ne", PI_IPA: "nə", PI: "ne" },

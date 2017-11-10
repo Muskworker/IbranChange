@@ -677,6 +677,11 @@ def step_oi4(ary)
   ary.change('n', Segment.new('ɲ', 'nh'), ->(s) { s.next.delete }) do |s|
     %w(n j).include? s.next.phon
   end
+  
+  # so nnj doesn't become nhj
+  ary.change('ɲ', Segment.new('ɲ', 'nh'), ->(s) { s.next.delete }) do |s|
+    s.next.phon == 'j'
+  end
 end
 
 # ll, lj > ʎ
