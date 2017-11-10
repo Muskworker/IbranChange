@@ -856,16 +856,16 @@ def step_oi18(ary)
   end
 end
 
-# Clusters pt 2 (in two parts)
+# Clusters pt 2
 def step_oi19(ary)
   ary.change(:vowel, {}, lambda do |segm|
-    nxt = segm.next 
-    
+    nxt = segm.next
+
     if segm.unstressed?
       OldIbran.unstressed_cluster_changes(nxt)
       OldIbran.unstressed_affricate_changes(nxt)
     elsif segm.before?(['ks', :affricate]) \
-       || (segm.before?([:dental, :velar]) && segm.after_next.sibilant?)
+       || (segm.before?(%i[dental velar]) && segm.after_next.sibilant?)
       OldIbran.post_stress_cluster_changes(nxt)
     end
   end)
