@@ -1348,6 +1348,7 @@ class IbranChangeTest < Minitest::Test
       { w: "lāg", RI_IPA: "lɑːkʲ", RI_Cyrl: "ла̄к", RI_Latn: "lag", PI_IPA: "lɑːx", PI: "lag" },
       { w: "lam", RI_IPA: "loː", RI_Cyrl: "лѡ̄", RI_Latn: "laũ", PI_IPA: "loː", PI: "lau" },
       { w: "lang", RI_IPA: "lɑ̃", RI_Cyrl: "лан", RI_Latn: "lang", PI_IPA: "lɑ̃", PI: "lang" },
+      { w: "larik", RI_IPA: "lɑrkʲ", RI_Cyrl: "ларк", RI_Latn: "larque", PI_IPA: "ˈlɑrkə", PI: "larcă" },
       { w: "lichamo", RI_IPA: "ˈlikʲəm", RI_Cyrl: "лікъм", RI_Latn: "liqueme", PI_IPA: "ˈlikəmə", PI: "licăma" },
       { w: "līht", RI_IPA: "liːkʲt", RI_Cyrl: "лі̄кт", RI_Latn: "light", PI_IPA: "liːkt", PI: "light" },
       { w: "linkiska", RI_IPA: "ˈlĩtʃəkʲkʲ", RI_Cyrl: "лінчъкк", RI_Latn: "linquesque", PI_IPA: "ˈlɛ̃tʃəkə", PI: "linchăca" },

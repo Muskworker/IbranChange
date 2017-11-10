@@ -2251,7 +2251,7 @@ def convert_OLF str
           @current[idx], @current[idx+1] = @current[idx+1], @current[idx]
         end
 
-        if segm.prev && %w{e i é}.include?(@current[idx][:orthography])
+        if segm.prev && %w{e i é}.include?(segm[:orthography])
           case segm.prev.phon
           when "k"
             segm.prev[:orthography] = "qu"
