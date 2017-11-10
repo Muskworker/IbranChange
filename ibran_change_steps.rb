@@ -2395,6 +2395,9 @@ def convert_LL str
   when /āre$/
     @current.pop(3)
     @current << Segment[IPA: "ɑ", orthography: "a", stress: true, long: false] << Segment[IPA: "r", orthography: "r", long: false]
+  when /ariu(m|s)$/ #ariam, arium
+    @current.pop(5)
+    @current << Segment[IPA: "a", orthography: "ài", long: true, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
   when /as$/
     @current.pop(2)
     @current << Segment[:IPA=>"ə", :orthography=>"e", :long=>false] << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
