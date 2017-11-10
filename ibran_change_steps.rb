@@ -104,6 +104,15 @@ module PhoneticEnvironment
     pos == @dictum.size - 1 || nxt.phon == ' '
   end
 
+  # TODO: replace most of the nxt & prev with this
+  def before?(segm)
+    nxt.match(segm)
+  end
+
+  def after?(segm)
+    prev.match(segm)
+  end
+
   def between?(fore, aft)
     prev.match(fore) && nxt.match(aft)
   end
