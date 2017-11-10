@@ -250,6 +250,10 @@ class Segment < Hash
     update(IPA: args[0], orthography: args[1] || args[0].dup) if args.any?
   end
 
+  def replace!(args)
+    update(IPA: args[0], orthography: args[1] || args[0].dup)
+  end
+
   def prev
     @dictum.renumber
     @pos.zero? ? Segment.new : @dictum.fetch(@pos - 1, Segment.new)
@@ -428,7 +432,7 @@ class OldIbran
     orth = %w(ae ae ei ei oe oe éi ói)
     outcomes = Hash[orig.zip(phon.zip(orth))]
 
-    segm.update(Segment.new(*outcomes[ipa]))
+    segm.replace!(outcomes[ipa])
   end
 
   # Outcome of clusters following stressed vowels
@@ -446,7 +450,7 @@ class OldIbran
 
     outcomes.default = %W(#{nxt.phon if assim} #{assim})
 
-    segm.update(Segment.new(*outcomes[segm.phon]))
+    segm.replace!(outcomes[segm.phon])
   end
 
   def self.unstressed_cluster_changes(segm)
