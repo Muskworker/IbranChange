@@ -455,8 +455,8 @@ class OldIbran
   end
 
   def self.unstressed_cluster_changes(segm)
-    return unless (segm.velar? && segm.before?([:dental, :nasal])) \
-                  || (segm =~ [:dental, :velar] && segm.before?(:sibilant))
+    return unless (segm.velar? && segm.before?(%i[dental nasal])) \
+                  || (segm =~ %i[dental velar] && segm.before?(:sibilant))
 
     segm.update(segm.next.starts_with)
     segm[:orthography] = 's' if segm.before?(final: true, sibilant: true)
@@ -687,7 +687,7 @@ def step_oi1(ary)
 
   # { [+stop], [+fric] }[+voice]j > dZ
   yod = Segment.new('dʒ', 'j')
-  ary.change([:stop, :fricative], yod, ->(s) { s.next.delete }) do |segm|
+  ary.change(%i[stop fricative], yod, ->(s) { s.next.delete }) do |segm|
     segm.voiced? && segm.next.phon == 'j'
   end
 end
@@ -851,9 +851,9 @@ def step_oi18(ary)
     nxt = s.next
     after_next = s.after_next
 
-    nxt =~ %w[k g l]                   \
-    && after_next =~ [:dental, :nasal] \
-    && !(nxt =~ after_next)
+    nxt =~ %w[k g l]                      \
+        && after_next =~ %i[dental nasal] \
+        && !(nxt =~ after_next)
   end
 end
 
