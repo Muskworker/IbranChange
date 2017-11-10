@@ -421,13 +421,14 @@ end
 # Complex exceptions to regular Ibran changes
 class OldIbran
   # Outcomes of vowels before /k g l/ before dentals and nasals
-  def self.cluster_change(ipa)
+  def self.cluster_change(segm)
+    ipa = segm.phon
     orig = %w(a ɑ e ɛ o ɔ i u)
     phon = %w(ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj)
     orth = %w(ae ae ei ei oe oe éi ói)
     outcomes = Hash[orig.zip(phon.zip(orth))]
 
-    Segment.new(*outcomes[ipa])
+    segm.update(Segment.new(*outcomes[ipa]))
   end
 
   # Outcome of clusters following stressed vowels
@@ -834,7 +835,7 @@ end
 # Clusters
 def step_oi18(ary)
   ary.change(:stressed, {}, lambda do |s|
-    s.update(OldIbran.cluster_change(s.phon))
+    OldIbran.cluster_change(s)
     s.next.delete
   end) do |s|
     nxt = s.next
@@ -848,19 +849,18 @@ end
 
 # Clusters pt 2 (in two parts)
 def step_oi19(ary)
-  # 19: stressed vowels [not diphthongs]
-  ary.change(:stressed, {}, lambda do |segm|
-    OldIbran.post_stress_cluster_changes(segm.next)
-    segm.update(OldIbran.cluster_change(segm.phon)) unless segm =~ %w(i u)
-  end) do |segm|
-    segm.vowel? && (segm.before?(['ks', :affricate]) || (segm.before?([:dental, :velar]) && segm.after_next.sibilant?))
-  end
-
-  # 19b: unstressed vowels [not diphthongs]
-  ary.change(:unstressed, {}, lambda do |segm|
-    OldIbran.unstressed_cluster_changes(segm.next)
-    OldIbran.unstressed_affricate_changes(segm.next)
-  end) {|segm| segm.vowel?}
+  ary.change(:vowel, {}, lambda do |segm|
+    nxt = segm.next 
+    
+    if segm.unstressed?
+      OldIbran.unstressed_cluster_changes(nxt)
+      OldIbran.unstressed_affricate_changes(nxt)
+    elsif segm.before?(['ks', :affricate]) \
+       || (segm.before?([:dental, :velar]) && segm.after_next.sibilant?)
+      OldIbran.post_stress_cluster_changes(nxt)
+      OldIbran.cluster_change(segm) unless segm =~ %w(i u)
+    end
+  end)
 end
 
 # vowel fronting
