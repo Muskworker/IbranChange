@@ -37,7 +37,8 @@ class Dictum < Array
     end
   end
 
-  def renumber # lousy hack
+  def renumber
+    # HACK: Should this be necessary?
     each_with_index do |segm, idx|
       segm.pos = idx
     end
