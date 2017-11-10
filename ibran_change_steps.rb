@@ -431,7 +431,9 @@ class OldIbran
   end
 
   # Outcome of clusters following stressed vowels
-  def self.post_stress_cluster_changes(segm, assim = nil)
+  def self.post_stress_cluster_changes(segm)
+    assim = segm.ends_with.phon if segm.after? %w(i u)
+
     outcomes = { 'ks' => %W(#{assim}s #{segm.next.vowel? ? 'ss' : 's'}),
                  'dʒ' => %W(#{assim}ʒ #{'s' if assim}#{segm.orth}),
                  'tʃ' => %W(#{assim}ʃ #{'s' if assim}#{segm.orth}) }
@@ -848,7 +850,7 @@ end
 def step_oi19(ary)
   # 19: stressed vowels [not diphthongs]
   ary.change(:stressed, {}, lambda do |segm|
-    OldIbran.post_stress_cluster_changes(segm.next, (segm.next.ends_with.phon if %w(i u).include?(segm[:IPA])))
+    OldIbran.post_stress_cluster_changes(segm.next)
     segm.update(OldIbran.cluster_change(segm.phon)) unless segm =~ %w(i u)
   end) do |segm|
     segm.vowel? && (segm.before?(['ks', :affricate]) || (segm.before?([:dental, :velar]) && segm.after_next.sibilant?))
