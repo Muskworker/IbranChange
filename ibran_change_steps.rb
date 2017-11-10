@@ -2322,7 +2322,7 @@ def convert_LL str
     if segment[:IPA] == 'g' &&
       segment.next.phon == 'u' &&
       segment.after_next.vowel? &&
-      idx > 0 && segm.prev.phon == 'n'
+      idx > 0 && segment.prev.phon == 'n'
         segment[:IPA] = 'gw'
         segment[:orthography] = 'gu'
         segment.next.phon = nil
