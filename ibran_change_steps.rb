@@ -442,6 +442,22 @@ class OldIbran
     segm.update(Segment.new(*outcomes[segm.phon]))
   end
 
+  def self.unstressed_cluster_changes(segm)
+    return unless (segm.velar? && segm.before?([:dental, :nasal])) \
+                  || (segm =~ [:dental, :velar] && segm.before?(:sibilant))
+
+    segm.update(segm.next.starts_with)
+    segm[:orthography] = 's' if segm.before?(final: true, sibilant: true)
+  end
+
+  def self.unstressed_affricate_changes(segm)
+    return unless segm =~ ['ks', :affricate]
+
+    segm[:orthography] = "s#{(segm.orth unless segm =~ 'ks') \
+                             || ('s' if segm.before?(:vowel))}"
+    segm[:IPA] = segm.ends_with.phon * 2
+  end
+
   # Intervocalic T becomes L, generally.
   # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
   # (In other words, T becomes D after intervocalic T
@@ -849,19 +865,8 @@ def step_oi19(ary)
   # 19b: unstressed vowels
   @current = ary.each_with_index do |segm, idx|
     if idx > 0 && segm.prev.vowel? && !segm.stressed?
-      if segm.velar? && (segm.next.dental? || segm.next.nasal?)
-        segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
-        segm[:orthography] = segm.next.final? ? nil : segm.next.orth[0]
-      elsif (segm.dental? || segm.velar?) && segm.next.sibilant?
-        segm[:IPA] = segm.next.final? ? nil : segm.next.phon[0]
-        segm[:orthography] = segm.next.final? ? nil : 's'
-      elsif segm[:IPA] == 'ks'
-        segm[:IPA] = 'ss'
-        segm[:orthography] = segm.next.vowel? ? 'ss' : 's'
-      elsif segm.affricate?
-        segm[:IPA] = segm[:IPA][1] * 2
-        segm[:orthography] = "s#{segm[:orthography]}"
-      end
+      OldIbran.unstressed_cluster_changes(segm)
+      OldIbran.unstressed_affricate_changes(segm)
     end
   end
 
