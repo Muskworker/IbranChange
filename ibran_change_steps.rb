@@ -871,27 +871,14 @@ def step_oi19(ary)
 end
 
 # vowel fronting
-def step_oi20 ary
-  @current = ary.each do |segm|
-    if segm.vowel? && !segm.stressed? && segm.next.consonantal? && segm.next.phon.size == 1 && segm.after_next.starts_with.front_vowel?
-      case segm[:IPA]
-      when 'ɔ'
-        segm[:IPA] = 'a'
-        segm[:orthography] = 'à'
-      when 'u'
-        segm[:IPA] = 'œ'
-        segm[:orthography] = 'eu'
-        if %w{k g}.include?(segm.prev.phon)
-          case segm.prev.phon
-          when 'k'
-            segm.prev[:orthography] = 'qu'
-          when 'g'
-            segm.prev[:orthography] = 'gu'
-          end
-        end
-      end
-    end
+def step_oi20(ary)
+  ary.change([{ IPA: 'ɔ', stress: nil }, { IPA: 'u', stress: nil }], {},
+             ->(s) { s.replace!(s =~ 'ɔ' ? %w[a à] : %w[œ eu]) }) do |segm|
+    segm.next.consonantal? && segm.next.phon.size == 1 \
+    && segm.after_next.starts_with.front_vowel?
   end
+
+  respell_velars(ary)
 end
 
 # vowel fronting: palatal consonants
