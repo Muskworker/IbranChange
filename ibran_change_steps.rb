@@ -519,8 +519,6 @@ def penult_cluster?(ary)
 end
 
 def respell_velars(ary)
-  ary.compact.renumber # ugh
-
   ary.each do |segm|
     next unless %w[e i].include?(segm.next.starts_with.orth)
 
@@ -2438,6 +2436,7 @@ def convert_LL str
   when /a$/
     @current.pop
     @current << Segment[:IPA=>"ə", :orthography=>"e", :long=>false]
+    @current.compact.renumber # ugh
     respell_velars(@current)
   when /ēre$/
     @current.pop(3)
