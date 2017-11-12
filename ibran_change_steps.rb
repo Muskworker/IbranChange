@@ -898,9 +898,8 @@ def step_oi22(ary)
   outcomes = { 'ɑ' => %w[a ài], 'a' => %w[a ài], 'ɛ' => %w[ɛ ei],
                'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu] }
 
-  ary.change(%w[ɑ a ɛ e ɔ o], {}, lambda do |segm|
+  ary.change(%w[ɑ a ɛ e ɔ o], { long: true }, lambda do |segm|
     segm.replace!(outcomes[segm.phon])
-    segm[:long] = true
     segm.after_next.delete
   end) do |iff|
     iff.before?('r') && iff.after_next =~ 'j'
