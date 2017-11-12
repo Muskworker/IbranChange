@@ -894,41 +894,19 @@ def step_oi21(ary)
 end
 
 # vowel fronting: umlaut
-def step_oi22 ary
-  @current = ary.each do |segm|
-    if segm.vowel? && segm.next.phon == 'r' && segm.after_next.phon == 'j'
-      case segm[:IPA]
-      when 'ɑ', 'a'
-        segm[:IPA] = 'a'
-        segm[:long] = true
-        segm[:orthography] = 'ài'
-        segm.after_next[:IPA] = nil
-        segm.after_next[:orthography] = nil
-      when 'ɛ', 'e'
-        segm[:IPA] = 'ɛ'
-        segm[:long] = true
-        segm[:orthography] = 'ei'
-        segm.after_next[:IPA] = nil
-        segm.after_next[:orthography] = nil
-      when 'ɔ', 'o'
-        segm[:IPA] = 'œ'
-        segm[:long] = true
-        segm[:orthography] = 'eu'
-        segm.after_next[:IPA] = nil
-        segm.after_next[:orthography] = nil
-        if %w{k g}.include?(segm.prev.phon)
-          case segm.prev.phon
-          when 'k'
-            segm.prev[:orthography] = 'qu'
-          when 'g'
-            segm.prev[:orthography] = 'gu'
-          end
-        end
-      end
-    end
+def step_oi22(ary)
+  outcomes = { 'ɑ' => %w[a ài], 'a' => %w[a ài], 'ɛ' => %w[ɛ ei],
+               'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu] }
+
+  ary.change(%w[ɑ a ɛ e ɔ o], {}, lambda do |segm|
+    segm.replace!(outcomes[segm.phon])
+    segm[:long] = true
+    segm.after_next.delete
+  end) do |iff|
+    iff.before?('r') && iff.after_next =~ 'j'
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  respell_velars(ary)
 end
 
 # vowel fronting: r
