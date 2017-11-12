@@ -882,30 +882,15 @@ def step_oi20(ary)
 end
 
 # vowel fronting: palatal consonants
-def step_oi21 ary
-  @current = ary.each do |segm|
-    if segm.vowel? && %w{ɲ ʎ}.include?(segm.next.phon)
-      case segm[:IPA]
-      when 'ɑ'
-        segm[:IPA] = 'a'
-        segm[:orthography] = 'à'
-      when 'ɛ', 'e'
-        segm[:IPA] = 'i'
-        segm[:orthography] = 'i'
-      when 'ɔ', 'o'
-        segm[:IPA] = 'œ'
-        segm[:orthography] = 'eu'
-        if %w{k g}.include?(segm.prev.phon)
-          case segm.prev.phon
-          when 'k'
-            segm.prev[:orthography] = 'qu'
-          when 'g'
-            segm.prev[:orthography] = 'gu'
-          end
-        end
-      end
-    end
+def step_oi21(ary)
+  outcomes = { 'ɑ' => %w[a à], 'ɛ' => %w[i i], 'e' => %w[i i],
+               'ɔ' => %w[œ eu], 'o' => %w[œ eu] }
+
+  ary.change(%w[ɑ ɛ e ɔ o], {}, ->(s) { s.replace!(outcomes[s.phon]) }) do |iff|
+    iff.before?(%w[ɲ ʎ])
   end
+
+  respell_velars(ary)
 end
 
 # vowel fronting: umlaut
