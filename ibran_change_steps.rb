@@ -910,13 +910,9 @@ def step_oi22(ary)
 end
 
 # vowel fronting: r
-def step_oi23 ary
-  @current = ary.each_with_index do |segm, idx|
-    if idx > 0 && segm.prev.phon == 'r' && segm[:IPA] == 'ɑ' &&
-      !(segm.next.phon == 'r' || segm.next.velar?)
-        segm[:IPA] = 'a'
-        segm[:orthography] = 'à'
-    end
+def step_oi23(ary)
+  ary.change('ɑ', IPA: 'a', orthography: 'à') do |iff|
+    !iff.before?(['r', :velar]) && iff.after?('r')
   end
 end
 
