@@ -956,13 +956,8 @@ def step_oi24(ary)
 end
 
 # f > h before round vowels
-def step_oi25 ary
-  @current = ary.each do |segm|
-    if segm[:IPA] == 'f' && segm.next.round?
-      segm[:IPA] = "h"
-      segm[:orthography] = "h"
-    end
-  end
+def step_oi25(ary)
+  ary.change('f', IPA: 'h', orthography: 'h') { |iff| iff.before? :round }
 end
 
 # drop unstressed final vowels except /A/
