@@ -481,6 +481,35 @@ class OldIbran
       end
     end, &:intervocalic?)
   end
+
+  def self.diphthongize_e(segm)
+    return if segm.after?([:sibilant, :affricate, { palatalized: true }]) \
+           || segm.prev.ends_with =~ %w[ʎ j i]
+
+    segm[:IPA] = "j#{segm[:IPA]}"
+    segm[:orthography] = "i#{segm[:orthography]}"
+  end
+
+  def self.diphthongize_open_o(segm)
+    if segm.before?(:sonorant) \
+    && (segm.before?(:final) || segm.after_next.consonantal?)
+      segm[:IPA] = 'wɛ'
+      segm[:orthography] = 'ue'
+    else
+      segm[:IPA] = 'ɔj'
+      segm[:orthography] = 'oi'
+    end
+  end
+
+  def self.diphthongize_closed_o(segm)
+    return unless segm.final?                                        \
+               || segm.before?(%i[vocalic intervocalic])             \
+               || (segm.before?('s') && segm.after_next.consonantal? \
+                   && segm.next.after_next.vowel?)
+
+    segm.update(IPA: 'u', orthography: 'uo', long: true)
+    segm.prev[:orthography].sub!(/q?u$/, 'u' => '', 'qu' => 'c')
+  end
 end
 
 def ipa(dict)
@@ -916,37 +945,14 @@ def step_oi23(ary)
 end
 
 # diphthongize
-def step_oi24 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm.stressed? && !segm[:long]
-      case segm[:IPA]
-      when 'ɛ', 'e'
-        unless idx > 0 && (segm.prev.sibilant? || segm.prev.affricate? || segm.prev[:palatalized] || %w{ʎ j i}.include?(segm.prev.phon[-1]))
-          segm[:IPA] = "j#{segm[:IPA]}"
-          segm[:orthography] = "i#{segm[:orthography]}"
-        end
-      when 'ɔ'
-        if segm.next.sonorant? && (segm.next.final? || segm.after_next.consonantal?)
-          segm[:IPA] = 'wɛ'
-          segm[:orthography] = 'ue'
-        else
-          segm[:IPA] = 'ɔj'
-          segm[:orthography] = 'oi'
-        end
-      when 'o'
-        if segm.final? || # Final
-            segm.next.vocalic? || # Before a vowel
-            (segm.next.consonantal? && segm.after_next.vowel?) || # Before single cons
-            (segm.next.phon == 's' && segm.after_next.consonantal? && segm.next.after_next.vowel?)
-          segm[:IPA] = 'u'
-          segm[:long] = true
-          segm.prev[:orthography][-1] = '' if segm.prev[:orthography][-1] == "u"   # no quuo
-          segm.prev[:orthography][-1] = 'c' if segm.prev[:orthography][-1] == "q"  # no quo /ku/
-          segm[:orthography] = 'uo'
-        end
-      end
+def step_oi24(ary)
+  ary.change(%w[ɛ e ɔ o], {}, lambda do |segm|
+    case segm[:IPA]
+    when 'ɛ', 'e' then OldIbran.diphthongize_e(segm)
+    when 'ɔ'      then OldIbran.diphthongize_open_o(segm)
+    when 'o'      then OldIbran.diphthongize_closed_o(segm)
     end
-  end
+  end) { |iff| iff.stressed? && !iff[:long] }
 end
 
 # f > h before round vowels
