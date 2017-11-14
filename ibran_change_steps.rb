@@ -576,6 +576,9 @@ def respell_velars(ary)
 end
 
 def respell_palatal(segm)
+  # Some older calls to similar functions used
+  # ʒ => c ç, ç => c ç
+  # Removing it passed tests, but there may be legacy variants
   res = { 'ʃ' => %w[c ç], 'ʒ' => %w[j z], 'k' => %w[qu c], 'g' => %w[gu g] }
   front = %w[e i é].include?(segm.next.starts_with.orth) ? 0 : 1
   prec = segm.phon[-1]
@@ -1002,26 +1005,10 @@ def step_oi26(ary)
 end
 
 # A > @
-def step_oi27 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == 'ɑ' && !segm.stressed? && segm.final? && !ary.monosyllable?
-      segm[:IPA] = 'ə'
-      segm[:orthography] = 'e'
-
-      if %w{ʃ ʒ g k}.include?(segm.prev.phon[-1])
-        case segm.prev[:IPA][-1]
-#        when 'ʃ', 'ç'
-#          ary[idx-1][:orthography][-1] = 'c'
-#        when 'ʒ'
-#          ary[idx-1][:orthography][-1] = 'c'
-        when 'g' # gu
-          segm.prev[:orthography] = 'gu'
-        when 'k' # qu
-          segm.prev[:orthography] = 'qu'
-        end
-      end
-    end
-  end
+def step_oi27(ary)
+  ary.change('ɑ', { IPA: 'ə', orthography: 'e' }, lambda do |segm|
+    respell_palatal(segm.prev) unless %w[ʃ ç ʒ].include?(segm.prev.phon[-1])
+  end) { |iff| iff.match_all(:unstressed, :final) && !ary.monosyllable? }
 end
 
 # A > @ (unless it's the only syllable)
