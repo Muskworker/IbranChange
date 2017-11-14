@@ -130,6 +130,14 @@ module PhoneticEnvironment
     consonantal? && (initial? || next_more_sonorous || nxt.vocalic?)
   end
 
+  def vowels_before
+    @dictum[0...pos].count(&:vocalic?)
+  end
+
+  def vowels_after
+    @dictum[pos + 1...-1].count(&:vocalic?)
+  end
+
   def in_penult?
     final = @dictum[pos + 1...@dictum.size].find(&:final?) || @dictum.last
     vowels_from_end = @dictum[pos + 1..final.pos].count(&:vocalic?)
@@ -524,6 +532,12 @@ class OldIbran
     && (OldIbran.in_stop_cluster?(segm) || segm.before?('s')))         \
     || segm.after?(%w[ʃʃ ʒʒ])                                          \
     || segm.between?('s', :sibilant)
+  end
+
+  def self.between_single_consonants?(segm)
+    segm.between?(%i[vocalic intervocalic], %i[vocalic intervocalic]) \
+    && (segm.next.vocalic? ? 0 : segm.next.phon.length)               \
+     + (segm.prev.vocalic? ? 0 : segm.prev.phon.length) <= 2
   end
 end
 
@@ -1019,93 +1033,17 @@ def step_oi28(ary)
 end
 
 # reduce unstressed medial syllables
-def step_oi29 ary
-  syllable = 0
-
-  @current = ary.each do |segm|
-    if segm.vocalic?
-      syllable += 1
-
-      # if is not initial, and is not final, and is unstressed
-      if syllable > 1 && syllable < ary.syllable_count && !segm.stressed? &&
-        segm[:IPA] != 'ə' # these come from #28 which we're working in parallel with
-        # one consonant or less to either side
-        if (segm.prev.vocalic? ||
-            (segm.prev.consonantal? && segm.before_prev.vocalic?)) &&
-            ((segm.next.vocalic?) ||
-            (segm.next.consonantal? && segm.after_next.vocalic?)) &&
-            (segm.next.vocalic? || segm.next.phon.nil? ? 0 : segm.next.phon.length) + (segm.prev.vocalic? || segm.prev.phon.nil? ? 0 : segm.prev.phon.length) <= 2 # Longs count to this total too.
-          segm[:IPA] = nil
-          segm[:orthography] = nil
-
-
-          if %w{ʃ ʒ ç k g}.include?(segm.prev.phon[-1]) &&
-              segm.next.phon && !%w{i y e é}.include?(segm.next.orth[0])
-            case segm.prev.phon[-1]
-            when 'ʃ', 'ç'
-              segm.prev[:orthography][-1] = 'ç'
-            when 'ʒ'
-              segm.prev[:orthography][-1] = 'ç'
-            when 'g' # gu
-              segm.prev[:orthography] = 'g'
-            when 'k' # qu
-              segm.prev[:orthography] = 'c'
-            end
-          end
-        else
-          segm[:IPA] = 'ə'
-          segm[:orthography] = 'e'
-
-          if %w{ʃ ʒ ç k g}.include?(segm.prev.phon[-1]) &&
-              segm.next.orth && !%w{a à o ó u}.include?(segm.next.orth[0])
-            case segm.prev.phon[-1]
-            when 'ʃ', 'ç'
-              segm.prev[:orthography][-1] = 'c'
-            when 'ʒ'
-              segm.prev[:orthography][-1] = 'c'
-            when 'g' # gu
-              segm.prev[:orthography] = 'gu'
-            when 'k' # qu
-              segm.prev[:orthography] = 'qu'
-            end
-          end
-        end
-      end
+def step_oi29(ary)
+  ary.change(:vocalic, {}, lambda do |segm|
+    if OldIbran.between_single_consonants?(segm) then segm.delete
+    else segm.replace!(%w[ə e])
     end
+
+    respell_palatal(segm.prev)
+  end) do |segm|
+    segm.vowels_before > 0 && segm.vowels_after > 0 \
+    && segm !~ [:stressed, 'ə']
   end
-
-  @current.compact
-=begin
-  @current = ary.each_with_index do |segm, idx|
-    if %w{ʃ ʒ ç k g}.include?(segm[:IPA][-1]) &&
-        ary[idx+1] && %w{a à o ó u}.include?(ary[idx+1][:orthography][0])
-      case segm[:IPA][-1]
-      when 'ʃ', 'ç'
-        segm[:orthography][-1] = 'ç'
-      when 'ʒ'
-        segm[:orthography][-1] = 'ç'
-      when 'g' # gu
-        segm[:orthography] = 'g'
-      when 'k' # qu
-        segm[:orthography] = 'c'
-      end
-    end
-
-    if %w{ʃ ʒ ç k g}.include?(segm[:IPA][-1]) &&
-        ary[idx+1] && !%w{a à o ó u}.include?(ary[idx+1][:orthography][0])
-      case segm[:IPA][-1]
-      when 'ʃ', 'ç'
-        segm[:orthography][-1] = 'c'
-      when 'ʒ'
-        segm[:orthography][-1] = 'c'
-      when 'g' # gu
-        segm[:orthography] = 'gu'
-      when 'k' # qu
-        segm[:orthography] = 'qu'
-      end
-    end
-  end
-=end
 end
 
 # plural /Os As/ to /@s/
