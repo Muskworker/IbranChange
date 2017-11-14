@@ -1011,19 +1011,10 @@ def step_oi27(ary)
   end) { |iff| iff.match_all(:unstressed, :final) && !ary.monosyllable? }
 end
 
-# A > @ (unless it's the only syllable)
-def step_oi28 ary
-  syllable = 0
-
-  @current = ary.each do |segm|
-    if segm.vocalic?
-      syllable +=1
-
-      if syllable > 1 && !segm.stressed? && segm[:IPA] == 'ɑ'
-        segm[:IPA] = 'ə'
-        segm[:orthography] = 'e'
-      end
-    end
+# A > @ in non-initial syllables (unless it's the only syllable)
+def step_oi28(ary)
+  ary.change('ɑ', IPA: 'ə', orthography: 'e') do |iff|
+    iff.unstressed? && ary[0..iff.pos].syllable_count > 1
   end
 end
 
