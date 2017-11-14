@@ -2232,7 +2232,7 @@ end
 
 # INCOMPLETE
 def convert_LL str
-  @current = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|[ln]j|./i).inject(Dictum.new) do |memo, obj|
+  ary = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|[ln]j|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
     supra.merge!({ long: true }) if obj.match(/aũ|éũ|eũ|éu|eu|iũ/i)
     supra.merge!({ was_k: true }) if obj.match(/k|ch/)
@@ -2280,30 +2280,17 @@ def convert_LL str
     memo << Segment[IPA: phon, orthography: orth].merge(supra)
   end
 
-  @current = @current.each_with_index do |segment, idx|
-    # /gw/
-    if segment[:IPA] == 'g' &&
-      segment.next.phon == 'u' &&
-      segment.after_next.vowel? &&
-      idx > 0 && segment.prev.phon == 'n'
-        segment[:IPA] = 'gw'
-        segment[:orthography] = 'gu'
-        segment.next.delete
-    end
+  # /gw/
+  ary.change('g', { IPA: 'gw', orthography: 'gu' }, lambda do |segm|
+    segm.next.delete
+  end) { |iff| iff.between?('n', 'u') && iff.after_next.vowel? } 
 
-    # |tiV|
-    if segment.ends_with =~ %w{t s} &&
-      segment.next.phon == 'i' &&
-      segment.after_next.vowel?
-        # do the thing
-        segment[:IPA] = 'ʃʃ'
-        segment[:orthography] << "i"
-        segment.next[:IPA] = nil
-        segment.next[:orthography] = nil
-    end
-  end
+  ary.change(%w[t s ks], { IPA: 'ʃʃ' }, lambda do |segm|
+    segm[:orthography] << 'i'
+    segm.next.delete
+  end) { |iff| iff.before?('i') && iff.after_next.vowel? }
 
-  @current.compact!
+  @current = ary
 
   # assign stress to each word
   @current.slice_before {|word| word[:IPA] == " " }.each do |word|
