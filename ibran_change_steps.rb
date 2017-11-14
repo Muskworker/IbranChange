@@ -2290,19 +2290,17 @@ def convert_LL str
     segm.next.delete
   end) { |iff| iff.before?('i') && iff.after_next.vowel? }
 
-  @current = ary
-
   # assign stress to each word
-  @current.slice_before {|word| word[:IPA] == " " }.each do |word|
-    vowels = word.find_all{|segment| segment.vocalic? }
-
-    if word[-1][:orthography] == "!" # Manual override for final stress
+  ary.change(:final, {}, lambda do |mark|
+    initial = ary[0...mark.pos].reverse_each.find {|s| s =~ :initial }
+    word = ary[initial.pos..mark.pos]
+    vowels = word.find_all { |segm| segm.vocalic? }
+    
+    if mark =~ '!'
       vowels[-1][:stress] = true
-      word[-1][:IPA] = nil
-      word[-1][:orthography] = nil
-    elsif word[-1][:orthography] == ">" # Move stress one syllable towards the end
-      word[-1][:IPA] = nil
-      word[-1][:orthography] = nil
+      mark.delete
+    elsif mark =~ '>'
+      mark[:IPA] = '' # '>' is read as consonantal
 
       case vowels.length
       when 0
@@ -2312,6 +2310,7 @@ def convert_LL str
       else
         (vowels[-1][:long] || ultima_cluster?(word)) ? vowels[-1][:stress] = true : vowels[-2][:stress] = true
       end
+      mark.delete
     else
       case vowels.length
       when 0, 1
@@ -2322,7 +2321,7 @@ def convert_LL str
         (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2][:stress] = true : vowels[-3][:stress] = true
       end
     end
-
+    
     if vowels[-2] && vowels[-2].stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
       case vowels[-2][:IPA]
       when 'ɛ'
@@ -2333,8 +2332,9 @@ def convert_LL str
         vowels[-2][:orthography] = 'ó'
       end
     end
-  end
+  end)
 
+  @current = ary
   @current.compact!
 
   # Endings
