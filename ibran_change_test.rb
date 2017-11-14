@@ -1436,6 +1436,8 @@ class IbranChangeTest < Minitest::Test
       { w: "augmentāre", RI_IPA: "ogʲmɛ̃ˈtɑr", RI_Cyrl: "ѡгментар", RI_Latn: "augmentar", PI_IPA: "əxmə̃ˈtɑr", PI: "augmentar" },
       { w: "basilicum", RI_IPA: "bɑˈzilikʲ", RI_Cyrl: "базілік", RI_Latn: "basilic", PI_IPA: "bəˈzilək", PI: "basilăc" },
       { w: "bottonem>", RI_IPA: "bɔtˈtũ", RI_Cyrl: "боттун", RI_Latn: "bottón", PI_IPA: "bətˈtɔ̃", PI: "bottón" },
+      { w: "boxator", RI_IPA: "bɔksəˈluːr", RI_Cyrl: "боксълӯр", RI_Latn: "boxeluor", PI_IPA: "bəksəˈluːr", PI: "boxeluor" },
+      { w: "boxatorium", RI_IPA: "bɔksəˈlœːr", RI_Cyrl: "боксълө̄р", RI_Latn: "boxeleur", PI_IPA: "bəksəˈlœːr", PI: "boxeleur" },
       { w: "caienna", RI_IPA: "kʲɑˈʝɛ̃n", RI_Cyrl: "каженн", RI_Latn: "cayenne", PI_IPA: "kəˈjɛ̃nə", PI: "cayennă" },
       { w: "canella", RI_IPA: "kʲɑˈnell", RI_Cyrl: "канилл", RI_Latn: "canélle", PI_IPA: "kəˈnellə", PI: "canéllă" },
       { w: "capitulum", RI_IPA: "kʲɑˈpityl", RI_Cyrl: "капітүл", RI_Latn: "capitul", PI_IPA: "kəˈpitəl", PI: "capităl" },
@@ -1491,6 +1493,7 @@ class IbranChangeTest < Minitest::Test
       { w: "phellogenum", RI_IPA: "vɛlˈlɔʝɛ̃", RI_Cyrl: "велложен", RI_Latn: "fellogen", PI_IPA: "vəlˈlɔʝə̃", PI: "felloçăn" },
       { w: "philosophum", RI_IPA: "viˈlɔzɔf", RI_Cyrl: "вілозов", RI_Latn: "filosof", PI_IPA: "vəˈlɔzəf", PI: "filosăf" },
       { w: "pimentum", RI_IPA: "piˈmẽt", RI_Cyrl: "піминт", RI_Latn: "pimént", PI_IPA: "pəˈmẽt", PI: "pimént" },
+      { w: "pistillum", RI_IPA: "pitˈtiː", RI_Cyrl: "пітті̄", RI_Latn: "pistill", PI_IPA: "pəˈtiː", PI: "pîty" },
       { w: "planum", RI_IPA: "plɑ̃", RI_Cyrl: "план", RI_Latn: "plan", PI_IPA: "plɑ̃", PI: "plan" },
       { w: "porcellana>", RI_IPA: "pɔrçɛlˈlɑn", RI_Cyrl: "поршеллан’", RI_Latn: "porcellane", PI_IPA: "pərçəlˈlɑnə", PI: "porcellană" },
       { w: "pulsum", RI_IPA: "pyls", RI_Cyrl: "пүлс", RI_Latn: "puls", PI_IPA: "pyls", PI: "puls" },
@@ -1509,6 +1512,7 @@ class IbranChangeTest < Minitest::Test
       { w: "sumach", RI_IPA: "ˈzymɑkʲ", RI_Cyrl: "зүмак", RI_Latn: "sumac", PI_IPA: "ˈzymək", PI: "sumăc" },
       { w: "systema>", RI_IPA: "zitˈtem", RI_Cyrl: "зіттим", RI_Latn: "sistéme", PI_IPA: "zəˈtemə", PI: "sîtémă" },
       { w: "thymum", RI_IPA: "dĩ", RI_Cyrl: "дін", RI_Latn: "dim", PI_IPA: "dɛ̃", PI: "dim" },
+      { w: "vanilla", RI_IPA: "vɑˈniʝ", RI_Cyrl: "ваніж", RI_Latn: "vanille", PI_IPA: "vəˈnijə", PI: "vaniyă" },
       { w: "zeta", RI_IPA: "ʒet", RI_Cyrl: "жит", RI_Latn: "zéte", PI_IPA: "ˈʒetə", PI: "zétă" },
       { w: "zuccarum", RI_IPA: "ˈʒykʲkʲɑr", RI_Cyrl: "жүккар", RI_Latn: "zuccar", PI_IPA: "ˈʒykkər", PI: "zuccăr" }
     ]

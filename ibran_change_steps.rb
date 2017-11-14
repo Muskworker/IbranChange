@@ -2334,60 +2334,91 @@ def convert_LL str
     end
   end)
 
+  ary.change(:final, {}, lambda do |segm|
+    initial = ary[0...segm.pos].reverse_each.find {|s| s =~ :initial }
+    word = ary[initial.pos..segm.pos]
+
+    # TODO: correctly get this working for multiple words
+    # TODO: get 'pop' working
+    case word.join
+    when /alis|alem$/
+      segm.before_prev.prev.update(IPA: "o", orthography: "au", stress: true, long: true)
+      segm.dictum[-3].delete # l
+      segm.dictum.renumber   # argh
+      segm.dictum[-2].delete # i/e
+      segm.dictum.renumber   # argh
+      segm.delete            # s/m
+    when /āre$/
+      segm.before_prev.update(orthography: 'a', stress: true)
+      segm.delete # e
+    when /ariu(m|s)$/ #ariam, arium
+      segm.before_prev.before_prev.update(IPA: "a", orthography: "ài", long: true, stress: true)
+      segm.dictum[-3].delete # i
+      segm.dictum.renumber   # argh
+      segm.dictum[-2].delete # u
+      segm.dictum.renumber   # argh
+      segm.delete            # m/s
+    when /as$/
+      segm.prev.replace!(%w[ə e]) # a
+    when /atio$/
+      segm.prev.replace!(%w[ʒʒ sç])
+      segm.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
+    when /ator$/
+      segm.before_prev.prev.replace!(%w[ə e])
+      segm.before_prev.replace!('l')
+      segm.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
+    when /atorium$/
+      segm.dictum[-7].replace!(%w[ə e])
+      segm.dictum[-6].replace!('l')
+      segm.dictum[-5].update(IPA: 'œ', orthography: 'eu', long: true, stress: true)
+      segm.dictum[-3].delete # i
+      segm.dictum.renumber   # argh
+      segm.dictum[-2].delete # u
+      segm.dictum.renumber   # argh
+      segm.delete            # m
+    when /illum$/
+      segm.dictum[-5].update(IPA: "i", orthography: "ill", stress: true, long: true)
+      segm.dictum[-4].delete # l
+      segm.dictum.renumber   # argh
+      segm.dictum[-3].delete # l
+      segm.dictum.renumber   # argh
+      segm.dictum[-2].delete # u
+      segm.dictum.renumber   # argh
+      segm.delete            # m
+    when /illa$/
+      segm.dictum[-3].replace!(%w[j ll])
+      segm.dictum[-2].delete
+      segm.replace!(%w[ə e])
+    when /a$/
+      segm.replace!(%w[ə e])
+      respell_velars(word)
+    when /ēre$/
+      segm.before_prev.update(IPA: 'je', orthography: 'ié', stress: true)
+      segm.delete
+    when /(énsem|énsis)$/
+      segm.dictum[-4].delete # n
+      segm.dictum[-2].delete # e/i
+      segm.dictum.renumber   # argh
+      segm.delete            # m/s
+    when /(sin|sis)$/
+      segm.prev.delete
+      segm.dictum.renumber
+      segm.delete
+    when /(t|s)ionem$/
+      segm.before_prev.before_prev.replace!(%w[ʒʒ sç])
+      segm.before_prev.prev.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
+      segm.dictum[-3].delete # n
+      segm.dictum.renumber   # argh
+      segm.dictum[-2].delete # e
+      segm.dictum.renumber   # argh
+      segm.delete            # m
+    when /(e|u)m$/ # not us
+      segm.delete # m
+      step_oi26(ary)
+    end
+  end)
+
   @current = ary
-  @current.compact!
-
-  # Endings
-  case @current.join
-  when /alis|alem$/
-    @current.pop(4)
-    @current << Segment[IPA: "o", orthography: "au", stress: true, long: true]
-  when /āre$/
-    @current.pop(3)
-    @current << Segment[IPA: "ɑ", orthography: "a", stress: true, long: false] << Segment[IPA: "r", orthography: "r", long: false]
-  when /ariu(m|s)$/ #ariam, arium
-    @current.pop(5)
-    @current << Segment[IPA: "a", orthography: "ài", long: true, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
-  when /as$/
-    @current.pop(2)
-    @current << Segment[:IPA=>"ə", :orthography=>"e", :long=>false] << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
-  when /atio$/
-    @current.pop(3)
-    @current << Segment[:IPA=>"ɑ", :orthography=>"a", :long=>false] << Segment[:IPA=>"ʒʒ", :orthography=>"sç", :long=>false] << Segment[:IPA=>"ũ", :orthography=>"uon", :long=>true, :stress=>true]
-  when /ator$/
-    @current.pop(4)
-    @current << Segment.new('ə', 'e') << Segment.new('l') << Segment[IPA: 'u', orthography: 'uo', long: true, stress: true] << Segment.new('r')
-  when /atorium$/
-    @current.pop(7)
-    @current << Segment.new('ə', 'e') << Segment.new('l') << Segment[IPA: 'œ', orthography: 'eu', long: true, stress: true] << Segment.new('r')
-  when /illum$/
-    @current.pop(5)
-    @current << Segment[IPA: "i", orthography: "ill", stress: true, long: true]
-  when /illa$/
-    @current.pop(4)
-    @current << Segment[IPA: "i", orthography: "i", stress: true] << Segment[IPA: "j", orthography: "ll"] << Segment[IPA: "ə", orthography: "e"]
-  when /a$/
-    @current.pop
-    @current << Segment[:IPA=>"ə", :orthography=>"e", :long=>false]
-    @current.compact.renumber # ugh
-    respell_velars(@current)
-  when /ēre$/
-    @current.pop(3)
-    @current << Segment[:IPA=>"je", :orthography=>"ié", :stress=>true, :long=>false] << Segment[:IPA=>"r", :orthography=>"r", :long=>false]
-  when /(énsem|énsis)$/
-    @current.pop(5)
-    @current << Segment[:IPA=>"e", :orthography=>"é", :stress=>true, :long=>false] << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
-  when /(sin|sis)$/
-    @current.pop(3)
-    @current << Segment[:IPA=>"s", :orthography=>"s", :long=>false]
-  when /(t|s)ionem$/
-    @current.pop(5)
-    @current << Segment.new('ʒʒ', 'sç') << Segment[IPA: 'ũ', orthography: 'uon', long: true, stress: true]
-  when /(e|u)m$/ # not us
-    @current.pop
-    @current = step_oi26(@current)
-  end
-
   # duplicate stresses after endings
   @current.select(&:stressed?)[0..-2].each{|s| s[:stress] = false} if @current.count(&:stressed?) > 1
 
