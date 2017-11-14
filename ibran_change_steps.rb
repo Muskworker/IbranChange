@@ -510,6 +510,21 @@ class OldIbran
     segm.update(IPA: 'u', orthography: 'uo', long: true)
     segm.prev[:orthography].sub!(/q?u$/, 'u' => '', 'qu' => 'c')
   end
+
+  # For the purpose of unstressed vowel dropping,
+  # these environments prevent that from happening.
+  def self.in_stop_cluster?(segm)
+    segm.prev.after?(%i[stop fricative affricate]) && segm.before_prev !~ 's' \
+    || segm.before_prev.nasal? && !segm.after?(%i[stop affricate])            \
+    || segm.before_prev =~ 's' && (segm.after? %i[sonorant affricate])
+  end
+
+  def self.keep_unstressed_schwa?(segm)
+    (segm.prev.ends_with.consonantal? && segm.before_prev.consonantal? \
+    && (OldIbran.in_stop_cluster?(segm) || segm.before?('s')))         \
+    || segm.after?(%w[ʃʃ ʒʒ])                                          \
+    || segm.between?('s', :sibilant)
+  end
 end
 
 def ipa(dict)
@@ -557,6 +572,17 @@ def respell_velars(ary)
     when 'g' then segm[:orthography] = 'gu'
     when 'ʝ' then segm[:orthography] = 'g'
     end
+  end
+end
+
+def respell_palatal(segm)
+  res = { 'ʃ' => %w[c ç], 'ʒ' => %w[j z], 'k' => %w[qu c], 'g' => %w[gu g] }
+  front = %w[e i é].include?(segm.next.starts_with.orth) ? 0 : 1
+  prec = segm.phon[-1]
+
+  case prec
+  when 'ʃ', 'ʒ' then segm[:orthography][-1] = res[prec][front]
+  when 'k', 'g' then segm[:orthography] = res[prec][front]
   end
 end
 
@@ -961,65 +987,18 @@ def step_oi25(ary)
 end
 
 # drop unstressed final vowels except /A/
-def step_oi26 ary
-  ary.compact.renumber #argh
-
-  @current = ary.each_with_index do |segm, idx|
-    if !segm.stressed? && segm.vowel? && !(segm[:IPA] == 'ɑ') &&  # unstressed, not A
-        (segm.final? || (segm.next.phon == 's' && segm.next.final?)) && # is final or behind final S
-        (idx > 0) # not if it's also the initial vowel
-
-      # assume sonority hierarchy will be C?V
-      stop_cluster = (segm.before_prev.stop? || (segm.before_prev.fricative? && segm.before_prev.phon != "s") || segm.before_prev.affricate? ||
-        (segm.before_prev.nasal? && !(segm.prev.stop? || segm.prev.affricate?) ) ||
-        segm.before_prev.phon == "s" && (segm.prev.sonorant? || segm.prev.affricate?)) ||
-        (segm.next.phon == "s")
-
-      # So precedent shows that /SSV/ reduces to /SS@/, not /SS/.  /ZZ/ for symmetry.
-      fricative_cluster = %w{ʃʃ ʒʒ}.include?(segm.prev.phon)
-
-      if (segm.prev.consonantal? && segm.before_prev.consonantal? &&
-          stop_cluster) &&
-          !segm.prev.ends_with.vocalic? || # drop a vowel after a vowel
-          ary.monosyllable? || # don't drop our only vowel
-          fricative_cluster ||
-          (segm.next.phon == 's' && segm.prev.sibilant?)
-        segm[:IPA] = "ə"
-        segm[:orthography] = "e"
-
-        if %w{ʃ ʒ g k}.include?(segm.prev.phon[-1])
-          case segm.prev.phon[-1]
-          when 'ʃ'
-            segm.prev[:orthography][-1] = 'c'
-          when 'ʒ'
-            segm.prev[:orthography][-1] = 'j'
-          when 'g' # gu
-            segm.prev[:orthography] = 'gu'
-          when 'k' # qu
-            segm.prev[:orthography] = 'qu'
-          end
-        end
-      else
-        segm[:IPA] = nil
-        segm[:orthography] = nil
-
-        if %w{ʃ ʒ g k}.include?(segm.prev.phon[-1])
-          case segm.prev.phon[-1]
-          when 'ʃ'
-            segm.prev[:orthography][-1] = 'ç'
-          when 'ʒ'
-            segm.prev[:orthography][-1] = 'z'
-          when 'g' # gu
-            segm.prev[:orthography] = 'g'
-          when 'k' # qu
-            segm.prev[:orthography] = 'c'
-          end
-        end
-      end
+def step_oi26(ary)
+  ary.change(:vowel, {}, lambda do |segm|
+    if OldIbran.keep_unstressed_schwa?(segm) || ary.monosyllable?
+      segm.replace! %w[ə e]
+    else segm.delete
     end
-  end
 
-  @current.compact
+    respell_palatal(segm.prev)
+  end) do |iff|
+    iff !~ ['ɑ', :initial, :stressed] \
+    && (iff.final? || iff.next.match_all(:final, 's'))
+  end
 end
 
 # A > @
