@@ -1047,13 +1047,13 @@ def step_oi29(ary)
 end
 
 # plural /Os As/ to /@s/
-def step_oix1 ary
+def step_oix1(ary)
   if @plural
-    ary << (Segment[IPA: 'ə', orthography: 'e']) unless ary.last.ends_with.phon == 'ə'
-    ary << (Segment[IPA: 's', orthography: 's'])
+    ary << Segment.new('ə', 'e') unless ary.last.ends_with =~ 'ə'
+    ary << Segment.new('s')
   end
 
-  @current = ary # This is not something we would feed in here without marking it's plural or a noun to be declined.
+  ary
 end
 
 # loss of initial unstressed /E/ and /i/
