@@ -1057,24 +1057,15 @@ def step_oix1(ary)
 end
 
 # loss of initial unstressed /E/ and /i/
-def step_oix2 ary
-  # Initial letter is E or i && is unstressed && is not the only syllable && sonority
-  if %w{ɛ i}.include?(ary.first[:IPA]) && !ary.first.stressed? && !ary.monosyllable?
-    if !(ary[1] && ary[2] && ary[1].consonantal? && !(%w{s ss}.include?(ary[1][:IPA])) && (ary[2].stop? || ary[2].nasal? || ary[2].fricative? || ary[2].affricate?))
-      ary.first[:IPA] = nil
-      ary.first[:orthography] = nil
+def step_oix2(ary)
+  ary.change(%w[ɛ i], { IPA: 'ə', orthography: 'e' }, lambda do |segm|
+    if segm.before?([:in_onset, 's', 'ss'])
+      segm.next[:IPA] = 's' if segm.next =~ 'ss'
+      segm.next[:orthography] = 's' if segm.next.orth == 'ss'
 
-      ary[1][:IPA] = 's' if ary[1] && ary[1][:IPA] == 'ss'
-      ary[1][:orthography] = 's' if ary[1] && ary[1][:orthography] == 'ss'
-    else
-      ary.first[:IPA] = 'ə'
-      ary.first[:orthography] = 'e'
+      segm.delete
     end
-  end
-
-  @current = ary
-
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  end) { |iff| iff.match_all(:unstressed, :initial) && !ary.monosyllable? }
 end
 
 # /m/ > /w~/ before consonants/finally
