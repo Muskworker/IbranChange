@@ -323,6 +323,11 @@ class Segment < Hash
     Segment[IPA: phon ? phon[-1] : '', orthography: orth ? orth[-1] : '']
   end
 
+  def append(phon, orth = phon)
+    self.phon << phon
+    self.orth << orth
+  end
+
   def to_ipa
     output = "#{phon}#{"\u0320" if self[:back]}#{'ʲ' if self[:palatalized]}"
     # /o:w/, not /ow:/
@@ -1074,9 +1079,6 @@ def step_oix3 ary
     if segm.vocalic? && segm.next.phon == 'm' && # Tried assimilating /n/ to labial, don't like.
         (segm.after_next.starts_with.consonantal? || segm.next.final?)
 
-        (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
-        segm[:IPA] << 'w̃'
-#        segm[:orthography] << 'ũ'
         segm.next[:IPA] = nil
         segm.next[:orthography] = nil
       elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
@@ -1085,15 +1087,13 @@ def step_oix3 ary
             (segm.next.after_next.starts_with.consonantal? || segm.after_next.final?)
         ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
 
-        (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yũ" : segm[:orthography] << 'ũ'
-        segm[:IPA] << 'w̃'
-        #segm[:orthography] << 'ũ'
         segm.next[:IPA] = nil
         segm.next[:orthography] = nil
     end
   end
 
   @current.delete_if {|segment| segment[:IPA].nil? }
+    segm.append('w̃', 'ũ')
 end
 
 # labials & L > /w/ before consonants/finally
