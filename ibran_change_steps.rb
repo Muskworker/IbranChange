@@ -544,6 +544,13 @@ class OldIbran
     && (segm.next.vocalic? ? 0 : segm.next.phon.length)               \
      + (segm.prev.vocalic? ? 0 : segm.prev.phon.length) <= 2
   end
+
+  # Test for Vm#, VmC; VRm#, VRmC as used in oix3
+  def self.takes_m_change(segm)
+    segm.sonorant? && [segm, segm.next].any? do |s|
+      s =~ 'm' && (s.next.starts_with.consonantal? || s.final?)
+    end
+  end
 end
 
 def ipa(dict)
@@ -1074,26 +1081,17 @@ def step_oix2(ary)
 end
 
 # /m/ > /w~/ before consonants/finally
-def step_oix3 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm.vocalic? && segm.next.phon == 'm' && # Tried assimilating /n/ to labial, don't like.
-        (segm.after_next.starts_with.consonantal? || segm.next.final?)
+def step_oix3(ary)
+  ary.change(:vocalic, {}, lambda do |segm|
+    nxt = segm.next
+    after_next = segm.after_next
 
-        segm.next[:IPA] = nil
-        segm.next[:orthography] = nil
-      elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
-            segm.next.sonorant? &&
-            segm.after_next.phon == 'm' &&
-            (segm.next.after_next.starts_with.consonantal? || segm.after_next.final?)
-        ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
+    nxt.metathesize(after_next) if after_next =~ 'm'
+    segm[:orthography][-1] = 'y' if segm.diphthong? && segm.orth =~ /i$/
 
-        segm.next[:IPA] = nil
-        segm.next[:orthography] = nil
-    end
-  end
-
-  @current.delete_if {|segment| segment[:IPA].nil? }
     segm.append('w̃', 'ũ')
+    nxt.delete
+  end) { |iff| OldIbran.takes_m_change(iff.next) }
 end
 
 # labials & L > /w/ before consonants/finally
