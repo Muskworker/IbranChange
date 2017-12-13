@@ -1086,7 +1086,7 @@ def step_oix3(ary)
     after_next = segm.after_next
 
     nxt.metathesize(after_next) if after_next =~ 'm'
-    segm[:orthography][-1] = 'y' if segm.diphthong? && segm.orth =~ /i$/
+    segm[:orthography][-1] = 'y' if segm.orth =~ /.i$/
 
     segm.append('w̃', 'ũ')
     nxt.delete
