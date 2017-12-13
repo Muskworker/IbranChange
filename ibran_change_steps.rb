@@ -844,8 +844,7 @@ end
 # { i }[-stress] > j / { ɔ, o }__
 def step_oi10(ary)
   yod = lambda do |s|
-    s[:IPA] << 'j'
-    s[:orthography] << 'i'
+    s.append('j', 'i')
     s.next.delete
   end
 
