@@ -1976,6 +1976,7 @@ def step_pi10 ary
     segm[:orthography].gsub!(/ă/, 'a') if segm.prev.orth && %w{é ó}.include?(segm.prev.orth[-1])
     segm[:orthography].gsub!(/àu/, 'au')
     segm[:orthography] = "y" if segm[:IPA] == "ji"
+    segm[:orthography] = "cu" if segm[:orthography] == "qu" && segm =~ "kw"    
     segm[:orthography] = "c" if segm[:orthography] == "qu" && %w{a à o ó u}.include?(segm.next.orth[0])
   end
 end
