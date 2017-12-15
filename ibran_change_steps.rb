@@ -1117,7 +1117,6 @@ def step_oix4 ary
     end
   end
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
 end
 
 # resolution of diphthongs in /a A @ V/
@@ -2111,7 +2110,7 @@ def convert_OLF str
     postinitial = true if segm.vocalic?
   end
 
-  @current
+  @current.delete_if {|segment| segment[:IPA].nil? }
 end
 
 # INCOMPLETE
