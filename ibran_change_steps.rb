@@ -551,6 +551,15 @@ class OldIbran
       s =~ 'm' && (s.next.starts_with.consonantal? || s.final?)
     end
   end
+
+  def self.takes_l_change(segm)
+    after_next = segm.after_next
+
+    (segm.next =~ [:labial, 'l']                     \
+    && after_next.starts_with =~ [:consonantal, '']) \
+    || (after_next =~ [:labial, 'l']                 \
+    && after_next.between?(:sonorant, [:consonantal, '']))
+  end
 end
 
 def ipa(dict)
@@ -1094,29 +1103,15 @@ def step_oix3(ary)
 end
 
 # labials & L > /w/ before consonants/finally
-def step_oix4 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm.vocalic? &&
-        (segm.next.phon == 'l' || segm.next.labial?) &&
-        (segm.after_next.starts_with.consonantal? || segm.next.final?)
+def step_oix4(ary)
+  ary.change(:vocalic, {}, lambda do |segm|
+    nxt = segm.next
+    nxt.metathesize(segm.after_next) if nxt !~ [:labial, 'l']
 
-      (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
-      segm[:IPA] << 'w'
-      segm.next[:IPA] = nil
-      segm.next[:orthography] = nil
-    elsif segm.vocalic? &&  # VRLC, VRL# > VwRC, VwR#
-          segm.next.sonorant? &&
-          (segm.after_next.phon == 'l' || segm.after_next.labial?) &&
-          (segm.next.after_next.consonantal? || segm.after_next.final?)
-      ary[idx+1], ary[idx+2] = ary[idx+2], ary[idx+1]
-
-      (segm.diphthong? && segm[:orthography][-1] == 'i') ? segm[:orthography][-1] = "yu" : segm[:orthography] << 'u'
-      segm[:IPA] << 'w'
-      segm.next[:IPA] = nil
-      segm.next[:orthography] = nil
-    end
-  end
-
+    segm[:orthography].sub!(/(.)i$/, '\1y')
+    segm.append('w', 'u')
+    nxt.delete
+  end) { |iff| OldIbran.takes_l_change(iff) }
 end
 
 # resolution of diphthongs in /a A @ V/
