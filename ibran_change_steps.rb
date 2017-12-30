@@ -1115,19 +1115,11 @@ def step_oix4(ary)
 end
 
 # resolution of diphthongs in /a A @ V/
-def step_oix5 ary
-  @current = ary.each do |segm|
-    if segm.vocalic? && segm[:IPA][-1] == 'w' && %w{a ɑ ə}.include?(segm[:IPA][-2])
-        segm[:IPA][-2..-1] = 'o'
-        segm[:long] = true
-    end
-
-    # if the diphthong ends with combining tilde
-    if segm.vocalic? && segm[:IPA][-1] == "\u0303" && %w{a ɑ ə}.include?(segm[:IPA][-3])
-        segm[:IPA][-3..-1] = 'õ'
-        segm[:long] = true
-    end
-  end
+def step_oix5(ary)
+  ary.change(:diphthong, { long: true }, lambda do |segm|
+    # \u0303 is combining tilde
+    segm[:IPA] = segm.ends_with =~ "\u0303" ? 'õ' : 'o'
+  end) { |iff| iff.phon =~ /[aɑə]w?[w\u0303]$/ }
 end
 
 # resolution of diphthongs in /E e i/
