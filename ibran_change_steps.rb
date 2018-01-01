@@ -307,6 +307,7 @@ class Segment < Hash
     when String then phon == segm
     when Array then segm.any? { |s| match(s) }
     when Proc then segm.call(self)
+    else phon =~ segm
     end
   end
   alias =~ match
