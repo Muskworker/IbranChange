@@ -256,7 +256,7 @@ class Segment < Hash
   def initialize(*args)
     @dictum ||= Dictum.new(self)
     @pos ||= 0
-    update(IPA: args[0], orthography: args[1] || args[0].dup) if args.any?
+    update(IPA: args[0] || '', orthography: args[1] || args[0].dup) if args.any?
   end
 
   def replace!(args)
@@ -521,7 +521,7 @@ class OldIbran
                    && segm.next.after_next.vowel?)
 
     segm.update(IPA: 'u', orthography: 'uo', long: true)
-    segm.prev[:orthography].sub!(/q?u$/, 'u' => '', 'qu' => 'c')
+    segm.prev.orth.sub!(/q?u$/, 'u' => '', 'qu' => 'c')
   end
 
   # For the purpose of unstressed vowel dropping,

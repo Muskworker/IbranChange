@@ -911,6 +911,7 @@ class IbranChangeTest < Minitest::Test
       { w: "apostolum", RI_IPA: "ɑˈbœjttr", RI_Cyrl: "абөјттр", RI_Latn: "aboistre", PI_IPA: "əˈbɔjtrə", PI: "aboîtră" },
       { w: "arborem", RI_IPA: "oːrr", RI_Cyrl: "ѡ̄рр", RI_Latn: "aurre", PI_IPA: "ˈoːrrə", PI: "aurră" },
       { w: "arcum", RI_IPA: "ɑrkʲ", RI_Cyrl: "арк", RI_Latn: "arc", PI_IPA: "ɑrk", PI: "arc" },
+      { w: "auca", RI_IPA: "uːdʒ", RI_Cyrl: "ӯџ", RI_Latn: "uogue", PI_IPA: "ˈuːdʒə", PI: "uodjă" },
       { w: "aucellam", RI_IPA: "ɔˈʒʒiʝ", RI_Cyrl: "ожжіж", RI_Latn: "oscille", PI_IPA: "əˈʒʒijə", PI: "osciyă" },
       { w: "audīre", RI_IPA: "ɔˈʝir", RI_Cyrl: "ожір", RI_Latn: "oyr", PI_IPA: "əˈjir", PI: "oyr" },
       { w: "auriculam", RI_IPA: "aˈrɛjl", RI_Cyrl: "ярејл", RI_Latn: "àreile", PI_IPA: "əˈrɛjlə", PI: "àreilă" }, #
