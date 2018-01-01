@@ -1124,40 +1124,17 @@ def step_oix5(ary)
 end
 
 # resolution of diphthongs in /E e i/
-def step_oix6 ary
-  @current = ary.each do |segm|
-    if segm.vocalic? && segm[:IPA][-1] == 'w' && %w{ɛ e i}.include?(segm[:IPA][-2])
-        segm[:IPA][-2..-1] = case segm[:IPA][-2]
-                             when 'ɛ' then 'œ'
-                             when 'e' then 'ø'
-                             when 'i' then 'y'
-                             end
-        segm[:long] = true
-    end
+def step_oix6(ary)
+  ary.change(/j?[ɛei]w\u0303?$/, { long: true }, lambda do |segm|
+    segm.phon.sub!(/ɛw/, 'œ')
+    segm.phon.sub!(/ew/, 'ø')
+    segm.phon.sub!(/iw/, 'y')
+  end)
 
-    # if the diphthong ends with combining tilde
-    if segm.vocalic? && segm[:IPA][-1] == "\u0303" && %w{ɛ e i}.include?(segm[:IPA][-3])
-        segm[:IPA][-3..-1] = case segm[:IPA][-3]
-                             when 'ɛ' then 'œ̃'
-                             when 'e' then 'ø̃'
-                             when 'i' then 'ỹ'
-                             when 'j' then "ɥ̃"
-                             end
-        segm[:long] = true
-    end
-
-    # jw
-    segm[:IPA][-2..-1] = "ɥ" if segm.vocalic? && segm[:IPA][-2..-1] == "jw"
-
-    # jw̃
-    segm[:IPA][-3..-1] = "ɥ̃" if segm.vocalic? && segm[:IPA][-3..-1] == "jw̃"
-
-    # ɛ̯w
-    segm[:IPA][-3..-1] = "œ̯" if segm.vocalic? && segm[:IPA][-3..-1] == "ɛ̯w"
-
-    # ɛ̯w̃
-    segm[:IPA][-4..-1] = "œ̯̃" if segm.vocalic? && segm[:IPA][-4..-1] == "ɛ̯w̃"
-  end
+  ary.change(:diphthong, {}, lambda do |segm|
+    segm.phon.sub!(/jw/, 'ɥ')
+    segm.phon.sub!(/ɛ̯w/, 'œ̯')
+  end)
 end
 
 # resolution of diphthongs in /O o u/
