@@ -123,6 +123,10 @@ module PhoneticEnvironment
     @dictum[0...pos].any?(&:stressed?)
   end
 
+  def pretonic?
+    @dictum[pos + 1...@dictum.size].any?(&:stressed?)
+  end
+
   def in_onset?
     next_more_sonorous = ends_with.sonority < nxt.starts_with.sonority
     # We explicitly check for nxt.vocalic because of things like /erje/
@@ -1138,48 +1142,22 @@ def step_oix6(ary)
 end
 
 # resolution of diphthongs in /O o u/
-def step_oix7 ary
-  @current = ary.each do |segm|
-    if segm.vocalic? && segm[:IPA][-1] == 'w' && %w{ɔ o u w}.include?(segm[:IPA][-2])
-        segm[:IPA][-2..-1] = case segm[:IPA][-2]
-                             when 'ɔ' then 'o'
-                             when 'o' then 'o'
-                             when 'u' then 'u'
-                             end
-        segm[:long] = true
-    end
+def step_oix7(ary)
+  ary.change(/[ɔouw]w\u0303?\Z/, { long: true }, lambda do |segm|
+    segm.phon.gsub!(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o', 'uw' => 'u',
+                                      'ɔw̃' => 'õ', 'ow̃' => 'õ', 'uw̃' => 'ũ')
+  end)
 
-    # if the diphthong ends with combining tilde
-    if segm.vocalic? && segm[:IPA] && segm[:IPA][-1] == "\u0303" && %w{ɔ o u w}.include?(segm[:IPA][-3])
-        segm[:IPA][-3..-1] = case segm[:IPA][-3]
-                             when 'ɔ' then 'õ'
-                             when 'o' then 'õ'
-                             when 'u' then 'ũ'
-                             end || segm[:IPA][-3..-1]
-        segm[:long] = true
-    end
-
-    # ww
-    if segm.vocalic? && segm[:IPA][-2..-1] == "ww"
-      segm[:IPA][-2..-1] = "w"
-      segm[:orthography][-2..-1] = "w"
-    end
-
-    # w̃w
-    if segm.vocalic? && segm[:IPA][-3..-1] == "w̃w"
-      segm[:IPA][-3..-1] = "w̃"
-      segm[:orthography][-2..-1] = "w̃"
-    end
-
-    # Assign stress if there isn't any
-    if segm.vocalic? && ary.count(&:stressed?) == 0
-      segm[:stress] = true
-    end
-  end
+  ary.change(/w\u0303?w/, {}, lambda do |segm|
+    segm[:IPA].chop!
+    segm[:orthography].sub!(/uu|ũu/, 'uu' => 'w', 'ũu' => 'w̃')
+  end)
 
   # Assign stress if there are multiple
-  ary.select(&:stressed?)[0..-2].each{|segm| segm[:stress] = false}
-  @current = ary
+  ary.change(:stressed, { stress: false }, nil, &:pretonic?)
+
+  # Assign stress to the first syllable if there isn't any
+  ary.change(:vocalic, stress: true) { |iff| !iff.dictum.stressed? }
 end
 
 # now lose all those precious nasals
