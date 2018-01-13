@@ -1161,7 +1161,6 @@ def step_oix7(ary)
 end
 
 # now lose all those precious nasals
-def step_CI1 ary
   @current = ary.each do |segm|
     if segm[:orthography].include?("ũ") || segm[:orthography].include?("w̃")
       segm[:IPA].gsub!(/w̃/, 'w')
@@ -1174,6 +1173,7 @@ def step_CI1 ary
       segm[:IPA].gsub!(/ɥ̃/, 'ɥ')
     end
   end
+def step_ci1(ary)
 end
 
 # New nasals from /n/ before consonants/finally
@@ -2364,7 +2364,7 @@ def transform(str, since = "L", plural = false)
     @steps[44] = step_oix6(deep_dup(@steps[43]))
     @steps[45] = step_oix7(deep_dup(@steps[44]))
 
-    @steps[46] = step_CI1(deep_dup(@steps[45]))
+    @steps[46] = step_ci1(deep_dup(@steps[45]))
     @steps[47] = step_CI2(deep_dup(@steps[46]))
     @steps[48] = step_CI3(deep_dup(@steps[47]))
     @steps[49] = step_CI4(deep_dup(@steps[48]))
