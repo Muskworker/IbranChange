@@ -154,8 +154,8 @@ end
 # Determine if a string has certain linguistic features.
 module PhoneticFeature
   def vowel?
-    vowels = 'aeioõuyæɑɐəɛɔøœ'
-    neither_vowel_nor_modifier = "^aeioõuyæɑɐəɛɔøœ\u0303"
+    vowels = 'aeioõuũyæɑɐəɛɔøœ'
+    neither_vowel_nor_modifier = "^aeioõuũyæɑɐəɛɔøœ\u0303"
     count(vowels) == 1 && count(neither_vowel_nor_modifier).zero?
   end
 
