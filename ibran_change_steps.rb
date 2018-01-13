@@ -1161,24 +1161,17 @@ def step_oix7(ary)
 end
 
 # now lose all those precious nasals
-  @current = ary.each do |segm|
-    if segm[:orthography].include?("ũ") || segm[:orthography].include?("w̃")
-      segm[:IPA].gsub!(/w̃/, 'w')
-      segm[:IPA].gsub!(/ũ/, 'u')
-      segm[:IPA].gsub!(/õ/, 'o')
-      segm[:IPA].gsub!(/œ̃/, 'œ')
-      segm[:IPA].gsub!(/œ̯̃/, 'œ̯')
-      segm[:IPA].gsub!(/ø̃/, 'ø')
-      segm[:IPA].gsub!(/ỹ/, 'y')
-      segm[:IPA].gsub!(/ɥ̃/, 'ɥ')
-    end
-  end
 def step_ci1(ary)
+  ary.change(:vocalic, {}, lambda do |segm|
+    segm.phon.gsub!(/(w̃|ũ|õ|œ̃|œ̯̃|ø̃|ỹ|ɥ̃)/,
+                    'w̃' => 'w', 'ũ' => 'u', 'õ' => 'o', 'œ̃' => 'œ',
+                    'œ̯̃' => 'œ̯', 'ø̃' => 'ø', 'ỹ' => 'y', 'ɥ̃' => 'ɥ')
+  end) { |iff| iff.orth =~ /ũ|w̃/ }
 end
 
 # New nasals from /n/ before consonants/finally
 def step_CI2 ary
-  @current.compact
+  # @current.compact
   @current = ary.each_with_index do |segm, idx|
     if segm.vocalic? && !%w{j w ɥ œ̯}.include?(segm[:IPA][-1]) &&
         ary[idx+1] && %w{m n ŋ}.include?(segm.next.phon) &&
