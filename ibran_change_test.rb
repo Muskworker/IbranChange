@@ -1452,6 +1452,7 @@ class IbranChangeTest < Minitest::Test
       { w: "cylindrum", RI_IPA: "çiˈlĩdr", RI_Cyrl: "шіліндр", RI_Latn: "cilindre", PI_IPA: "çəˈlɛ̃drə", PI: "cilindră" },
       { w: "diatribas>", RI_IPA: "diɑˈtrib", RI_Cyrl: "діатріб", RI_Latn: "diatribes", PI_IPA: "diːəˈtribəs", PI: "diatribăs" },
       { w: "discum", RI_IPA: "dikʲkʲ", RI_Cyrl: "дікк", RI_Latn: "disc", PI_IPA: "dik", PI: "dîc" },
+      { w: "distingu>", RI_IPA: "ditˈtĩkʲ", RI_Cyrl: "діттінк", RI_Latn: "disting", PI_IPA: "dəˈtɛ̃x", PI: "dîting" },
       { w: "emphasis", RI_IPA: "ˈɛ̃vɑʰ", RI_Cyrl: "енва’", RI_Latn: "emfas", PI_IPA: "ˈɛ̃vəs", PI: "emfăs" },
       { w: "entropia>", RI_IPA: "ɛ̃trɔˈpi", RI_Cyrl: "ентропі", RI_Latn: "entropie", PI_IPA: "ə̃trəˈpiə", PI: "entropiă" },
       { w: "epictetum>", RI_IPA: "ɛpikʲˈtet", RI_Cyrl: "епіктит", RI_Latn: "epictét", PI_IPA: "əpəkˈtet", PI: "epictét" },

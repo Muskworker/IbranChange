@@ -2102,7 +2102,13 @@ def convert_LL str
   # /gw/
   ary.change('g', { IPA: 'gw', orthography: 'gu' }, lambda do |segm|
     segm.next.delete
-  end) { |iff| iff.between?('n', 'u') && iff.after_next.vowel? } 
+  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with.vowel? } 
+
+  # /gw/ in LL verb forms
+  ary.change('g', {}, lambda do |segm|
+    segm[:orthography] = 'gu' unless segm.after_next =~ '>'
+    segm.next.delete
+  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with =~ ['>', 'j'] } 
 
   ary.change(%w[t s ks], { IPA: 'ʃʃ' }, lambda do |segm|
     segm[:orthography] << 'i'
