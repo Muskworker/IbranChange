@@ -2247,6 +2247,7 @@ def convert_LL str
   # duplicate stresses after endings
   @current.select(&:stressed?)[0..-2].each{|s| s[:stress] = false} if @current.count(&:stressed?) > 1
 
+  @current = step_oix1(@current)
   @current = step_CI2(@current)
   @current = step_CI3(@current)
   @current = step_CI4(@current)
