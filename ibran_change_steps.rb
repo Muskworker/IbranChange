@@ -567,6 +567,15 @@ class OldIbran
   end
 end
 
+# Complex conditions in Common Ibran
+class CommonIbran
+  # VNC / VN#
+  def self.nasalizes(segm)
+    segm.ends_with.vowel? && segm.next.ends_with =~ %w[m n ŋ] \
+      && (segm.after_next.starts_with.consonantal? || segm.next.final?)
+  end
+end
+
 def ipa(dict)
   dict.join :IPA
 end
@@ -1170,25 +1179,16 @@ def step_ci1(ary)
 end
 
 # New nasals from /n/ before consonants/finally
-def step_CI2 ary
-  # @current.compact
-  @current = ary.each_with_index do |segm, idx|
-    if segm.vocalic? && !%w{j w ɥ œ̯}.include?(segm[:IPA][-1]) &&
-        ary[idx+1] && %w{m n ŋ}.include?(segm.next.phon) &&
-        (segm.after_next.phon && segm.after_next.starts_with.consonantal? || segm.next.final?)
+def step_ci2(ary)
+  ary.change(:vocalic, {}, lambda do |segm|
+    segm[:IPA] += "\u0303"
+    segm[:orthography] += if segm.next.final? then segm.next.orth
+                          elsif segm.after_next.labial? then 'm'
+                          else 'n'
+                          end
 
-      segm[:IPA] += "\u0303"
-      segm[:orthography] += case #'n'#ary[idx+1][:orthography]
-                            when segm.next.final? then segm.next.orth
-                            when segm.after_next.labial? then 'm'
-                            else 'n'
-                            end
-      segm.next[:IPA] = nil
-      segm.next[:orthography] = nil
-    end
-  end
-
-  @current.delete_if {|segment| segment[:IPA].nil? }
+    segm.next.delete
+  end) { |segm| CommonIbran.nasalizes(segm) }
 end
 
 # Neutralization of voicing in fricatives
@@ -2248,7 +2248,7 @@ def convert_LL str
   @current.select(&:stressed?)[0..-2].each{|s| s[:stress] = false} if @current.count(&:stressed?) > 1
 
   @current = step_oix1(@current)
-  @current = step_CI2(@current)
+  @current = step_ci2(@current)
   @current = step_CI3(@current)
   @current = step_CI4(@current)
   @current = step_CI5(@current)
@@ -2365,7 +2365,7 @@ def transform(str, since = "L", plural = false)
     @steps[45] = step_oix7(deep_dup(@steps[44]))
 
     @steps[46] = step_ci1(deep_dup(@steps[45]))
-    @steps[47] = step_CI2(deep_dup(@steps[46]))
+    @steps[47] = step_ci2(deep_dup(@steps[46]))
     @steps[48] = step_CI3(deep_dup(@steps[47]))
     @steps[49] = step_CI4(deep_dup(@steps[48]))
     @steps[50] = step_CI5(deep_dup(@steps[49]))
