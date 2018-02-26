@@ -31,6 +31,15 @@ class Dictum < Array
     end
   end
 
+  def retro_change(origin, target, consequence = nil)
+    reverse_each do |segm|
+      next unless segm.match(origin) && (block_given? ? yield(segm) : true)
+
+      segm.merge!(target)
+      consequence.call(segm) if consequence
+    end
+  end
+
   def slice_before
     super.collect do |sl|
       Dictum.new(sl)
