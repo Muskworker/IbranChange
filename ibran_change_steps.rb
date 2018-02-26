@@ -1240,12 +1240,9 @@ def step_ci5(ary)
 end
 
 # gl > ll
-def step_CI6 ary
-  @current = ary.each_with_index do |segm, idx|
-    if idx > 0 && segm[:IPA] == 'g' && segm.next.phon == 'l'
-      segm[:IPA] = "l"
-      segm[:palatalized] = false
-    end
+def step_ci6(ary)
+  ary.change('g', IPA: 'l', palatalized: false) do |iff|
+    !iff.initial? && iff.next =~ 'l'
   end
 end
 
@@ -2375,7 +2372,7 @@ def transform(str, since = "L", plural = false)
     @steps[48] = step_ci3(deep_dup(@steps[47]))
     @steps[49] = step_ci4(deep_dup(@steps[48]))
     @steps[50] = step_ci5(deep_dup(@steps[49]))
-    @steps[51] = step_CI6(deep_dup(@steps[50]))
+    @steps[51] = step_ci6(deep_dup(@steps[50]))
     @steps[52] = step_CI7(deep_dup(@steps[51]))
     @steps[53] = step_CI8(deep_dup(@steps[52]))
   end
