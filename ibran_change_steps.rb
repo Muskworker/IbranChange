@@ -1214,10 +1214,8 @@ def step_ci3(ary)
 end
 
 # short u(~) > y
-def step_CI4 ary
-  @current = ary.each do |segm|
-    segm[:IPA].gsub!(/u/, 'y') unless segm[:long]
-  end
+def step_ci4(ary)
+  ary.change(/u/, {}, ->(s) { s[:IPA].tr!('u', 'y') }) { |iff| !iff[:long] }
 end
 
 # ʎ > j / iʎ -> i: finally or before consonants
@@ -2254,7 +2252,7 @@ def convert_LL str
   @current = step_oix1(@current)
   @current = step_ci2(@current)
   @current = step_ci3(@current)
-  @current = step_CI4(@current)
+  @current = step_ci4(@current)
   @current = step_CI5(@current)
   @current = step_CI8(@current)
 
@@ -2371,7 +2369,7 @@ def transform(str, since = "L", plural = false)
     @steps[46] = step_ci1(deep_dup(@steps[45]))
     @steps[47] = step_ci2(deep_dup(@steps[46]))
     @steps[48] = step_ci3(deep_dup(@steps[47]))
-    @steps[49] = step_CI4(deep_dup(@steps[48]))
+    @steps[49] = step_ci4(deep_dup(@steps[48]))
     @steps[50] = step_CI5(deep_dup(@steps[49]))
     @steps[51] = step_CI6(deep_dup(@steps[50]))
     @steps[52] = step_CI7(deep_dup(@steps[51]))
