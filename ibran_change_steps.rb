@@ -1201,21 +1201,16 @@ def step_ci2(ary)
 end
 
 # Neutralization of voicing in fricatives
-def step_CI3 ary
-  @current = ary.reverse_each.with_index do |segm, idx|
-    if segm.fricative?
-      case
-      when segm.next.voiceless? || segm.final?
-        segm.devoice!
-      when segm.next.voiced?
-        segm.voice!
+def step_ci3(ary)
+  ary.retro_change(:fricative, {}, lambda do |segm|
+    if segm.next.voiceless? || segm.final?
+      segm.devoice!
+    else
+      segm.voice!
 
-        segm[:orthography] = "d" if segm.orth == "th"
-      end
+      segm[:orthography] = 'd' if segm.orth == 'th'
     end
-  end
-
-  @current = ary
+  end)
 end
 
 # short u(~) > y
@@ -2258,7 +2253,7 @@ def convert_LL str
 
   @current = step_oix1(@current)
   @current = step_ci2(@current)
-  @current = step_CI3(@current)
+  @current = step_ci3(@current)
   @current = step_CI4(@current)
   @current = step_CI5(@current)
   @current = step_CI8(@current)
@@ -2375,7 +2370,7 @@ def transform(str, since = "L", plural = false)
 
     @steps[46] = step_ci1(deep_dup(@steps[45]))
     @steps[47] = step_ci2(deep_dup(@steps[46]))
-    @steps[48] = step_CI3(deep_dup(@steps[47]))
+    @steps[48] = step_ci3(deep_dup(@steps[47]))
     @steps[49] = step_CI4(deep_dup(@steps[48]))
     @steps[50] = step_CI5(deep_dup(@steps[49]))
     @steps[51] = step_CI6(deep_dup(@steps[50]))

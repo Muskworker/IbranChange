@@ -691,7 +691,7 @@ class IbranChangeTest < Minitest::Test
   end
 
   def to_CI3 str
-    step_CI3(to_CI2 str)  
+    step_ci3(to_CI2 str)  
   end
 
   def test_CI3
