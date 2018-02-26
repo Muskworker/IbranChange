@@ -1227,20 +1227,16 @@ def step_ci4(ary)
 end
 
 # ʎ > j / iʎ -> i: finally or before consonants
-def step_CI5 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] && segm[:IPA][-1] == 'i' && segm.next.phon == 'ʎ' &&
-        (segm.after_next.starts_with.consonantal? || segm.next.final?)
-      segm[:long] = true
-      segm[:orthography] << "ll"
-      segm.next[:IPA] = nil
-      segm.next[:orthography] = nil
-    end
-
-    segm[:IPA].gsub!(/ʎ/, 'j') if segm[:IPA]
+def step_ci5(ary)
+  ary.change(/i\Z/, { long: true }, lambda do |segm|
+    segm[:orthography] << 'll'
+    segm.next.delete
+  end) do |iff|
+    iff.next =~ 'ʎ' \
+    && (iff.after_next =~ %i[rising_diphthong consonantal] || iff.next.final?)
   end
 
-  @current.compact
+  ary.change('ʎ', IPA: 'j')
 end
 
 # gl > ll
@@ -2261,7 +2257,7 @@ def convert_LL str
   @current = step_ci2(@current)
   @current = step_ci3(@current)
   @current = step_ci4(@current)
-  @current = step_CI5(@current)
+  @current = step_ci5(@current)
   @current = step_CI8(@current)
 
   posttonic = false
@@ -2378,7 +2374,7 @@ def transform(str, since = "L", plural = false)
     @steps[47] = step_ci2(deep_dup(@steps[46]))
     @steps[48] = step_ci3(deep_dup(@steps[47]))
     @steps[49] = step_ci4(deep_dup(@steps[48]))
-    @steps[50] = step_CI5(deep_dup(@steps[49]))
+    @steps[50] = step_ci5(deep_dup(@steps[49]))
     @steps[51] = step_CI6(deep_dup(@steps[50]))
     @steps[52] = step_CI7(deep_dup(@steps[51]))
     @steps[53] = step_CI8(deep_dup(@steps[52]))
