@@ -177,6 +177,14 @@ module PhoneticFeature
     vowel_count > 0 && modifier_count > 0 && neither_count.zero?
   end
 
+  def rising_diphthong?
+    diphthong? && starts_with.consonantal?
+  end
+
+  def falling_diphthong?
+    diphthong? && ends_with.consonantal?
+  end
+
   def vocalic?
     vowel? || diphthong?
   end
