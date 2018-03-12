@@ -720,12 +720,12 @@ class IbranChangeTest < Minitest::Test
     step_ci6(to_CI5 str)  
   end
 
-  def to_CI7 str
-    step_CI7(to_CI6 str)  
+  def to_ci7 str
+    step_ci7(to_CI6 str)  
   end
 
   def to_CI8 str
-    step_CI8(to_CI7 str)  
+    step_CI8(to_ci7 str)  
   end
   
   def test_CI8

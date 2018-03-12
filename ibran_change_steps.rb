@@ -591,6 +591,17 @@ class CommonIbran
     segm.ends_with.vowel? && segm.next.ends_with =~ %w[m n ŋ] \
       && (segm.after_next.starts_with.consonantal? || segm.next.final?)
   end
+
+  def self.affricate_change(segm)
+    outcomes = { 'tʃ' => 'ç', 'dʒ' => 'ʝ' }
+
+    if segm.prev =~ %w[t d]
+      segm[:orthography] = "#{segm.prev.orth}#{segm[:orthography]}"
+      segm.prev.delete
+    else
+      segm[:IPA] = outcomes[segm.phon]
+    end
+  end
 end
 
 def ipa(dict)
@@ -1247,33 +1258,8 @@ def step_ci6(ary)
 end
 
 # reduce affricates
-def step_CI7 ary
-  @current = ary.each do |segm|
-    if segm.affricate?
-      case segm[:IPA]
-      when "tʃ"
-        if segm.prev.phon == 't'
-          segm[:IPA] = "tʃ"
-          segm[:orthography] = "#{segm.prev.orth}#{segm[:orthography]}"
-          segm.prev[:IPA] = nil
-          segm.prev[:orthography] = nil
-        else
-          segm[:IPA] = "ç"
-        end
-      when "dʒ"
-        if segm.prev.phon == 'd'
-          segm[:IPA] = "dʒ"
-          segm[:orthography] = "#{segm.prev.orth}#{segm[:orthography]}"
-          segm.prev[:IPA] = nil
-          segm.prev[:orthography] = nil
-        else
-          segm[:IPA] = "ʝ"
-        end
-      end
-    end
-  end
-
-  @current.delete_if {|segment| segment[:IPA].nil? }
+def step_ci7(ary)
+  ary.change(:affricate, {}, ->(s) { CommonIbran.affricate_change(s) })
 end
 
 # i > ji after hiatus
@@ -2373,7 +2359,7 @@ def transform(str, since = "L", plural = false)
     @steps[49] = step_ci4(deep_dup(@steps[48]))
     @steps[50] = step_ci5(deep_dup(@steps[49]))
     @steps[51] = step_ci6(deep_dup(@steps[50]))
-    @steps[52] = step_CI7(deep_dup(@steps[51]))
+    @steps[52] = step_ci7(deep_dup(@steps[51]))
     @steps[53] = step_CI8(deep_dup(@steps[52]))
   end
 
