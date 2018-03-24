@@ -602,6 +602,17 @@ class CommonIbran
       segm[:IPA] = outcomes[segm.phon]
     end
   end
+
+  U_TO_BE_W = lambda do |segm|
+    segm.starts_with.orth == 'u' &&
+      segm[:orthography][0..1] != 'uo' &&
+      (segm.match_all(:initial, :diphthong) || segm.prev.vowel?)
+  end
+
+  I_TO_BE_Y = lambda do |segm|
+    segm.starts_with.orth == 'i' &&
+      (segm.match_all(:initial, :diphthong) || segm.prev.vowel?)
+  end
 end
 
 def ipa(dict)
@@ -1263,29 +1274,16 @@ def step_ci7(ary)
 end
 
 # i > ji after hiatus
-def step_CI8 ary
-  @current = ary.each do |segm|
-    if segm.phon[0] == 'i' && segm.prev.ends_with.vowel?
-      segm[:IPA][0] = "ji"
-    end
-  end
+def step_ci8(ary)
+  ary.change('i', IPA: 'ji') { |iff| iff.prev.ends_with.vowel? }
 
-  # initial |i, u| or in a new syllable after a (non-diphthong) vowel become |y, w|
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:orthography][0] == "i" &&
-      ((idx == 0 && segm.diphthong?) || segm.prev.vowel?)
-      segm[:orthography][0] = "y"
-    end
-  end
+  ary.change(CommonIbran::I_TO_BE_Y, {}, lambda do |segm|
+    segm[:orthography][0] = 'y'
+  end)
 
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:orthography][0] == "u" && segm[:orthography][0..1] != "uo" && # don't do 'uo'/ů
-      ((idx == 0 && segm.diphthong?) ||
-      (idx > 0 && segm.prev.vowel?))
-      segm[:orthography][0] = "w"
-    end
-  end
-
+  ary.change(CommonIbran::U_TO_BE_W, {}, lambda do |segm|
+    segm[:orthography][0] = 'w'
+  end)
 end
 
 #############
@@ -2241,7 +2239,7 @@ def convert_LL str
   @current = step_ci3(@current)
   @current = step_ci4(@current)
   @current = step_ci5(@current)
-  @current = step_CI8(@current)
+  @current = step_ci8(@current)
 
   posttonic = false
 
@@ -2360,7 +2358,7 @@ def transform(str, since = "L", plural = false)
     @steps[50] = step_ci5(deep_dup(@steps[49]))
     @steps[51] = step_ci6(deep_dup(@steps[50]))
     @steps[52] = step_ci7(deep_dup(@steps[51]))
-    @steps[53] = step_CI8(deep_dup(@steps[52]))
+    @steps[53] = step_ci8(deep_dup(@steps[52]))
   end
 
   if ["LL", "OLF", "L"].include?(since)
