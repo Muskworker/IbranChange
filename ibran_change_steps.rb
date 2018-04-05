@@ -178,11 +178,11 @@ module PhoneticFeature
   end
 
   def rising_diphthong?
-    diphthong? && starts_with.consonantal?
+    diphthong? && self[0].consonantal?
   end
 
   def falling_diphthong?
-    diphthong? && ends_with.consonantal?
+    diphthong? && self[-1].consonantal?
   end
 
   def vocalic?
@@ -1311,23 +1311,21 @@ def step_ri2 ary
         ary[idx+1][:IPA][0] = ''
       end
     end
-
-    if segm[:IPA][0] == "j" &&
+  end) do |segm|
+    segm[:IPA][0] == "j" &&
       (Segment[IPA: segm[:IPA][1]].vowel? ||   # front of diphthong
       (!segm[:IPA][1] && segm.next.starts_with.vowel?)) && # isolated segment
-      !(idx > 0 && !(segm.prev.dental? || (segm.prev.phon == 'r' && segm.before_prev.vocalic?) || segm.prev.vocalic?)) &&
-      !(idx > 0 && segm.prev.phon == 'l') &&
-      !(idx > 0 && ary[0...idx].all?(&:consonantal?))
-      # segm[:IPA][0] = 'ʝ'
-
-      if segm[:IPA][1] # part of a diphthong
-        ary.insert(idx, Segment[IPA: 'ʝ', orthography: '' ])
-        segm[:IPA][0] = ''
-      else # by itself
-        segm[:IPA] = 'ʝ'
-      end
-    end
-
+      !(segm.pos > 0 && !(segm.prev.dental? || (segm.prev.phon == 'r' && segm.before_prev.vocalic?) || segm.prev.vocalic?)) &&
+      !(segm.pos > 0 && segm.prev.phon == 'l') &&
+      !(segm.pos > 0 && ary[0...segm.pos].all?(&:consonantal?))
+    #((iff.ends_with !~ 'j' || iff.next.starts_with.vowel?) && !iff.initial?) \
+    #|| ((iff.ends_with !~ 'j' || iff.next.starts_with.vowel?) \
+    #    && (iff.prev.dental? || (iff.prev =~ 'r' && iff.before_prev.vocalic?) || iff.prev.vocalic?) \
+    #    && iff.prev !~ 'l' \
+    #    && iff.vowels_before != 0)
+  end
+  
+  @current = ary.each_with_index do |segm, idx|
     if segm[:IPA][-1] == "j" &&
       segm[:IPA][-2] && segm.ends_with.vowel? &&   # end of diphthong
       segm.next.starts_with.vowel?
