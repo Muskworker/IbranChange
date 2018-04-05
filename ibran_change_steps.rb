@@ -1288,11 +1288,9 @@ end
 
 #############
 # õ ã > u~ 6~
-def step_ri1 ary
-  @current = ary.each do |segm|
-    segm[:IPA].gsub!(/o\u0303/, "u\u0303")
-    segm[:IPA].gsub!(/a\u0303/, "ɐ\u0303")
-  end
+def step_ri1(ary)
+  ary.change(/o\u0303/, IPA: "u\u0303")
+  ary.change(/a\u0303/, IPA: "ɐ\u0303")
 end
 
 # syll-initial /j/
