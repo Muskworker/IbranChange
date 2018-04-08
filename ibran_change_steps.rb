@@ -615,6 +615,42 @@ class CommonIbran
   end
 end
 
+# Complex conditions in Roesan Ibran
+class RoesanIbran
+  def self.jot_to_harden?(segm)
+    not_lj = !segm.after?('l')
+    prevocalic = (segm.rising_diphthong? ||
+                  segm.match_all(:consonantal, ->(s) { s.before?(:vocalic) }))
+    after_appropriate = (segm.initial? ||
+                        segm.after?([:dental, :vocalic, lambda do |s|
+                          s.match_all('r', :intervocalic)
+                        end]) &&
+                        segm.vowels_before > 0)
+
+    not_lj && prevocalic && after_appropriate
+  end
+
+  def self.jotate_dentals(ary)
+    outcomes = { 'd' => 'ɟʝ', 't' => 'cç', 's' => 'ç' }
+
+    ary.change(outcomes.keys, {}, lambda do |segm|
+      segm[:IPA] = outcomes[segm.phon]
+      segm.next[:IPA][0] = ''
+    end) { |iff| iff.before?(/\Aj/) }
+  end
+
+  def self.harden_prevocalic_jot(ary)
+    ary.change(/\Aj/, {}, lambda do |segm|
+      if segm.rising_diphthong?
+        ary.insert(segm.pos, Segment[IPA: 'ʝ', orthography: ''])
+        segm[:IPA][0] = ''
+      else
+        segm[:IPA] = 'ʝ'
+      end
+    end) { |segm| RoesanIbran.jot_to_harden?(segm) }
+  end
+end
+
 def ipa(dict)
   dict.join :IPA
 end
@@ -1294,46 +1330,14 @@ def step_ri1(ary)
 end
 
 # syll-initial /j/
-def step_ri2 ary
-  @current = ary.each_with_index do |segm, idx|
-    if %w{d t s}.include?(segm[:IPA]) && ary[idx+1] && ary[idx+1][:IPA][0] == "j"
-      case segm[:IPA]
-      when 'd'
-        segm[:IPA] = 'ɟʝ'
-        ary[idx+1][:IPA][0] = ''
-      when 't'
-        segm[:IPA] = 'cç'
-        ary[idx+1][:IPA][0] = ''
-      when 's'
-        segm[:IPA] = 'ç'
-        ary[idx+1][:IPA][0] = ''
-      end
-    end
-  end) do |segm|
-    segm[:IPA][0] == "j" &&
-      (Segment[IPA: segm[:IPA][1]].vowel? ||   # front of diphthong
-      (!segm[:IPA][1] && segm.next.starts_with.vowel?)) && # isolated segment
-      !(segm.pos > 0 && !(segm.prev.dental? || (segm.prev.phon == 'r' && segm.before_prev.vocalic?) || segm.prev.vocalic?)) &&
-      !(segm.pos > 0 && segm.prev.phon == 'l') &&
-      !(segm.pos > 0 && ary[0...segm.pos].all?(&:consonantal?))
-    #((iff.ends_with !~ 'j' || iff.next.starts_with.vowel?) && !iff.initial?) \
-    #|| ((iff.ends_with !~ 'j' || iff.next.starts_with.vowel?) \
-    #    && (iff.prev.dental? || (iff.prev =~ 'r' && iff.before_prev.vocalic?) || iff.prev.vocalic?) \
-    #    && iff.prev !~ 'l' \
-    #    && iff.vowels_before != 0)
-  end
-  
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA][-1] == "j" &&
-      segm[:IPA][-2] && segm.ends_with.vowel? &&   # end of diphthong
-      segm.next.starts_with.vowel?
-      # segm[:IPA][0] = 'ʝ'
-      ary.insert(idx+1, Segment[IPA: 'ʝ', orthography: ''])
-      segm[:IPA][-1] = ''
-    end
-  end
+def step_ri2(ary)
+  RoesanIbran.jotate_dentals(ary)
+  RoesanIbran.harden_prevocalic_jot(ary)
 
-  @current = ary.delete_if {|segment| segment[:IPA] == '' }
+  ary.change(:falling_diphthong, {}, lambda do |segm|
+    ary.insert(segm.pos + 1, Segment[IPA: 'ʝ', orthography: ''])
+    segm[:IPA].chop!
+  end) { |iff| iff.next.starts_with.vowel? }
 end
 
 # assimilation of /s/
