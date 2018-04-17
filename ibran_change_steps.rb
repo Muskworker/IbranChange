@@ -1341,20 +1341,16 @@ def step_ri2(ary)
 end
 
 # assimilation of /s/
-def step_ri3 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == 's' && !segm[:long] && idx > 0 && segm.prev.vocalic?
-      case
-      when segm.final?
-        segm[:IPA] = 'ʰ'
-      when segm.next.consonantal?
-        segm[:IPA] = segm.next.phon[0]
-      end
-    end
-
-    if idx == 0 && segm[:IPA] == 's' && segm.next.consonantal?
-      segm[:IPA] = 'ʰ'
-    end
+def step_ri3(ary)
+  ary.change('s', {}, lambda do |segm|
+    segm[:IPA] = if segm.final? || segm.initial?
+                   'ʰ'
+                 else
+                   segm.next.phon[0]
+                 end
+  end) do |iff|
+    !iff[:long] &&
+      (iff.after?(:vocalic) || iff.initial? && iff.before?(:consonantal))
   end
 end
 
