@@ -1355,20 +1355,10 @@ def step_ri3(ary)
 end
 
 # je wo wø > ji u y in closed syllables
-def step_ri4 ary
-  @current = ary.each_with_index do |segm, idx|
-    if %w{je wo wø}.include?(segm[:IPA]) && segm.next.consonantal? &&
-        (segm.next.final? || (ary[idx+2] && segm.next.consonantal?))
-      case segm[:IPA]
-      when "je"
-        segm[:IPA] = 'ji'
-      when "wo"
-        segm[:IPA] = 'u'
-      when "wø"
-        segm[:IPA] = 'y'
-      end
-    end
-  end
+def step_ri4(ary)
+  ary.change('je', IPA: 'ji') { |iff| iff.before?(:consonantal) }
+  ary.change('wo', IPA: 'u') { |iff| iff.before?(:consonantal) }
+  ary.change('wø', IPA: 'y') { |iff| iff.before?(:consonantal) }
 end
 
 # w > 0 before round vowels
