@@ -337,6 +337,7 @@ class Segment < Hash
   end
   alias =~ match
 
+  # This doesn't belong here
   def parse_sym(feat)
     return send("#{feat}?") unless feat =~ /_with_/
 
