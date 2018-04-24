@@ -1384,20 +1384,18 @@ def step_ri4(ary)
 end
 
 # w > 0 before round vowels
-def step_ri5 ary
-  @current = ary.each do |segm|
-    if segm[:IPA] == "w" && segm.next.starts_with.round?
-      segm.next[:orthography] = segm[:orthography] << segm.next.orth
+def step_ri5(ary)
+  # TODO: accepting 'starts_with_round?' for 'starts_with.round?'
+  #       would simplify so much
+  ary.change(/w/, {}, lambda do |segm|
+    return segm.phon.delete!('w') if segm.vocalic?
 
-      segm[:IPA] = nil
-      segm[:orthography] = nil
-    elsif segm[:IPA][-1] == 'w' && segm.next.starts_with.round?
-      segm[:IPA][-1] = ''
-    elsif segm[:IPA][0] == 'w' && segm[:IPA][1] && segm[:IPA][1].round?
-      segm[:IPA][0] = ''
-    end
+    segm.next.prepend('', segm.orth)
+    segm.delete
+  end) do |iff|
+    iff.next =~ :starts_with_round \
+    || (iff.rising_diphthong? && iff.nucleus.round?)
   end
-  @current.compact
 end
 
 # k_j g_j > tS dZ
