@@ -185,6 +185,10 @@ module PhoneticFeature
     diphthong? && self[-1].consonantal?
   end
 
+  def nucleus
+    chars.max_by(&:sonority)
+  end
+
   def vocalic?
     vowel? || diphthong?
   end
