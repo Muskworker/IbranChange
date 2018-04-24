@@ -328,7 +328,7 @@ class Segment < Hash
   def match(segm)
     case segm
     when Hash then segm.all? { |k, _| self[k] == segm[k] }
-    when Symbol then send "#{segm}?"
+    when Symbol then parse_sym(segm)
     when String then phon == segm
     when Array then segm.any? { |s| match(s) }
     when Proc then segm.call(self)
@@ -336,6 +336,19 @@ class Segment < Hash
     end
   end
   alias =~ match
+
+  def parse_sym(feat)
+    return send("#{feat}?") unless feat =~ /_with_/
+
+    feat = feat.to_s.partition('_with_')
+
+    target = case feat[0]
+             when 'starts' then starts_with
+             when 'ends' then ends_with
+             end
+
+    target.send("#{feat[-1]}?")
+  end
 
   def match_all(*ary)
     ary.all? { |criterion| match(criterion) }
