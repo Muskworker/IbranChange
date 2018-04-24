@@ -367,6 +367,11 @@ class Segment < Hash
     self.orth << orth
   end
 
+  def prepend(phon, orth = phon)
+    self.phon.prepend(phon)
+    self.orth.prepend(orth)
+  end
+
   def to_ipa
     output = "#{phon}#{"\u0320" if self[:back]}#{'ʲ' if self[:palatalized]}"
     # /o:w/, not /ow:/
