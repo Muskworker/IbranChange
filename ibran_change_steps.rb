@@ -2243,7 +2243,7 @@ def convert_LL str
   end)
 
   ary.change('i', {}, lambda do |segm|
-    segm.append('j', '')
+    ary.insert(segm.pos + 1, Segment.new('j', '')) # segm.append('j', '')
   end) { |iff| iff.pretonic? && iff.next.vocalic?  }
 
   @current = ary
