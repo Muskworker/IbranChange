@@ -337,7 +337,7 @@ class Segment < Hash
   end
   alias =~ match
 
-  # This doesn't belong here
+  # TODO: This doesn't belong here
   def parse_sym(feat)
     return send("#{feat}?") unless feat =~ /_with_/
 
@@ -2104,6 +2104,7 @@ def convert_LL str
     segm.next.delete
   end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with =~ ['>', 'j'] } 
 
+  # jot
   ary.change(%w[t s ks], { IPA: 'ʃʃ' }, lambda do |segm|
     segm[:orthography] << 'i'
     segm.next.delete
