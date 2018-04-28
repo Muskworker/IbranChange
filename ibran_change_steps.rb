@@ -2242,6 +2242,10 @@ def convert_LL str
     end
   end)
 
+  ary.change('i', {}, lambda do |segm|
+    segm.append('j', '')
+  end) { |iff| iff.pretonic? && iff.next.vocalic?  }
+
   @current = ary
   # duplicate stresses after endings
   @current.select(&:stressed?)[0..-2].each{|s| s[:stress] = false} if @current.count(&:stressed?) > 1
