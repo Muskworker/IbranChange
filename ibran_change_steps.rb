@@ -1798,7 +1798,7 @@ def step_pi5 ary
           end
         end
 
-        if !segm[:long]  # I don't think this will catch /jV/ /wV/ diphthongs
+        if !segm[:long] || segm.rising_diphthong?
           #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' :
           vowel_pos = segm.starts_with.vowel? ? 0 : 1
           segm[:IPA][vowel_pos] = 'ə'
