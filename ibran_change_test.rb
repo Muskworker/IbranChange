@@ -1515,6 +1515,7 @@ class IbranChangeTest < Minitest::Test
       { w: "sumach", RI_IPA: "ˈzymɑkʲ", RI_Cyrl: "зүмак", RI_Latn: "sumac", PI_IPA: "ˈzymək", PI: "sumăc" },
       { w: "systema>", RI_IPA: "zitˈtem", RI_Cyrl: "зіттим", RI_Latn: "sistéme", PI_IPA: "zəˈtemə", PI: "sîtémă" },
       { w: "thymum", RI_IPA: "dĩ", RI_Cyrl: "дін", RI_Latn: "dim", PI_IPA: "dɛ̃", PI: "dim" },
+      { w: "tractorem>", RI_IPA: "trɑkʲˈtuːr", RI_Cyrl: "трактӯр", RI_Latn: "tractuor", PI_IPA: "trəkˈtuːr", PI: "tractuor" },
       { w: "vanilla", RI_IPA: "vɑˈniʝ", RI_Cyrl: "ваніж", RI_Latn: "vanille", PI_IPA: "vəˈnijə", PI: "vaniyă" },
       { w: "zeta", RI_IPA: "ʒet", RI_Cyrl: "жит", RI_Latn: "zéte", PI_IPA: "ˈʒetə", PI: "zétă" },
       { w: "zuccarum", RI_IPA: "ˈʒykʲkʲɑr", RI_Cyrl: "жүккар", RI_Latn: "zuccar", PI_IPA: "ˈʒykkər", PI: "zuccăr" }

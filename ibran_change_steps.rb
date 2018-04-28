@@ -2231,6 +2231,11 @@ def convert_LL str
       segm.dictum[-2].delete # e
       segm.dictum.renumber   # argh
       segm.delete            # m
+    when /tórem$/
+      segm.before_prev.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
+      segm.dictum[-2].delete # e
+      segm.dictum.renumber   # argh
+      segm.delete            # m
     when /(e|u)m$/ # not us
       segm.delete # m
       step_oi26(ary)
