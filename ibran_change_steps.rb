@@ -1412,17 +1412,8 @@ def step_ri6(ary)
 end
 
 # k g > k_j g_j
-def step_ri7 ary
-  @current = ary.each do |segm|
-    if !segm[:back]
-      case segm[:IPA]
-      when 'k'
-        segm[:palatalized] = true
-      when 'g'
-        segm[:palatalized] = true
-      end
-    end
-  end
+def step_ri7(ary)
+  ary.change(%w[k g], palatalized: true) { |iff| !iff[:back] }
 end
 
 # k- g- > k g
