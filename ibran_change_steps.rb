@@ -1400,24 +1400,15 @@ def step_ri5(ary)
 end
 
 # k_j g_j > tS dZ
-def step_ri6 ary
-  @current = ary.each_with_index do |segm, idx|
-    if ary[idx+1] && ary[idx+1][:palatalized]
-      segm[:IPA] = 't' if segm[:IPA] == 'k' && segm.next.phon == 'k'
-      segm[:IPA] = 'd' if segm[:IPA] == 'g' && segm.next.phon == 'g'
-    end
+def step_ri6(ary)
+  outcomes = { 'k' => 'tʃ', 'g' => 'dʒ' }
 
-    if segm[:palatalized]
-      case segm[:IPA]
-      when 'k'
-        segm[:IPA] = 'tʃ'
-        segm[:palatalized] = false
-      when 'g'
-        segm[:IPA] = 'dʒ'
-        segm[:palatalized] = false
-      end
-    end
-  end
+  ary.change(%w[k g], {}, lambda do |segm|
+    segm.prev[:IPA] = outcomes.fetch(segm.prev[:IPA], [])[0] \
+                      || segm.prev.phon
+    segm[:IPA] = outcomes[segm[:IPA]]
+    segm[:palatalized] = false
+  end) { |iff| iff[:palatalized] }
 end
 
 # k g > k_j g_j
