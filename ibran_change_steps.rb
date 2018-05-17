@@ -1417,17 +1417,8 @@ def step_ri7(ary)
 end
 
 # k- g- > k g
-def step_ri8 ary
-  @current = ary.each do |segm|
-    if segm[:back]
-      case segm[:IPA]
-      when 'k'
-        segm[:back] = false
-      when 'g'
-        segm[:back] = false
-      end
-    end
-  end
+def step_ri8(ary)
+  ary.change(%w[k g], back: false) { |iff| iff[:back] }
 end
 
 # Devoice final stops
