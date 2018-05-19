@@ -2160,6 +2160,7 @@ def convert_LL str
       segm.before_prev.prev.replace!(%w[ə e])
       segm.before_prev.replace!('l')
       segm.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
+      respell_velars(word)
     when /atorium$/
       segm.dictum[-7].replace!(%w[ə e])
       segm.dictum[-6].replace!('l')
