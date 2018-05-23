@@ -1422,10 +1422,8 @@ def step_ri8(ary)
 end
 
 # Devoice final stops
-def step_ri9 ary
-  ary.last.devoice! if ary.last.stop?
-
-  @current = ary
+def step_ri9(ary)
+  ary.change(:final, {}, ->(s) { s.devoice! }, &:stop?)
 end
 
 # lose final schwa
