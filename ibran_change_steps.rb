@@ -1430,30 +1430,18 @@ def step_ri9(ary)
   ary.change(:final, {}, ->(s) { s.devoice! }, &:stop?)
 end
 
-# lose final schwa
-def step_ri10 ary
-  # We can have words of one character like ч.
-  # But don't lose our only segment.
-  if (ary.size > 1 && %W{ə ə\u0303}.include?(ary.last[:IPA])) || (ary[-2] && !ary[-2].stressed? && ary.last[:IPA] == "ʰ" && ary[-2][:IPA] == "ə")
-    case ary.last[:IPA]
-    when "ə", "ə\u0303"
-      ary[-2][:final_n] = true if ary[-2][:IPA] == "n" #to distinguish from final nasal later
-      ary[-2][:orthography] = ary[-2][:orthography] << ary[-1][:orthography]
+# Lose final schwa.
+def step_ri10(ary)
+  ary.change(/ə/, {}, lambda do |segm|
+    prev = segm.prev
+    nxt = segm.next
+    prev[:final_n] = prev[:IPA] == 'n' # To distinguish from final nasal later
+    prev[:orthography] <<= segm[:orthography] <<= nxt.orth
 
-      ary[-1][:IPA] = nil
-      ary[-1][:orthography] = nil
-    when "ʰ"
-      ary[-3][:final_n] = true if ary[-3][:IPA] == "n" #to distinguish from final nasal later
-      ary[-3][:orthography] = ary[-3][:orthography] << ary[-2][:orthography] << ary[-1][:orthography]
-
-      ary[-2][:IPA] = nil
-      ary[-2][:orthography] = nil
-      ary[-1][:IPA] = nil
-      ary[-1][:orthography] = nil
-    end
+    [nxt, segm].each(&:delete)
+  end) do |iff|
+    iff.final? || (iff.next =~ 'ʰ' && iff.match_all(:penultimate, :unstressed))
   end
-
-  @current = ary.compact
 end
 
 # lose /h/
