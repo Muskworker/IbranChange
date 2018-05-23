@@ -110,6 +110,10 @@ module PhoneticEnvironment
     pos.zero? || nxt.phon == ' '
   end
 
+  def penultimate?
+    pos == @dictum.size - 2 || (nxt.phon != ' ' && nxt.phon == ' ')
+  end
+
   def final?
     pos == @dictum.size - 1 || nxt.phon == ' '
   end
