@@ -1460,16 +1460,13 @@ def step_ri11(ary)
 end
 
 # OE AE > O: a:
-def step_ri12 ary
-  @current = ary.each do |segm|
-    if segm[:IPA].include?('ɑɛ̯') || segm[:IPA].include?('ɔɛ̯') || segm[:IPA].include?('œ̯')
-      segm[:IPA].gsub!(/ɑɛ̯/, 'a')
-      segm[:IPA].gsub!(/ɔɛ̯/, 'ɔ')
-      segm[:IPA].gsub!(/(.*)œ̯/, '\1')
+def step_ri12(ary)
+  # TODO: allow 'change' to handle hashes like this directly
+  outcomes = { /ɑɛ̯/ => 'a', /ɔɛ̯/ => 'ɔ', /œ̯/ => '' }
 
-      segm[:long] = true
-    end
-  end
+  ary.change(outcomes.keys, { long: true }, lambda do |segm|
+    outcomes.each_pair { |i, o| segm[:IPA].gsub!(i, o) }
+  end)
 end
 
 # ej > Ej
