@@ -1445,26 +1445,18 @@ def step_ri10(ary)
 end
 
 # lose /h/
-def step_ri11 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == 'h'
-      if ary[idx+1]
-        segm.next[:orthography] = segm[:orthography] << segm.next.orth
-      end
+def step_ri11(ary)
+  ary.change('h', {}, lambda do |segm|
+    nxt = segm.next
+    nxt[:orthography] = segm[:orthography] << nxt.orth
 
-      if idx > 0 && segm.prev.phon[-1] == "\u0303"
-        segm[:IPA] = 'n'
-        segm.prev.phon[-1] = ''
-        segm[:orthography] = 'n'
-        segm.prev.orth[-1] = ''
-      else
-        segm[:IPA] = nil
-        segm[:orthography] = nil
-      end
+    if segm.after?(/\u0303/) # Nasalized /~h/ > /n/
+      segm.update(IPA: 'n', orthography: 'n')
+      %i[phon orth].each { |s| segm.prev.send(s).chop! }
+    else
+      segm.delete
     end
-  end
-
-  @current = ary.delete_if {|segment| segment[:IPA].nil? }
+  end)
 end
 
 # OE AE > O: a:
