@@ -1470,12 +1470,8 @@ def step_ri12(ary)
 end
 
 # ej > Ej
-def step_ri13 ary
-  @current = ary.each do |segm, idx|
-    if segm[:IPA].include?('ej')
-      segm[:IPA].gsub!(/ej/, 'ɛj')
-    end
-  end
+def step_ri13(ary)
+  ary.change('ej', IPA: 'ɛj')
 end
 
 # oj Oj OH EH > œj
