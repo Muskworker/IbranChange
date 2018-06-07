@@ -1499,28 +1499,16 @@ def cyrillize(ary)
 end
 
 def neocyrillize(ary)
-  cyrl = ary.to_ipa.tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐcɟ", "абвджзилмннњоөпрсстуүфѡшыюяятд")
-  cyrl.gsub!(/\u0304/, '')
-  cyrl.gsub!(/тш/, "ч")
-  cyrl.gsub!(/дж/, "џ")
-  cyrl.gsub!(/θ/, "ћ")
-  cyrl.gsub!(/gʲ/, "г")
-  cyrl.gsub!(/kʲ/, "к")
-  cyrl.gsub!(/g/, "гъ")
-  cyrl.gsub!(/k/, "къ")
-  cyrl.gsub!(/ç/, 'с́')
-  cyrl.gsub!(/ŋ/, 'нг')
-  cyrl.gsub!(/үː/, 'ӱ')
-  cyrl.gsub!(/уː/, 'у́')
-  cyrl.gsub!(/ү/, 'у')
-  cyrl.gsub!(/[jʝ]ɛ/, 'є')
-  cyrl.gsub!(/[jʝ][ei]/, 'ї')
-  cyrl.gsub!(/ʝ$/, "јъ")
-  cyrl = cyrl.tr("ʝɛi", "јеі")
-  cyrl.gsub!(/([аиоөуүѡыюєяїеі])j([^аиоөуүѡыюєяїеі])/, '\1й\2')
-  cyrl.gsub!(/([аиоөуүѡыюєяїеі])w([^аиоөуүѡыюєяїеі])/, '\1ў\2')
-  cyrl = cyrl.tr("jw", "јв")
-  cyrl.gsub(/[ˈː]/, '')
+  cyrl = ary.to_ipa.tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐcɟ",
+                       'абвджзилмннњоөпрсстуүфѡшыюяятд')
+
+  { /\u0304/ => '', /тш/ => 'ч', /дж/ => 'џ', /θ/ => 'ћ', /gʲ/ => 'г',
+    /kʲ/ => 'к', /g/ => 'гъ', /k/ => 'къ', /ç/ => 'с́', /ŋ/ => 'нг',
+    /үː/ => 'ӱ', /уː/ => 'у́', /ү/ => 'у', /[jʝ]ɛ/ => 'є', /[jʝ][ei]/ => 'ї',
+    /ʝ$/ => 'јъ', 'ʝ' => 'ј', 'ɛ' => 'е', 'i' => 'і',
+    /([аиоөуүѡыюєяїеі])j([^аиоөуүѡыюєяїеі])/ => '\1й\2',
+    /([аиоөуүѡыюєяїеі])w([^аиоөуүѡыюєяїеі])/ => '\1ў\2',
+    'j' => 'ј', 'w' => 'в', /[ˈː]/ => '' }.each { |i, o| cyrl.gsub! i, o }
 end
 
 # This doesn't really introduce any good changes other than ă$ > e
