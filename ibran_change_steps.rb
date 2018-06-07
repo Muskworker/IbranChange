@@ -1480,24 +1480,25 @@ def step_ri14(ary)
 end
 
 # rough, cleanup
-def cyrillize ary
-  cyrl = ary.to_ipa.tr("ɑbvgdɛfʒzeijklmn\u0303ɲɔœøprstθuwɥyoʃəɐaʰː", "абвгдевжзиіјклмннњоөөпрсттууүүѡшъъя’\u0304")
-  cyrl.gsub!(/н\u0304/, "\u0304н")  # ũː > ун̄ > ӯн
-  cyrl.gsub!(/н’/, "’н")            # w̃ʰ > н’ > ’н
-  cyrl.sub!(/н$/, 'н’') if ary[-1][:final_n] && cyrl != "н" && %W{а е и і ј о ө у ү ѡ ъ я \u0304}.include?(cyrl[-2]) # && !(cyrl[-2] == "н") # no need for нн' or н' solo
-  cyrl.gsub!(/тш/, 'ч')
-  cyrl.gsub!(/дж/, 'џ')
-  cyrl.gsub!(/[ˈʲ]/, '')
-  cyrl.gsub!(/ccç/, 'ттј')
-  cyrl.gsub!(/cç/, 'тј')
-  cyrl.gsub!(/ɟɟʝ/, 'ддј')
-  cyrl.gsub!(/ɟʝ/, 'дј')
-  cyrl.gsub!(/ʝ/, 'ж')
-  cyrl.gsub!(/ŋ/, 'нг')
-  cyrl.gsub(/ç/, 'ш')
+def cyrillize(ary)
+  cyrl = ary.to_ipa.tr("ɑbvgdɛfʒzeijklmn\u0303ɲɔœøprstθuwɥyoʃəɐaʰː",
+                       "абвгдевжзиіјклмннњоөөпрсттууүүѡшъъя’\u0304")
+
+  output = { /н\u0304/ => "\u0304н", /н’/ => '’н', /тш/ => 'ч',
+             /дж/ => 'џ', /[ˈʲ]/ => '', /ccç/ => 'ттј',
+             /cç/ => 'тј', /ɟɟʝ/ => 'ддј', /ɟʝ/ => 'дј',
+             /ʝ/ => 'ж', /ŋ/ => 'нг', /ç/ => 'ш' }
+
+  output.each { |int, out| cyrl.gsub! int, out }
+
+  # no need for нн' or н' solo
+  cyrl.sub!(/н$/, 'н’') if ary[-1][:final_n] && cyrl != 'н' \
+    && %W[а е и і ј о ө у ү ѡ ъ я \u0304].include?(cyrl[-2])
+
+  cyrl
 end
 
-def neocyrillize ary
+def neocyrillize(ary)
   cyrl = ary.to_ipa.tr("ɑbvdʒzelmn\u0303ɲɔœprsʰtuyfoʃəøaɐcɟ", "абвджзилмннњоөпрсстуүфѡшыюяятд")
   cyrl.gsub!(/\u0304/, '')
   cyrl.gsub!(/тш/, "ч")
@@ -1848,6 +1849,8 @@ def step_pi10 ary
     segm[:orthography] = "c" if segm[:orthography] == "qu" && %w{a à o ó u}.include?(segm.next.orth[0])
   end
 end
+
+# TODO: convert_fro
 
 # INCOMPLETE
 def convert_OLF str
