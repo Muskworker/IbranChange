@@ -1509,6 +1509,8 @@ def neocyrillize(ary)
     /([аиоөуүѡыюєяїеі])j([^аиоөуүѡыюєяїеі])/ => '\1й\2',
     /([аиоөуүѡыюєяїеі])w([^аиоөуүѡыюєяїеі])/ => '\1ў\2',
     'j' => 'ј', 'w' => 'в', /[ˈː]/ => '' }.each { |i, o| cyrl.gsub! i, o }
+
+  cyrl
 end
 
 # This doesn't really introduce any good changes other than ă$ > e
@@ -1575,9 +1577,9 @@ def neolatinize(ary)
   neo.change(:diphthong, {}, ->(segm) { segm[:orthography] = 'u' << segm.orth[1..-1] }) do |segm| 
     segm.starts_with == 'w' && segm.prev.consonantal? 
   end
-  
+
   neo.join
-#  ~ 
+#  ~
 #  n 
 end
 
