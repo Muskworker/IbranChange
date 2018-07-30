@@ -1520,10 +1520,8 @@ def step_pi1(ary)
 end
 
 # a a~ > æ æ~
-def step_pi2 ary
-  @current = ary.each do |segm|
-    segm[:IPA].gsub!(/a/, "æ")
-  end
+def step_pi2(ary)
+  ary.change(/a/, {}, ->(s) { s[:IPA].tr!('a', 'æ') })
 end
 
 # assimilation of /s/
