@@ -280,7 +280,6 @@ if ARGV.include?("-t")
 end
 
 puts "NeoRI: #{neocyrillize(@roesan_steps[-1])}"
-puts "NeoPI: #{neolatinize(@paysan_steps[-1])}"
 
 # HTML for Lexicon.html
 puts
