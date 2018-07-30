@@ -1646,7 +1646,19 @@ def step_pi5 ary
           end
         end
       else
-        segm[:long] = true if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯" || (segm.next.vowel? && !segm.next.stressed?)
+        segm[:long] = true if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯" || (segm.next.vowel? && !segm.next.stressed? && segm.pretonic?)
+
+        # hiatus
+        if segm.next.starts_with.vowel? && segm.posttonic?
+          case segm.phon
+          when 'i', 'ɛ', 'je'
+            segm.next[:IPA] = 'j' << segm.next.phon
+            segm.next[:orthography] = segm.orth << segm.next.orth
+            segm[:IPA] = nil
+            segm[:orthography] = nil
+            next
+          end
+        end
 
         if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯"
           ary.insert(idx+1, Segment[IPA: 'ə', orthography: 'a'])
@@ -1689,6 +1701,8 @@ def step_pi5 ary
       end
     end
   end
+  
+  @current.delete_if {|segment| segment[:IPA].nil? }
 end
 
 # k_j g_j > tS dZ
@@ -2103,6 +2117,10 @@ def convert_LL str
       segm.dictum[-2].delete # e
       segm.dictum.renumber   # argh
       segm.delete            # m
+    when /ium$/
+      # segm.before_prev.replace!(%w[j i]) if segm.before_prev =~ 'i'
+      segm.prev.replace!(%w[ə e])         # u
+      segm.delete                         # m
     when /(e|u)m$/ # not us
       segm.delete # m
       step_oi26(ary)
@@ -2139,7 +2157,7 @@ def convert_LL str
         end
       end
     when "g"
-      if segm.next.starts_with.front_vowel? && segm.next[:orthography] != "u"
+      if (segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j' ) && segm.next[:orthography] != "u"
         if segm[:orthography] == "gh"
           segm[:orthography] = "gu"
           segm[:palatalized] = true
