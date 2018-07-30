@@ -1515,12 +1515,8 @@ end
 
 #############
 # i~ o~ y~ > E~ O~ œ~
-def step_pi1 ary
-  @current = ary.each do |segm|
-    segm[:IPA].gsub!(/i\u0303/, "ɛ\u0303")
-    segm[:IPA].gsub!(/o\u0303/, "ɔ\u0303")
-    segm[:IPA].gsub!(/y\u0303/, "œ\u0303")
-  end
+def step_pi1(ary)
+  ary.change(/[ioy]\u0303/, {}, ->(s) { s[:IPA].tr!('ioy', 'ɛɔœ') })
 end
 
 # a a~ > æ æ~
