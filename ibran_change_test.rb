@@ -1303,6 +1303,7 @@ class IbranChangeTest < Minitest::Test
       { w: "bulto", RI_IPA: "buːt", RI_Cyrl: "бӯт", RI_Latn: "buute", PI_IPA: "ˈbuːtə", PI: "buută" },
       { w: "butera", RI_IPA: "ˈbytər", RI_Cyrl: "бүтър", RI_Latn: "butere", PI_IPA: "ˈbytərə", PI: "butăra" },
       { w: "butt", RI_IPA: "bytt", RI_Cyrl: "бүтт", RI_Latn: "butt", PI_IPA: "bytt", PI: "butt" },
+      { w: "cūprehum", RI_IPA: "kʲyːr", RI_Cyrl: "кү̄р", RI_Latn: "cuyure", PI_IPA: "ˈkyːrə", PI: "cuyură" },
       { w: "dag", RI_IPA: "dɑkʲ", RI_Cyrl: "дак", RI_Latn: "dag", PI_IPA: "dɑx", PI: "dag" },
       { w: "dilli", RI_IPA: "dyːl", RI_Cyrl: "дү̄л", RI_Latn: "diule", PI_IPA: "ˈdyːlə", PI: "diulă" },
       { w: "dōdāre", RI_IPA: "doːˈdɑr", RI_Cyrl: "дѡ̄дар", RI_Latn: "dódar", PI_IPA: "doːˈdɑr", PI: "dódar" },

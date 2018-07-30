@@ -1104,13 +1104,22 @@ end
 # vowel fronting: umlaut
 def step_oi22(ary)
   outcomes = { 'ɑ' => %w[a ài], 'a' => %w[a ài], 'ɛ' => %w[ɛ ei],
-               'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu] }
+               'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu],
+               'u' => %w[y ui] }
 
-  ary.change(%w[ɑ a ɛ e ɔ o], { long: true }, lambda do |segm|
+  ary.change(%w[ɑ a ɛ e ɔ o u], { long: true }, lambda do |segm|
     segm.replace!(outcomes[segm.phon])
     segm.after_next.delete
   end) do |iff|
-    iff.before?('r') && iff.after_next =~ 'j'
+    iff.before?('r') && iff.after_next =~ 'j' \
+  end
+
+  # Muta cum liquida
+  ary.change(%w[ɑ a ɛ e ɔ o u], { long: true }, lambda do |segm|
+    segm.replace!(outcomes[segm.phon])
+    segm.next.after_next.delete
+  end) do |iff|
+    iff.before?(:stop) && iff.after_next =~ 'r' && iff.next.after_next =~ 'j'
   end
 
   respell_velars(ary)
@@ -1240,10 +1249,11 @@ end
 
 # resolution of diphthongs in /E e i/
 def step_oix6(ary)
-  ary.change(/j?[ɛei]w\u0303?$/, { long: true }, lambda do |segm|
+  ary.change(/j?[ɛeiy]w\u0303?$/, { long: true }, lambda do |segm|
     segm.phon.sub!(/ɛw/, 'œ')
     segm.phon.sub!(/ew/, 'ø')
     segm.phon.sub!(/iw/, 'y')
+    segm.phon.sub!(/yw/, 'y')
   end)
 
   ary.change(:diphthong, {}, lambda do |segm|
