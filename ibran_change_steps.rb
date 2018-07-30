@@ -2106,6 +2106,13 @@ def convert_LL str
       segm.dictum[-2].delete # e
       segm.dictum.renumber   # argh
       segm.delete            # m
+    when /onem$/
+      segm.before_prev.prev.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
+      segm.dictum[-3].delete # n
+      segm.dictum.renumber   # argh
+      segm.dictum[-2].delete # e
+      segm.dictum.renumber   # argh
+      segm.delete            # m
     when /tórem$/
       segm.before_prev.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
       segm.dictum[-2].delete # e
