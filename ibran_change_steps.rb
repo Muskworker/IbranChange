@@ -22,6 +22,7 @@ class Dictum < Array
     end
   end
 
+  # TODO: maybe add an ability to change substrings instead of entire matches
   def change(origin, target, consequence = nil)
     each do |segm|
       next unless segm.match(origin) && (block_given? ? yield(segm) : true)
@@ -806,7 +807,7 @@ end
 def step_vl4(ary)
   ary.each do |segment|
     segment[:IPA].delete! 'h'
-    segment[:orthography].delete! 'h'
+    segment[:orthography].delete! 'h' unless segment.orth == 'ph'
   end
 
   ary.delete_if { |segment| segment[:IPA] == '' }
@@ -1175,6 +1176,8 @@ def step_oi28(ary)
   ary.change('ɑ', IPA: 'ə', orthography: 'e') do |iff|
     iff.unstressed? && ary[0..iff.pos].syllable_count > 1
   end
+
+  respell_velars(ary)
 end
 
 # reduce unstressed medial syllables
@@ -1390,7 +1393,7 @@ def step_ri3(ary)
                  end
   end) do |iff|
     !iff[:long] &&
-      (iff.after?(:vocalic) || iff.initial? && iff.before?(:consonantal))
+      ((iff.after?(:vocalic) || iff.initial?) && (iff.before?(:consonantal) || iff.final?))
   end
 end
 
@@ -1686,29 +1689,32 @@ def step_pi5 ary
           segm[:IPA][vowel_pos] = 'ə'
           if posttonic && segm[:orthography] != 'ă'
             segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
+
             segm[:orthography].gsub!(/ă\u0302/, "ă")  # no ă̂
             any_breve = true
           end
 
-          if %w{ʃ ʒ ç ʝ k g}.include?(segm.prev.phon[-1]) &&
+          if %w{ʃ ʒ ç ʝ k g s}.include?(segm.prev.phon[-1]) &&
               %w{a à o ó u ă}.include?(segm[:orthography][0]) &&
               !%w{i j}.include?(segm.prev.orth[-1]) # LL |tiV|; pluvia > plusja
             case segm.prev.phon[-1]
             when 'ʃ', 'ç'
-              segm.prev.orth[-1] = 'ç'
+              segm.prev.orth[-1] = 'ç' unless segm.prev.orth == 'ch'
             when 'ʒ', 'ʝ'
               segm.prev.orth[-1] = 'ç'
             when 'g' # gu
               segm.prev[:orthography] = 'g'
             when 'k' # qu
               segm.prev[:orthography] = 'c'
+            when 's' # c in French loans 
+              segm.prev[:orthography] = segm.prev.intervocalic? ? 'ss' : 's'
             end
           end
         end
       end
     end
   end
-  
+
   @current.delete_if {|segment| segment[:IPA].nil? }
 end
 
