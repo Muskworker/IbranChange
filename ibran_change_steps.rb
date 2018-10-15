@@ -1541,28 +1541,19 @@ def step_pi2(ary)
 end
 
 # assimilation of /s/
-def step_pi3 ary
-  @current = ary.each_with_index do |segm, idx|
-    if segm[:IPA] == 's' && !segm[:long] && idx > 0 && !segm.final? && segm.prev.vocalic? && segm.next.consonantal?
-        segm[:IPA] = nil
-        segm[:orthography] = nil
+def step_pi3(ary)
+  outcomes = { 'e' => %w[ê eî], 'o' => %w[ô oû], 'æ' => %w[àî àî] }
 
-        case segm.prev.phon[-1]
-        when 'e'
-          segm.prev.phon[-1] = "ɛ"
-          segm.prev[:long] ? segm.prev.orth[-([2, segm.prev.orth.length].min)..-1] = "eî" : segm.prev.orth[-1] = "ê"
-        when 'o'
-          segm.prev.phon[-1] = "ɔ"
-          segm.prev[:long] ? segm.prev.orth[-([2, segm.prev.orth.length].min)..-1] = "oû" : segm.prev.orth[-1] = "ô"
-        when 'æ' # avoid à̂
-          segm.prev[:long] ? segm.prev.orth[-([2, segm.prev.orth.length].min)..-1] = "àî" : segm.prev.orth[-1] = "àî"
-        else
-          segm.prev[:orthography] << "\u0302"
-        end
-    end
-  end
+  ary.change('s', {}, lambda do |segm|
+    prev = segm.prev
 
-  @current = ary.compact
+    prev.orth.gsub!(/(#{'.?' if prev[:long]}.)\Z/,
+                    (outcomes.dig(prev.ends_with.phon, prev[:long] ? 1 : 0) \
+                    || "\\1\u0302"))
+    prev.phon.tr!('eo', 'ɛɔ')
+
+    segm.delete
+  end) { |iff| !iff[:long] && iff.between?(:vocalic, :consonantal) }
 end
 
 # je wo wø > i u y in closed syllables
