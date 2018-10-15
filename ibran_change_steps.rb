@@ -620,7 +620,7 @@ class CommonIbran
   end
 
   def self.affricate_change(segm)
-    outcomes = { 'tʃ' => 'ç', 'dʒ' => 'ʝ' }
+    outcomes = { 'tʃ' => 'ç', 'dʒ' => 'ʝ', 'ts' => 's', 'dz' => 'z' }
 
     if segm.prev =~ %w[t d]
       segm[:orthography] = "#{segm.prev.orth}#{segm[:orthography]}"
@@ -1318,7 +1318,10 @@ end
 
 # short u(~) > y
 def step_ci4(ary)
-  ary.change(/u/, {}, ->(s) { s[:IPA].tr!('u', 'y') }) { |iff| !iff[:long] }
+  ary.change(/u/, {}, lambda do |s| 
+    s[:orthography].tr!('o', 'i') # French ou -> iu, which is already /y/
+    s[:IPA].tr!('u', 'y') 
+  end) { |iff| !iff[:long] }
 end
 
 # ʎ > j / iʎ -> i: finally or before consonants
@@ -1789,6 +1792,44 @@ def step_pi10 ary
 end
 
 # TODO: convert_fro
+def convert_FRO str
+  ary = str.scan(/ch|[eoq]u|./).inject(Dictum.new) do |memo, obj|
+    supra = {}
+    
+    phon = case obj
+           when 'ch' then 'tʃ'
+           when 'j' then 'dʒ'
+           when 'c' then 'k'
+           when 'qu' then 'k'
+           when 'ou' then 'u'
+           when 'eu' then 'ew'
+           when 'u' then 'y'
+           when 'o' then 'ɔ'
+           when 'z' then 'dz'
+           when 'y' then 'j'
+           else obj.dup.downcase
+           end
+    
+    orth = obj.dup
+    
+    memo << Segment[IPA: phon, orthography: orth].merge(supra)
+  end
+  
+  # c before front vowels
+  ary.change('k', IPA: 'ts') {|iff| iff.next.starts_with.front_vowel? && iff.orth !~ /q/ }
+  ary.change('g', IPA: 'dʒ') {|iff| iff.next.starts_with.front_vowel? }
+
+  # final schwa
+  ary.change('e', IPA: 'ə', &:final?)
+  
+  # TODO: open vs closed /e/
+  
+  # final dz
+  ary.change('dz', IPA: 'ts', &:final?)
+  
+  # assign stress
+  ary.change(:vocalic, stress: true) {|iff| iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? {|segm| segm =~ [:consonantal, 'ə'] }}
+end
 
 # INCOMPLETE
 def convert_OLF str
@@ -2253,8 +2294,10 @@ def transform(str, since = "L", plural = false)
     @steps[38] = step_oi29(deep_dup(@steps[37]))
   end
 
-  if ["OLF", "L"].include?(since)
+  if ["OLF", "FRO", "L"].include?(since)
     @steps[38] = convert_OLF(str) if since == "OLF"
+    @steps[38] = convert_FRO(str) if since == "FRO"
+    
     @steps[39] = step_oix1(deep_dup(@steps[38]))
     @steps[40] = step_oix2(deep_dup(@steps[39]))
     @steps[41] = step_oix3(deep_dup(@steps[40]))
@@ -2273,7 +2316,7 @@ def transform(str, since = "L", plural = false)
     @steps[53] = step_ci8(deep_dup(@steps[52]))
   end
 
-  if ["LL", "OLF", "L"].include?(since)
+  if ["LL", "OLF", "FRO", "L"].include?(since)
     @steps[53] = convert_LL(str) if since == "LL"
 
     @roesan_steps[0] = step_ri1(deep_dup(@steps[53]))

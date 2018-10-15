@@ -1425,6 +1425,21 @@ class IbranChangeTest < Minitest::Test
       assert_equal word[:PI_IPA], xform[2].to_ipa
       assert_equal word[:PI], xform[2].join
     end
+    
+    fro_words = [
+      { w: "race", RI_IPA: "ras", RI_Cyrl: "ряс", RI_Latn: "race", PI_IPA: "ˈræsə", PI: "rassă" }
+    ]
+    
+    fro_words.each do |word|
+      xform = transform word[:w], "FRO"
+
+      assert_equal word[:RI_IPA], xform[1].to_ipa
+      assert_equal word[:RI_Cyrl], cyrillize(xform[1])
+      assert_equal word[:RI_Latn], xform[1].join
+
+      assert_equal word[:PI_IPA], xform[2].to_ipa
+      assert_equal word[:PI], xform[2].join
+    end
 
     late_latin_words = [
       { w: "abominatio", RI_IPA: "ɑbɔminɑˈʒʒũː", RI_Cyrl: "абомінажжӯн", RI_Latn: "abominasçuon", PI_IPA: "əbəmənəˈʒʒũː", PI: "abominasçuon" },

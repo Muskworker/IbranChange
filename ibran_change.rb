@@ -8,6 +8,8 @@ if ARGV.include?("--LL")
   since = "LL"
 elsif ARGV.include?("--OLF")
   since = "OLF"
+elsif ARGV.include?("--FRO")
+  since = "FRO"
 else
   since = "L"
 end
@@ -34,9 +36,9 @@ if since == "L"
   end
 end
 
-puts "0.  | #{@steps[38].to_ipa.ljust(len + @steps[38].to_ipa.count("\u032f\u0303"))} | #{@steps[38].join}" if since == "OLF"
+puts "0.  | #{@steps[38].to_ipa.ljust(len + @steps[38].to_ipa.count("\u032f\u0303"))} | #{@steps[38].join}" if (since == "OLF" || since == "FRO")
 
-if ["OLF", "L"].include?(since)
+if ["FRO", "OLF", "L"].include?(since)
   @steps[39..45].each_with_index do |step, idx|
     puts "x#{((idx + 1).to_s << ".").ljust(2)} | #{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))} | #{step.join}" unless @steps[idx+39-1].to_ipa == step.to_ipa
   end
@@ -50,7 +52,7 @@ end
 
 puts "0.  | #{@steps[53].to_ipa.ljust(len + @steps[53].to_ipa.count("\u032f\u0303"))} | #{@steps[53].join}" if since == "LL"
 
-if ["OLF", "LL", "L"].include?(since)
+if ["FRO", "OLF", "LL", "L"].include?(since)
   puts "#{'-' * (9 + len * 2)} CI #{@steps[53].join}"
 
   puts "RI"
@@ -291,7 +293,11 @@ else
 end
 puts "<dd class=\"part-of-speech\"><!-- PART OF SPEECH --></dd>"
 puts "<dd class=\"definition\"><!-- DEFINITION --></dd>"
-lang = since == "OLF" ? "Old Dutch" : "Latin"
+lang = case since 
+       when "OLF" then "Old Dutch"
+       when "FRO" then "Old French"
+       else "Latin"
+       end
 puts "<dd class=\"etymology\">#{lang} <i>#{input}</i>.</dd>"
 
 # CSV for Anki
