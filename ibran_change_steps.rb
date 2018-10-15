@@ -2354,3 +2354,96 @@ def transform(str, since = "L", plural = false)
 
   [@steps[53], @roesan_steps[-1], @paysan_steps[-1]]
 end
+def interactive_process(steps, first_step)
+  steps.each_with_index do |step, i|
+    @outcomes.concat(@outcomes.collect.with_index do |prior, j|
+      send(step, deep_dup(prior))
+    end)
+
+    @outcomes = @outcomes.compact.reverse.uniq { |oc| "|#{oc.join}| /#{oc.to_ipa}/" }.reverse
+
+    if @outcomes.size != @prior_outcome_size
+      puts "-----"
+      @outcomes.keep_if.with_index do |oc, j|
+        if j == @outcomes.size - 1
+          true
+        else
+          puts "#{step} (#{j + 1}/#{@outcomes.size - 1}) - natural outcome |#{@outcomes.last.join}| /#{@outcomes.last.to_ipa}/
+          Additional outcomes:
+                #{@outcomes[0...-1].collect { |ocx| "|#{ocx.join}| /#{ocx.to_ipa}/" }}"
+          puts "Keep |#{oc.join}| /#{oc.to_ipa}/? (Y/n)"
+          !(STDIN.gets =~ /^n/i)
+        end
+      end
+    end
+    
+    @prior_outcome_size = @outcomes.size
+          
+    @steps[i + first_step] = @outcomes.last # for show
+  end
+end
+def name_transform(str, since = "L", plural = false)
+  @steps = []
+  @current = []
+  @roesan_steps = []
+  @paysan_steps = []
+  @plural = plural
+  @outcomes = []
+  @prior_outcome_size = 1
+
+  if since == "L"
+    @steps[0] = deep_dup step_vl0(str)
+    steps = %i[step_vl1 step_vl2 step_vl3 step_vl4 step_vl5 step_vl6 step_vl7 step_vl8 step_vl9
+               step_oi1 step_oi2 step_oi3 step_oi4 step_oi5 step_oi6 step_oi7 step_oi8 step_oi9 step_oi10
+               step_oi11 step_oi12 step_oi13 step_oi14 step_oi15 step_oi16 step_oi17 step_oi18 step_oi19 step_oi20
+               step_oi21 step_oi22 step_oi23 step_oi24 step_oi25 step_oi26 step_oi27 step_oi28 step_oi29]
+    @outcomes << deep_dup(@steps[0]) 
+
+    interactive_process(steps, 1)
+  end
+
+  if ["OLF", "FRO", "L"].include?(since)
+    @outcomes = [@steps[38] = convert_OLF(str)] if since == "OLF"
+    @outcomes = [@steps[38] = convert_FRO(str)] if since == "FRO"
+    steps = %i[step_oix1 step_oix2 step_oix3 step_oix4 step_oix5 step_oix6 step_oix7
+               step_ci1 step_ci2 step_ci3 step_ci4 step_ci5 step_ci6 step_ci7 step_ci8]
+
+    interactive_process(steps, 39)
+  end
+
+  if ["LL", "OLF", "FRO", "L"].include?(since)
+    @outcomes = [@steps[53] = convert_LL(str)] if since == "LL"
+
+    @outcomes.each do |oc|
+      @roesan_steps[0] = step_ri1(deep_dup(oc))
+      @roesan_steps[1] = step_ri2(deep_dup(@roesan_steps[0]))
+      @roesan_steps[2] = step_ri3(deep_dup(@roesan_steps[1]))
+      @roesan_steps[3] = step_ri4(deep_dup(@roesan_steps[2]))
+      @roesan_steps[4] = step_ri5(deep_dup(@roesan_steps[3]))
+      @roesan_steps[5] = step_ri6(deep_dup(@roesan_steps[4]))
+      @roesan_steps[6] = step_ri7(deep_dup(@roesan_steps[5]))
+      @roesan_steps[7] = step_ri8(deep_dup(@roesan_steps[6]))
+      @roesan_steps[8] = step_ri9(deep_dup(@roesan_steps[7]))
+      @roesan_steps[9] = step_ri10(deep_dup(@roesan_steps[8]))
+      @roesan_steps[10] = step_ri11(deep_dup(@roesan_steps[9]))
+      @roesan_steps[11] = step_ri12(deep_dup(@roesan_steps[10]))
+      @roesan_steps[12] = step_ri13(deep_dup(@roesan_steps[11]))
+      @roesan_steps[13] = step_ri14(deep_dup(@roesan_steps[12]))
+      
+      @paysan_steps[0] = step_pi1(deep_dup(oc))
+      @paysan_steps[1] = step_pi2(deep_dup(@paysan_steps[0]))
+      @paysan_steps[2] = step_pi3(deep_dup(@paysan_steps[1]))
+      @paysan_steps[3] = step_pi4(deep_dup(@paysan_steps[2]))
+      @paysan_steps[4] = step_pi5(deep_dup(@paysan_steps[3]))
+      @paysan_steps[5] = step_pi6(deep_dup(@paysan_steps[4]))
+      @paysan_steps[6] = step_pi7(deep_dup(@paysan_steps[5]))
+      @paysan_steps[7] = step_pi8(deep_dup(@paysan_steps[6]))
+      @paysan_steps[8] = step_pi9(deep_dup(@paysan_steps[7]))
+      @paysan_steps[9] = step_pi10(deep_dup(@paysan_steps[8]))
+      
+      puts "###{ " " << since unless since == "L"} #{caps(str)} > PI #{@paysan_steps[-1].join} [#{@paysan_steps[-1].to_ipa}], RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join} [#{@roesan_steps[-1].to_ipa}]"
+    end
+  end
+
+  [@steps[53], @roesan_steps[-1], @paysan_steps[-1]]
+end
