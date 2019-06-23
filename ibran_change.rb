@@ -24,39 +24,68 @@ else
   transform input, since, plural
 end
 
-puts "###{' ' << since unless since == 'L'} #{caps(input)} > PI #{@paysan_steps[-1].join} [#{@paysan_steps[-1].to_ipa}], RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join} [#{@roesan_steps[-1].to_ipa}]"
+puts "###{' ' << since unless since == 'L'} #{caps(input)}"           \
+     " > PI #{@paysan_steps[-1].join} [#{@paysan_steps[-1].to_ipa}]," \
+     " RI #{cyrillize(@roesan_steps[-1])} /"                          \
+     " #{@roesan_steps[-1].join} [#{@roesan_steps[-1].to_ipa}]"
 
-len = [*@steps, *@roesan_steps, *@paysan_steps].compact.inject(0) do |memo, step|
-  memo = [memo, step.to_ipa.length].max
-end
+len = [*@steps, *@roesan_steps, *@paysan_steps].compact.group_by do |s|
+  s.to_ipa.length
+end.max[0]
 
 if since == 'L'
   @steps[0..9].each_with_index do |step, idx|
-    puts "#{(idx.to_s << '.').ljust(3)} | #{step.to_ipa.ljust(len)} | #{step.join}" unless @steps[idx - 1].to_ipa == step.to_ipa
+    next if @steps[idx - 1].to_ipa == step.to_ipa # Don't print unchanged.
+
+    puts "#{(idx.to_s << '.').ljust(3)} | " \
+         "#{step.to_ipa.ljust(len)} | "     \
+         "#{step.join}"
   end
 
   puts "#{'-' * (9 + len * 2)} VL #{@steps[9].join}"
 
   @steps[10..38].each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << '.').ljust(3)} | #{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))} | #{step.join}" unless @steps[idx + 10 - 1].to_ipa == step.to_ipa
+    next if @steps[idx + 10 - 1].to_ipa == step.to_ipa
+
+    puts "#{((idx + 1).to_s << '.').ljust(3)} | "                              \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+         " | #{step.join}"
   end
 end
 
-puts "0.  | #{@steps[38].to_ipa.ljust(len + @steps[38].to_ipa.count("\u032f\u0303"))} | #{@steps[38].join}" if since == 'OLF' || since == 'FRO'
+if %w[OLF FRO].include? since
+  original_ipa = @steps[38].to_ipa
+
+  puts "0.  | #{original_ipa.ljust(len + original_ipa.count("\u032f\u0303"))}" \
+       " | #{@steps[38].join}"
+end
 
 if %w[FRO OLF L].include?(since)
   @steps[39..45].each_with_index do |step, idx|
-    puts "x#{((idx + 1).to_s << '.').ljust(2)} | #{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))} | #{step.join}" unless @steps[idx + 39 - 1].to_ipa == step.to_ipa
+    next if @steps[idx + 39 - 1].to_ipa == step.to_ipa
+
+    puts "x#{((idx + 1).to_s << '.').ljust(2)} | "                             \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+         " | #{step.join}"
   end
 
   puts "#{'-' * (9 + len * 2)} OI #{@steps[45].join}"
 
   @steps[46..53].each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << '.').ljust(3)} | #{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))} | #{step.join}" unless @steps[idx + 46 - 1].to_ipa == step.to_ipa
+    next if @steps[idx + 46 - 1].to_ipa == step.to_ipa
+
+    puts "#{((idx + 1).to_s << '.').ljust(3)} | "                              \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+         " | #{step.join}"
   end
 end
 
-puts "0.  | #{@steps[53].to_ipa.ljust(len + @steps[53].to_ipa.count("\u032f\u0303"))} | #{@steps[53].join}" if since == 'LL'
+if since == 'LL'
+  original_ipa = @steps[53].to_ipa
+
+  puts "0.  | #{original_ipa.ljust(len + original_ipa.count("\u032f\u0303"))}" \
+       " | #{@steps[53].join}"
+end
 
 if %w[FRO OLF LL L].include?(since)
   puts "#{'-' * (9 + len * 2)} CI #{@steps[53].join}"
@@ -64,7 +93,11 @@ if %w[FRO OLF LL L].include?(since)
   puts 'RI'
 
   @roesan_steps.each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << '.').ljust(3)} | #{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))} | #{step.join}" unless (idx == 0 ? @steps[53] : @roesan_steps[idx - 1]).to_ipa == step.to_ipa
+    next if (idx.zero? ? @steps[53] : @roesan_steps[idx - 1]).to_ipa == step.to_ipa
+
+    puts "#{((idx + 1).to_s << '.').ljust(3)} | "\
+         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+         " | #{step.join}"
   end
 
   puts "#{'-' * (9 + len * 2)} RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join}"
