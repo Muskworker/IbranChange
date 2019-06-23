@@ -1790,7 +1790,7 @@ end
 
 # TODO: convert_fro
 def convert_FRO str
-  ary = str.scan(/ch|[eoq]u|./).inject(Dictum.new) do |memo, obj|
+  ary = str.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
     supra = {}
     
     phon = case obj
@@ -1804,6 +1804,7 @@ def convert_FRO str
            when 'o' then 'ɔ'
            when 'z' then 'dz'
            when 'y' then 'j'
+           when 'ai' then 'aj'
            else obj.dup.downcase
            end
     
