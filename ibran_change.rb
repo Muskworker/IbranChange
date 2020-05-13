@@ -24,7 +24,7 @@ else
   transform input, since, plural
 end
 
-puts "###{' ' << since unless since == 'L'} #{caps(input)}"           \
+puts "###{' '.dup << since unless since == 'L'} #{caps(input)}"           \
      " > PI #{@paysan_steps[-1].join} [#{@paysan_steps[-1].to_ipa}]," \
      " RI #{cyrillize(@roesan_steps[-1])} /"                          \
      " #{@roesan_steps[-1].join} [#{@roesan_steps[-1].to_ipa}]"
