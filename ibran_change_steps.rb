@@ -760,6 +760,9 @@ def step_vl0(lemma)
 
   # /nf/ acts like /mf/
   lemma.change({ IPA: 'n' }, IPA: 'm') { |segm| segm.next.phon == 'f' }
+  
+  # /ps/ and /pt/ act like /ks/ and /kt/
+  lemma.change({ IPA: 'p' }, IPA: 'k') { |segm| ['s', 't'].include? segm.next.phon }
 
   # assign stress to each word
   lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
