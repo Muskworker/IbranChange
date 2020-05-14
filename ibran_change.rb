@@ -4,6 +4,8 @@
 require './ibran_change_steps.rb'
 require './ibran_verb_presenter.rb'
 
+DIACRITICS = "\u032f\u0303\u0320"
+
 input = ARGV[-1] # STDIN.read
 
 since = if ARGV.include?('--LL')
@@ -17,6 +19,7 @@ since = if ARGV.include?('--LL')
         end
 
 plural = ARGV.include? '--pl'
+io_verb = ARGV.include? '-io'
 
 if ARGV.include? '--name'
   name_transform input, since, plural
@@ -48,7 +51,7 @@ if since == 'L'
     next if @steps[idx + 10 - 1].to_ipa == step.to_ipa
 
     puts "#{((idx + 1).to_s << '.').ljust(3)} | "                              \
-         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count(DIACRITICS))}" \
          " | #{step.join}"
   end
 end
@@ -64,8 +67,8 @@ if %w[FRO OLF L].include?(since)
   @steps[39..45].each_with_index do |step, idx|
     next if @steps[idx + 39 - 1].to_ipa == step.to_ipa
 
-    puts "x#{((idx + 1).to_s << '.').ljust(2)} | "                             \
-         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+    puts "x#{((idx + 1).to_s << '.').ljust(2)} | "                   \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count(DIACRITICS))}" \
          " | #{step.join}"
   end
 
@@ -74,8 +77,8 @@ if %w[FRO OLF L].include?(since)
   @steps[46..53].each_with_index do |step, idx|
     next if @steps[idx + 46 - 1].to_ipa == step.to_ipa
 
-    puts "#{((idx + 1).to_s << '.').ljust(3)} | "                              \
-         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+    puts "#{((idx + 1).to_s << '.').ljust(3)} | "                    \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count(DIACRITICS))}" \
          " | #{step.join}"
   end
 end
@@ -93,19 +96,27 @@ if %w[FRO OLF LL L].include?(since)
   puts 'RI'
 
   @roesan_steps.each_with_index do |step, idx|
-    next if (idx.zero? ? @steps[53] : @roesan_steps[idx - 1]).to_ipa == step.to_ipa
+    previous_step = idx.zero? ? @steps[53] : @roesan_steps[idx - 1]
+    next if previous_step.to_ipa == step.to_ipa
 
     puts "#{((idx + 1).to_s << '.').ljust(3)} | "\
-         "#{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))}" \
+         "#{step.to_ipa.ljust(len + step.to_ipa.count(DIACRITICS))}" \
          " | #{step.join}"
   end
 
-  puts "#{'-' * (9 + len * 2)} RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join}"
+  puts "#{'-' * (9 + len * 2)} "            \
+       "RI #{cyrillize(@roesan_steps[-1])}" \
+       " / #{@roesan_steps[-1].join}"
 
   puts 'PI'
 
   @paysan_steps.each_with_index do |step, idx|
-    puts "#{((idx + 1).to_s << '.').ljust(3)} | #{step.to_ipa.ljust(len + step.to_ipa.count("\u032f\u0303\u0320"))} | #{step.join}" unless (idx == 0 ? @steps[53] : @paysan_steps[idx - 1]).to_ipa == step.to_ipa
+    previous_step = idx.zero? ? @steps[53] : @paysan_steps[idx - 1]
+    next if previous_step.to_ipa == step.to_ipa
+
+    puts "#{((idx + 1).to_s << '.').ljust(3)}"                          \
+         " | #{step.to_ipa.ljust(len + step.to_ipa.count(DIACRITICS))}" \
+         " | #{step.join}"
   end
 
   puts "#{'-' * (9 + len * 2)} PI #{@paysan_steps[-1].join}"
@@ -117,10 +128,12 @@ if ARGV.include?('-v')
 
   present = { 'L' => {
     'āre' => %w[ō ās at āmus ātis ant],
-    'ēre' => [ARGV.include?('-io') ? 'eō' : 'ō', 'ēs', 'et', 'ēmus', 'ētis', 'ent'],
+    'ēre' => [io_verb ? 'eō' : 'ō', 'ēs', 'et', 'ēmus', 'ētis', 'ent'],
     'īre' => %w[iō īs it īmus ītis iunt]
   }, 'OLF' => {
-    'āre' => ['>', 's>', '>', 'ams!', 'als!', 'an'], # need a verb override otherwise /verban/ becomes /verbna/
+    # TODO: need a verb override otherwise /verban/ becomes /verbna/
+    # (actually verbāre now produces 'verban', but still have 'verbārna')
+    'āre' => ['>', 's>', '>', 'ams!', 'als!', 'an'],
     'ēre' => ['>', 's>', '>', 'iéms!', 'iéls!', 'en'],
     'īre' => ['>', 's>', '>', 'ims!', 'ils!', 'ion']
   }, 'LL' => {
@@ -186,47 +199,74 @@ if ARGV.include?('-v')
   } }
 
   conditional = { 'L' => {
-    'āre' => ['āre habēa', 'āre habēas', 'āre habēa', 'āre habēāmus', 'āre habēātis', 'āre habēant'],
-    'ēre' => ['ēre habēa', 'ēre habēas', 'ēre habēa', 'ēre habēāmus', 'ēre habēātis', 'ēre habēant'],
-    'īre' => ['īre habēa', 'īre habēas', 'īre habēa', 'īre habēāmus', 'īre habēātis', 'īre habēant']
+    'āre' => ['āre habēa', 'āre habēas', 'āre habēa',
+              'āre habēāmus', 'āre habēātis', 'āre habēant'],
+    'ēre' => ['ēre habēa', 'ēre habēas', 'ēre habēa',
+              'ēre habēāmus', 'ēre habēātis', 'ēre habēant'],
+    'īre' => ['īre habēa', 'īre habēas', 'īre habēa',
+              'īre habēāmus', 'īre habēātis', 'īre habēant']
   }, 'OLF' => {
-    'āre' => ['areviée>', 'areviées>', 'areviée>', 'arevams!', 'arevals!', 'areviéen>'],
-    'ēre' => ['iéreviée>', 'iéreviées>', 'iéreviée>', 'iérevams!', 'iérevals!', 'iéreviéen>'],
-    'īre' => ['ireviée>', 'ireviées>', 'ireviée>', 'irevams!', 'irevals!', 'ireviéen>']
+    'āre' => ['areviée>', 'areviées>', 'areviée>',
+              'arevams!', 'arevals!', 'areviéen>'],
+    'ēre' => ['iéreviée>', 'iéreviées>', 'iéreviée>',
+              'iérevams!', 'iérevals!', 'iéreviéen>'],
+    'īre' => ['ireviée>', 'ireviées>', 'ireviée>',
+              'irevams!', 'irevals!', 'ireviéen>']
   }, 'LL' => {
-    'āre' => ['areuiée>', 'areuiées>', 'areuiée>', 'arevaũs!', 'arevaus!', 'areuiéen>'],
-    'ēre' => ['iéreuiée>', 'iéreuiées>', 'iéreuiée>', 'iérevaũs!', 'iérevaus!', 'iéreuiéen>'],
-    'īre' => ['ireuiée>', 'ireuiées>', 'ireuiée>', 'irevaũs!', 'irevaus!', 'ireuiéen>']
+    'āre' => ['areuiée>', 'areuiées>', 'areuiée>',
+              'arevaũs!', 'arevaus!', 'areuiéen>'],
+    'ēre' => ['iéreuiée>', 'iéreuiées>', 'iéreuiée>',
+              'iérevaũs!', 'iérevaus!', 'iéreuiéen>'],
+    'īre' => ['ireuiée>', 'ireuiées>', 'ireuiée>',
+              'irevaũs!', 'irevaus!', 'ireuiéen>']
   } }
 
   future = { 'L' => {
-    'āre' => ['āre habeō', 'āre habēs', 'āre habet', 'āre habēmus', 'āre habētis', 'āre habent'],
-    'ēre' => ['ēre habeō', 'ēre habēs', 'ēre habet', 'ēre habēmus', 'ēre habētis', 'ēre habent'],
-    'īre' => ['īre habeō', 'īre habēs', 'īre habet', 'īre habēmus', 'īre habētis', 'īre habent']
+    'āre' => ['āre habeō', 'āre habēs', 'āre habet',
+              'āre habēmus', 'āre habētis', 'āre habent'],
+    'ēre' => ['ēre habeō', 'ēre habēs', 'ēre habet',
+              'ēre habēmus', 'ēre habētis', 'ēre habent'],
+    'īre' => ['īre habeō', 'īre habēs', 'īre habet',
+              'īre habēmus', 'īre habētis', 'īre habent']
   }, 'OLF' => {
-    'āre' => ['araez!', 'araus!', 'arav!', 'areviéms!', 'areviéls!', 'araven>'],
-    'ēre' => ['iéraez!', 'iéraus!', 'iérav!', 'iéreviéms!', 'iéreviéls!', 'iéraven>'],
-    'īre' => ['iraez!', 'iraus!', 'irav!', 'ireviéms!', 'ireviéls!', 'iraven>']
+    'āre' => ['araez!', 'araus!', 'arav!',
+              'areviéms!', 'areviéls!', 'araven>'],
+    'ēre' => ['iéraez!', 'iéraus!', 'iérav!',
+              'iéreviéms!', 'iéreviéls!', 'iéraven>'],
+    'īre' => ['iraez!', 'iraus!', 'irav!',
+              'ireviéms!', 'ireviéls!', 'iraven>']
   }, 'LL' => {
-    'āre' => ['araez!', 'araus!', 'arau!', 'areuiéũs!', 'areuiéus!', 'araven>'],
-    'ēre' => ['iéraez!', 'iéraus!', 'iérau!', 'iéreuiéũs!', 'iéreuiéus!', 'iéraven>'],
-    'īre' => ['iraez!', 'iraus!', 'irau!', 'ireuiéũs!', 'ireuiéus!', 'iraven>']
+    'āre' => ['araez!', 'araus!', 'arau!',
+              'areuiéũs!', 'areuiéus!', 'araven>'],
+    'ēre' => ['iéraez!', 'iéraus!', 'iérau!',
+              'iéreuiéũs!', 'iéreuiéus!', 'iéraven>'],
+    'īre' => ['iraez!', 'iraus!', 'irau!',
+              'ireuiéũs!', 'ireuiéus!', 'iraven>']
   } }
 
-  inf = { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-          PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+  inf = { PI: @paysan_steps[-1].join,
+          RIL: @roesan_steps[-1].join,
+          RIC: cyrillize(@roesan_steps[-1]),
+          PIPA: @paysan_steps[-1].to_ipa,
+          RIPA: @roesan_steps[-1].to_ipa }
 
   gerund = { 'L' => { 'āre' => 'andum', 'ēre' => 'endum', 'īre' => 'jendum' },
              'OLF' => { 'āre' => 'and!', 'ēre' => 'iend!', 'īre' => 'iend!' },
              'LL' => { 'āre' => 'and!', 'ēre' => 'iend!', 'īre' => 'iend!' } }
 
-  past_participle = { 'L' => { 'āre' => 'ātum', 'ēre' => ARGV.include?('-io') ? 'itum' : 'tum', 'īre' => 'ītum' },
-                      'OLF' => { 'āre' => 'al!', 'ēre' => 't>', 'īre' => 'il!' },
-                      'LL' => { 'āre' => 'au!', 'ēre' => 't>', 'īre' => 'iu!' } }
+  past_participle = { 'L' => { 'āre' => 'ātum',
+                               'ēre' => io_verb ? 'itum' : 'tum',
+                               'īre' => 'ītum' },
+                      'OLF' => { 'āre' => 'al!',
+                                 'ēre' => 't>',
+                                 'īre' => 'il!' },
+                      'LL' => { 'āre' => 'au!',
+                                'ēre' => 't>',
+                                'īre' => 'iu!' } }
 
   imperative = { 'L' => {
     'āre' => %w[ā āte],
-    'ēre' => ['ē', ARGV.include?('-io') ? 'ēte' : 'ite'],
+    'ēre' => ['ē', io_verb ? 'ēte' : 'ite'],
     'īre' => %w[ī īte]
   }, 'OLF' => {
     'āre' => ['e', 'al!'],
@@ -240,66 +280,97 @@ if ARGV.include?('-v')
 
   pres = (0..5).collect do |person|
     transform (stem + present[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   impf = (0..5).collect do |person|
     transform (stem + imperfect[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   pret = (0..5).collect do |person|
     transform (stem + preterite[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   psubj = (0..5).collect do |person|
     transform (stem + present_subj[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   isubj = (0..5).collect do |person|
     transform (stem + imperfect_subj[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   cond = (0..5).collect do |person|
     transform (stem + conditional[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   fut = (0..5).collect do |person|
     transform (stem + future[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
-  longest = [*pres, *impf, *pret, *psubj, *isubj, *cond, *fut].compact.inject(0) do |memo, step|
-    memo = [memo, step[:PI].length, step[:RIL].length, step[:RIC].length,
-            step[:PIPA].length, step[:RIPA].length].max
+  verb_forms = [*pres, *impf, *pret, *psubj, *isubj, *cond, *fut]
+  longest = verb_forms.compact.inject(0) do |memo, step|
+    [memo, step[:PI].length, step[:RIL].length, step[:RIC].length,
+     step[:PIPA].length, step[:RIPA].length].max
   end
 
   # Gerund
   transform (stem + gerund[since][conj]), since
-  ger = { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-          PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+  ger = { PI: @paysan_steps[-1].join,
+          RIL: @roesan_steps[-1].join,
+          RIC: cyrillize(@roesan_steps[-1]),
+          PIPA: @paysan_steps[-1].to_ipa,
+          RIPA: @roesan_steps[-1].to_ipa }
 
   # Past Participle
   transform (stem + past_participle[since][conj]), since
-  ppl = { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-          PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+  ppl = { PI: @paysan_steps[-1].join,
+          RIL: @roesan_steps[-1].join,
+          RIC: cyrillize(@roesan_steps[-1]),
+          PIPA: @paysan_steps[-1].to_ipa,
+          RIPA: @roesan_steps[-1].to_ipa }
 
   # Imperatives
   imv = (0..1).collect do |person|
     transform (stem + imperative[since][conj][person]), since
-    { PI: @paysan_steps[-1].join, RIL: @roesan_steps[-1].join, RIC: cyrillize(@roesan_steps[-1]),
-      PIPA: @paysan_steps[-1].to_ipa, RIPA: @roesan_steps[-1].to_ipa }
+    { PI: @paysan_steps[-1].join,
+      RIL: @roesan_steps[-1].join,
+      RIC: cyrillize(@roesan_steps[-1]),
+      PIPA: @paysan_steps[-1].to_ipa,
+      RIPA: @roesan_steps[-1].to_ipa }
   end
 
   IbranVerbPresenter.mono_single('Infinitive', inf)
@@ -316,17 +387,29 @@ if ARGV.include?('-v')
 
 end
 
+final_roesan = @roesan_steps[-1].join
+final_paysan = @paysan_steps[-1].join
+
 if ARGV.include?('-t')
-  puts "{ w: \"#{input}\", RI_IPA: \"#{@roesan_steps[-1].to_ipa}\", RI_Cyrl: \"#{cyrillize(@roesan_steps[-1])}\", RI_Latn: \"#{@roesan_steps[-1].join}\", PI_IPA: \"#{@paysan_steps[-1].to_ipa}\", PI: \"#{@paysan_steps[-1].join}\" },"
+  puts "{ w: \"#{input}\", "                            \
+       "RI_IPA: \"#{@roesan_steps[-1].to_ipa}\", "      \
+       "RI_Cyrl: \"#{cyrillize(@roesan_steps[-1])}\", " \
+       "RI_Latn: \"#{@roesan_steps[-1].join}\", "       \
+       "PI_IPA: \"#{@paysan_steps[-1].to_ipa}\", "      \
+       "PI: \"#{@paysan_steps[-1].join}\" },"
 end
 
 puts "NeoRI: #{neocyrillize(@roesan_steps[-1])}"
 
 # HTML for Lexicon.html
 puts
-puts "<dt><dfn class=\"paysan\">#{@paysan_steps[-1].join}</dfn>, <dfn class=\"roesan\">#{cyrillize(@roesan_steps[-1])}#{" (#{@roesan_steps[-1].join})" if @roesan_steps[-1].join != @paysan_steps[-1].join}</dfn></dt>"
+puts "<dt><dfn class=\"paysan\">#{@paysan_steps[-1].join}</dfn>, " \
+     "<dfn class=\"roesan\">#{cyrillize(@roesan_steps[-1])}"       \
+     "#{" (#{final_roesan})" if final_roesan != final_paysan}</dfn></dt>"
 if @paysan_steps[-1].to_ipa != @roesan_steps[-1].to_ipa
-  puts "<dd class=\"pronunciation\"><span class=\"paysan\">/#{@paysan_steps[-1].to_ipa}/</span> <span class=\"roesan\">/#{@roesan_steps[-1].to_ipa}/</span></dd>"
+  puts '<dd class="pronunciation">'                                   \
+       "<span class=\"paysan\">/#{@paysan_steps[-1].to_ipa}/</span> " \
+       "<span class=\"roesan\">/#{@roesan_steps[-1].to_ipa}/</span></dd>"
 else
   puts "<dd class=\"pronunciation\">/#{@roesan_steps[-1].to_ipa}/</dd>"
 end
@@ -341,4 +424,9 @@ puts "<dd class=\"etymology\">#{lang} <i>#{input}</i>.</dd>"
 
 # CSV for Anki
 puts
-puts [@paysan_steps[-1].join, cyrillize(@roesan_steps[-1]), @roesan_steps[-1].join, @paysan_steps[-1].to_ipa, @roesan_steps[-1].to_ipa, 'DEFINITION'].join(';')
+puts [@paysan_steps[-1].join,
+      cyrillize(@roesan_steps[-1]),
+      @roesan_steps[-1].join,
+      @paysan_steps[-1].to_ipa,
+      @roesan_steps[-1].to_ipa,
+      'DEFINITION'].join(';')
