@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'forwardable'
 
 # Dictum: A word or series of segments.
@@ -55,7 +57,7 @@ class Dictum < Array
   end
 
   def join(type = :orthography)
-    inject('') do |memo, obj|
+    inject(String.new) do |memo, obj|
       memo << (obj[type] || '')
     end
   end
@@ -88,10 +90,10 @@ class Dictum < Array
 
     inject('') do |output, segm|
       if syllable_count > 1 && takes_stress_mark(segm)
-        output << 'ˈ' unless output =~ /ˈ\S*$/ # Don't add more than one
+        output += 'ˈ' unless output =~ /ˈ\S*$/ # Don't add more than one
       end
 
-      output << segm.to_ipa
+      output += segm.to_ipa
     end
   end
 
@@ -314,11 +316,11 @@ class Segment < Hash
 
   # TODO: Don't ever set this to nil.
   def phon
-    fetch(:IPA, '') || ''
+    +(fetch(:IPA, String.new) || String.new)
   end
 
   def orth
-    fetch(:orthography, '')
+    +(fetch(:orthography, String.new) || String.new)
     # @orth
   end
 
@@ -369,8 +371,9 @@ class Segment < Hash
   end
 
   def append(phon, orth = phon)
-    self.phon << phon
-    self.orth << orth
+    # self.phon.concat(phon)
+    # self.orth.concat(orth)
+    update(IPA: self.phon + phon, orthography: self.orth + orth)
   end
 
   def prepend(phon, orth = phon)
@@ -381,7 +384,7 @@ class Segment < Hash
   def to_ipa
     output = "#{phon}#{"\u0320" if self[:back]}#{'ʲ' if self[:palatalized]}"
     # /o:w/, not /ow:/
-    output.sub!(/([jwɥ]*)$/, 'ː\1') if self[:long]
+    output = output.sub(/([jwɥ]*)$/, 'ː\1') if self[:long]
     output
   end
 
@@ -397,11 +400,13 @@ class Segment < Hash
   # Devoice a segment.  If +target+ is given, only devoice if +target+ is also
   # voiceless.
   def devoice!(target = '')
-    phon.tr!('vʒzbdg', 'fʃsptk') if target.voiceless?
+    update(IPA: phon.tr('vʒzbdg', 'fʃsptk')) if target.voiceless?
+    phon
   end
 
   def voice!
-    phon.tr!('fçʃsptθk', 'vʝʒzbddg')
+    update(IPA: phon.tr('fçʃsptθk', 'vʝʒzbddg'))
+    phon
   end
 
   # Set the value of this segment to another,
@@ -736,7 +741,7 @@ def respell_palatal(segm)
   prec = segm.phon[-1]
 
   case prec
-  when 'ʃ', 'ʒ' then segm[:orthography][-1] = res[prec][front]
+  when 'ʃ', 'ʒ' then segm[:orthography] = segm[:orthography].chop + res[prec][front] # segm[:orthography][-1] = res[prec][front]
   when 'k', 'g' then segm[:orthography] = res[prec][front]
   end
 end
@@ -809,8 +814,8 @@ end
 # drop /h/
 def step_vl4(ary)
   ary.each do |segment|
-    segment[:IPA].delete! 'h'
-    segment[:orthography].delete! 'h' unless segment.orth == 'ph'
+    segment[:IPA] = segment[:IPA].delete 'h'
+    segment[:orthography] = segment[:orthography].delete 'h' unless segment.orth == 'ph'
   end
 
   ary.delete_if { |segment| segment[:IPA] == '' }
@@ -1239,7 +1244,7 @@ def step_oix4(ary)
     nxt = segm.next
     nxt.metathesize(segm.after_next) if nxt !~ [:labial, 'l']
 
-    segm[:orthography].sub!(/(.)i$/, '\1y')
+    segm[:orthography] = segm[:orthography].sub(/(.)i$/, '\1y')
     segm.append('w', 'u')
     nxt.delete
   end) { |iff| OldIbran.takes_l_change(iff) }
@@ -1271,7 +1276,7 @@ end
 # resolution of diphthongs in /O o u/
 def step_oix7(ary)
   ary.change(/[ɔouw]w\u0303?\Z/, { long: true }, lambda do |segm|
-    segm.phon.gsub!(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o', 'uw' => 'u',
+    segm[:IPA] = segm.phon.gsub(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o', 'uw' => 'u',
                                       'ɔw̃' => 'õ', 'ow̃' => 'õ', 'uw̃' => 'ũ')
   end)
 
@@ -1290,7 +1295,7 @@ end
 # now lose all those precious nasals
 def step_ci1(ary)
   ary.change(:vocalic, {}, lambda do |segm|
-    segm.phon.gsub!(/(w̃|ũ|õ|œ̃|œ̯̃|ø̃|ỹ|ɥ̃)/,
+    segm[:IPA] = segm.phon.gsub(/(w̃|ũ|õ|œ̃|œ̯̃|ø̃|ỹ|ɥ̃)/,
                     'w̃' => 'w', 'ũ' => 'u', 'õ' => 'o', 'œ̃' => 'œ',
                     'œ̯̃' => 'œ̯', 'ø̃' => 'ø', 'ỹ' => 'y', 'ɥ̃' => 'ɥ')
   end) { |iff| iff.orth =~ /ũ|w̃/ }
@@ -1325,15 +1330,15 @@ end
 # short u(~) > y
 def step_ci4(ary)
   ary.change(/u/, {}, lambda do |s| 
-    s[:orthography].tr!('o', 'i') # French ou -> iu, which is already /y/
-    s[:IPA].tr!('u', 'y') 
+    s[:orthography] = s[:orthography].tr('o', 'i') # French ou -> iu, which is already /y/
+    s[:IPA] = s[:IPA].tr('u', 'y') 
   end) { |iff| !iff[:long] }
 end
 
 # ʎ > j / iʎ -> i: finally or before consonants
 def step_ci5(ary)
   ary.change(/i\Z/, { long: true }, lambda do |segm|
-    segm[:orthography] << 'll'
+    segm[:orthography] += 'll'
     segm.next.delete
   end) do |iff|
     iff.next =~ 'ʎ' \
@@ -1360,7 +1365,7 @@ def step_ci8(ary)
   ary.change('i', IPA: 'ji') { |iff| iff.prev.ends_with.vowel? }
 
   ary.change(CommonIbran::I_TO_BE_Y, {}, lambda do |segm|
-    segm[:orthography][0] = 'y'
+    segm[:orthography] = 'y' + segm[:orthography][1..-1]
   end)
 
   ary.change(CommonIbran::U_TO_BE_W, {}, lambda do |segm|
@@ -1455,7 +1460,8 @@ def step_ri10(ary)
     prev = segm.prev
     nxt = segm.next
     prev[:final_n] = prev[:IPA] == 'n' # To distinguish from final nasal later
-    prev[:orthography] <<= segm[:orthography] <<= nxt.orth
+    # prev[:orthography] <<= segm[:orthography] <<= nxt.orth
+    prev[:orthography] = "#{prev[:orthography]}#{segm[:orthography]}#{nxt.orth}"
 
     [nxt, segm].each(&:delete)
   end) do |iff|
@@ -1484,7 +1490,7 @@ def step_ri12(ary)
   outcomes = { /ɑɛ̯/ => 'a', /ɔɛ̯/ => 'ɔ', /œ̯/ => '' }
 
   ary.change(outcomes.keys, { long: true }, lambda do |segm|
-    outcomes.each_pair { |i, o| segm[:IPA].gsub!(i, o) }
+    outcomes.each_pair { |i, o| segm[:IPA] = segm[:IPA].gsub(i, o) }
   end)
 end
 
@@ -1508,7 +1514,7 @@ def cyrillize(ary)
              /cç/ => 'тј', /ɟɟʝ/ => 'ддј', /ɟʝ/ => 'дј',
              /ʝ/ => 'ж', /ŋ/ => 'нг', /ç/ => 'ш' }
 
-  output.each { |int, out| cyrl.gsub! int, out }
+  output.each { |int, out| cyrl = cyrl.gsub int, out }
 
   # no need for нн' or н' solo
   cyrl.sub!(/н$/, 'н’') if ary[-1][:final_n] && cyrl != 'н' \
@@ -1527,7 +1533,7 @@ def neocyrillize(ary)
     /ʝ$/ => 'јъ', 'ʝ' => 'ј', 'ɛ' => 'е', 'i' => 'і',
     /([аиоөуүѡыюєяїеі])j([^аиоөуүѡыюєяїеі])/ => '\1й\2',
     /([аиоөуүѡыюєяїеі])w([^аиоөуүѡыюєяїеі])/ => '\1ў\2',
-    'j' => 'ј', 'w' => 'в', /[ˈː]/ => '' }.each { |i, o| cyrl.gsub! i, o }
+    'j' => 'ј', 'w' => 'в', /[ˈː]/ => '' }.each { |i, o| cyrl = cyrl.gsub i, o }
 
   cyrl
 end
@@ -1535,12 +1541,12 @@ end
 #############
 # i~ o~ y~ > E~ O~ œ~
 def step_pi1(ary)
-  ary.change(/[ioy]\u0303/, {}, ->(s) { s[:IPA].tr!('ioy', 'ɛɔœ') })
+  ary.change(/[ioy]\u0303/, {}, ->(s) { s[:IPA] = s[:IPA].tr('ioy', 'ɛɔœ') })
 end
 
 # a a~ > æ æ~
 def step_pi2(ary)
-  ary.change(/a/, {}, ->(s) { s[:IPA].tr!('a', 'æ') })
+  ary.change(/a/, {}, ->(s) { s[:IPA] = s[:IPA].tr('a', 'æ') })
 end
 
 # assimilation of /s/
@@ -1550,10 +1556,10 @@ def step_pi3(ary)
   ary.change('s', {}, lambda do |segm|
     prev = segm.prev
 
-    prev.orth.gsub!(/(#{'.?' if prev[:long]}.)\Z/,
+    prev[:orthography] = prev.orth.gsub(/(#{'.?' if prev[:long]}.)\Z/,
                     (outcomes.dig(prev.ends_with.phon, prev[:long] ? 1 : 0) \
                     || "\\1\u0302"))
-    prev.phon.tr!('eo', 'ɛɔ')
+    prev[:IPA] = prev.phon.tr('eo', 'ɛɔ')
 
     segm.delete
   end) { |iff| !iff[:long] && iff.between?(:vocalic, :consonantal) }
@@ -1656,8 +1662,8 @@ def step_pi5 ary
         if segm.next.starts_with.vowel? && segm.posttonic?
           case segm.phon
           when 'i', 'ɛ', 'je'
-            segm.next[:IPA] = 'j' << segm.next.phon
-            segm.next[:orthography] = segm.orth << segm.next.orth
+            segm.next[:IPA] = 'j' + segm.next.phon
+            segm.next[:orthography] = segm.orth + segm.next.orth
             segm[:IPA] = nil
             segm[:orthography] = nil
             next
@@ -1678,13 +1684,15 @@ def step_pi5 ary
         end
 
         if !segm[:long] || segm.rising_diphthong?
-          #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' :
+          #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' :          
           vowel_pos = segm.starts_with.vowel? ? 0 : 1
+          segm[:IPA] = segm[:IPA].dup
           segm[:IPA][vowel_pos] = 'ə'
           if posttonic && segm[:orthography] != 'ă'
+            segm[:orthography] = segm[:orthography].dup
             segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
 
-            segm[:orthography].gsub!(/ă\u0302/, "ă")  # no ă̂
+            segm[:orthography] = segm[:orthography].gsub(/ă\u0302/, "ă")  # no ă̂
             any_breve = true
           end
 
@@ -1748,8 +1756,8 @@ end
 def step_pi8 ary
   @current = ary.each do |segm|
     if segm[:IPA].include?("ɑɛ̯\u0303") || segm[:IPA].include?("ɔɛ̯\u0303")
-      segm[:IPA].gsub!(/ɑɛ̯\u0303/, 'æ')
-      segm[:IPA].gsub!(/ɔɛ̯\u0303/, 'ɔ')
+      segm[:IPA] = segm[:IPA].gsub(/ɑɛ̯\u0303/, 'æ')
+      segm[:IPA] = segm[:IPA].gsub(/ɔɛ̯\u0303/, 'ɔ')
 
       segm[:long] = true
     end
@@ -1760,10 +1768,10 @@ end
 def step_pi9 ary
   @current = ary.each do |segm|
     if segm[:IPA].include?('ɑɛ̯') || segm[:IPA].include?('ɔɛ̯') || segm[:IPA].include?('oj')
-      segm[:IPA].gsub!(/ɑɛ̯/, 'ɑj')
-      segm[:IPA].gsub!(/ɔɛ̯/, 'ɔj')
-      segm[:IPA].gsub!(/oj/, 'ɔj')
-      segm[:orthography].gsub!(/ói/, 'oi')
+      segm[:IPA] = segm[:IPA].gsub(/ɑɛ̯/, 'ɑj')
+      segm[:IPA] = segm[:IPA].gsub(/ɔɛ̯/, 'ɔj')
+      segm[:IPA] = segm[:IPA].gsub(/oj/, 'ɔj')
+      segm[:orthography] = segm[:orthography].gsub(/ói/, 'oi')
     end
   end
 end
@@ -1771,20 +1779,20 @@ end
 # g > x
 def step_pi10 ary
   @current = ary.each do |segm|
-    segm[:IPA].gsub!(/g/, 'x')
+    segm[:IPA] = segm[:IPA].gsub(/g/, 'x')
   end
 
   # Orthography changes
   @current = ary.each do |segm|
-    segm[:orthography].gsub!(/i/, 'y') if segm.prev.phon == 'j'
-    segm[:orthography].gsub!(/ll/, 'y')
-    segm[:orthography].gsub!(/iy/, 'y')
-    segm[:orthography].gsub!(/ũ/, 'u')
-    segm[:orthography].gsub!(/w̃/, 'w')
-    segm[:orthography].gsub!(/uou/, 'uo')
+    segm[:orthography] = segm.orth.gsub(/i/, 'y') if segm.prev.phon == 'j'
+    segm[:orthography] = segm.orth.gsub(/ll/, 'y')
+    segm[:orthography] = segm.orth.gsub(/iy/, 'y')
+    segm[:orthography] = segm.orth.gsub(/ũ/, 'u')
+    segm[:orthography] = segm.orth.gsub(/w̃/, 'w')
+    segm[:orthography] = segm.orth.gsub(/uou/, 'uo')
     segm[:orthography] = "l" if segm[:IPA] == "l" # |gl| /ll/
-    segm[:orthography].gsub!(/ă/, 'a') if segm.prev.orth && %w{é ó}.include?(segm.prev.orth[-1])
-    segm[:orthography].gsub!(/àu/, 'au')
+    segm[:orthography] = segm.orth.gsub(/ă/, 'a') if segm.prev.orth && %w{é ó}.include?(segm.prev.orth[-1])
+    segm[:orthography] = segm.orth.gsub(/àu/, 'au')
     segm[:orthography] = "y" if segm[:IPA] == "ji"
     segm[:orthography] = "cu" if segm[:orthography] == "qu" && segm =~ "kw"    
     segm[:orthography] = "c" if segm[:orthography] == "qu" && %w{a à o ó u}.include?(segm.next.orth[0])
@@ -2223,7 +2231,7 @@ def convert_LL str
       segm[:IPA] = 'o' if !segm.stressed?
     end
 
-    segm[:orthography].gsub!(/ch/, "c")
+    segm[:orthography] = segm[:orthography].gsub(/ch/, "c")
 
     if segm.vocalic? && posttonic
       case segm[:orthography]
