@@ -693,8 +693,11 @@ def takes_stress_mark(segm)
   dictum = segm.dictum
   stressed = dictum.index(&:stressed?)
 
+  # False unless stress happens anywhere after this segment.
   return false unless stressed && stressed > segm.pos
 
+  # Is everything from here to the stressed segment
+  # in [the same] syllable onset?
   dictum[segm.pos...stressed].all?(&:in_onset?)
 end
 
