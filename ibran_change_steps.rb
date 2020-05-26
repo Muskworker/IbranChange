@@ -1837,7 +1837,12 @@ def convert_FRO str
   ary.change('dz', IPA: 'ts', &:final?)
   
   # assign stress
-  ary.change(:vocalic, stress: true) {|iff| iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? {|segm| segm =~ [:consonantal, 'ə'] }}
+  if ary[-1][:orthography] == "!" # Manual override for final stress
+    ary.find_all { |segment| segment.vocalic? }[-1][:stress] = true
+    ary[-1].delete
+  else
+    ary.change(:vocalic, stress: true) {|iff| iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? {|segm| segm =~ [:consonantal, 'ə'] }}
+  end
 end
 
 # INCOMPLETE
