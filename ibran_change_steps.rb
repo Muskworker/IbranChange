@@ -614,6 +614,14 @@ class OldIbran
     || (after_next =~ [:labial, 'l']                 \
     && after_next.between?(:sonorant, [:consonantal, '']))
   end
+
+  def self.vowel_fronting!(segm)
+    outcomes = { 'ɑ' => %w[a ài], 'a' => %w[a ài], 'ɛ' => %w[ɛ ei],
+                 'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu],
+                 'u' => %w[y ui] }
+
+    segm.replace!(outcomes[segm.phon])
+  end
 end
 
 # Complex conditions in Common Ibran
@@ -1119,23 +1127,16 @@ end
 
 # vowel fronting: umlaut
 def step_oi22(ary)
-  outcomes = { 'ɑ' => %w[a ài], 'a' => %w[a ài], 'ɛ' => %w[ɛ ei],
-               'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu],
-               'u' => %w[y ui] }
-
   ary.change(%w[ɑ a ɛ e ɔ o u], { long: true }, lambda do |segm|
-    segm.replace!(outcomes[segm.phon])
-    segm.after_next.delete
-  end) do |iff|
-    iff.before?('r') && iff.after_next =~ 'j' \
-  end
+    anxt = segm.after_next
 
-  # Muta cum liquida
-  ary.change(%w[ɑ a ɛ e ɔ o u], { long: true }, lambda do |segm|
-    segm.replace!(outcomes[segm.phon])
-    segm.next.after_next.delete
+    OldIbran.vowel_fronting!(segm)
+    (anxt =~ 'j' ? anxt : anxt.next).delete
   end) do |iff|
-    iff.before?(:stop) && iff.after_next =~ 'r' && iff.next.after_next =~ 'j'
+    anxt = iff.after_next
+
+    (iff.before?('r') && anxt =~ 'j') ||
+      (iff.before?(:stop) && anxt =~ 'r' && anxt.before?('j'))
   end
 
   respell_velars(ary)
