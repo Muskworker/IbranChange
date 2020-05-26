@@ -744,9 +744,9 @@ def respell_palatal(segm)
   prec = segm.phon[-1]
 
   case prec
-  when 'ʃ', 'ʒ' 
+  when 'ʃ', 'ʒ'
     segm[:orthography] = segm[:orthography].chop + res[prec][front]
-  when 'k', 'g' 
+  when 'k', 'g'
     segm[:orthography] = res[prec][front]
   end
 end
@@ -770,9 +770,9 @@ def step_vl0(lemma)
 
   # /nf/ acts like /mf/
   lemma.change({ IPA: 'n' }, IPA: 'm') { |segm| segm.next.phon == 'f' }
-  
+
   # /ps/ and /pt/ act like /ks/ and /kt/
-  lemma.change({ IPA: 'p' }, IPA: 'k') do |segm| 
+  lemma.change({ IPA: 'p' }, IPA: 'k') do |segm|
     ['s', 't'].include? segm.next.phon
   end
 
@@ -823,7 +823,7 @@ def step_vl4(ary)
   ary.each do |segment|
     segment[:IPA] = segment[:IPA].delete 'h'
     unless segment.orth == 'ph'
-      segment[:orthography] = segment[:orthography].delete 'h' 
+      segment[:orthography] = segment[:orthography].delete 'h'
     end
   end
 
@@ -1286,7 +1286,7 @@ end
 def step_oix7(ary)
   ary.change(/[ɔouw]w\u0303?\Z/, { long: true }, lambda do |segm|
     segm[:IPA] = segm.phon.gsub(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o',
-                                                  'uw' => 'u', 'ɔw̃' => 'õ', 
+                                                  'uw' => 'u', 'ɔw̃' => 'õ',
                                                   'ow̃' => 'õ', 'uw̃' => 'ũ')
   end)
 
@@ -1339,9 +1339,9 @@ end
 
 # short u(~) > y
 def step_ci4(ary)
-  ary.change(/u/, {}, lambda do |s| 
+  ary.change(/u/, {}, lambda do |s|
     s[:orthography] = s[:orthography].tr('o', 'i') # French ou -> iu, which is already /y/
-    s[:IPA] = s[:IPA].tr('u', 'y') 
+    s[:IPA] = s[:IPA].tr('u', 'y')
   end) { |iff| !iff[:long] }
 end
 
@@ -1411,7 +1411,7 @@ def step_ri3(ary)
                  end
   end) do |iff|
     !iff[:long] &&
-      ((iff.after?(:vocalic) || iff.initial?) && 
+      ((iff.after?(:vocalic) || iff.initial?) &&
        (iff.before?(:consonantal) || iff.final?))
   end
 end
@@ -1695,7 +1695,7 @@ def step_pi5 ary
         end
 
         if !segm[:long] || segm.rising_diphthong?
-          #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' :          
+          #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' :
           vowel_pos = segm.starts_with.vowel? ? 0 : 1
           segm[:IPA] = segm[:IPA].dup
           segm[:IPA][vowel_pos] = 'ə'
@@ -1719,7 +1719,7 @@ def step_pi5 ary
               segm.prev[:orthography] = 'g'
             when 'k' # qu
               segm.prev[:orthography] = 'c'
-            when 's' # c in French loans 
+            when 's' # c in French loans
               segm.prev[:orthography] = segm.prev.intervocalic? ? 'ss' : 's'
             end
           end
@@ -1805,7 +1805,7 @@ def step_pi10 ary
     segm[:orthography] = segm.orth.gsub(/ă/, 'a') if segm.prev.orth && %w{é ó}.include?(segm.prev.orth[-1])
     segm[:orthography] = segm.orth.gsub(/àu/, 'au')
     segm[:orthography] = "y" if segm[:IPA] == "ji"
-    segm[:orthography] = "cu" if segm[:orthography] == "qu" && segm =~ "kw"    
+    segm[:orthography] = "cu" if segm[:orthography] == "qu" && segm =~ "kw"
     segm[:orthography] = "c" if segm[:orthography] == "qu" && %w{a à o ó u}.include?(segm.next.orth[0])
   end
 end
@@ -1814,7 +1814,7 @@ end
 def convert_FRO str
   ary = str.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
     supra = {}
-    
+
     phon = case obj
            when 'ch' then 'tʃ'
            when 'j' then 'dʒ'
@@ -1829,24 +1829,24 @@ def convert_FRO str
            when 'ai' then 'aj'
            else obj.dup.downcase
            end
-    
+
     orth = obj.dup
-    
+
     memo << Segment[IPA: phon, orthography: orth].merge(supra)
   end
-  
+
   # c before front vowels
   ary.change('k', IPA: 'ts') {|iff| iff.next.starts_with.front_vowel? && iff.orth !~ /q/ }
   ary.change('g', IPA: 'dʒ') {|iff| iff.next.starts_with.front_vowel? }
 
   # final schwa
   ary.change('e', IPA: 'ə', &:final?)
-  
+
   # TODO: open vs closed /e/
-  
+
   # final dz
   ary.change('dz', IPA: 'ts', &:final?)
-  
+
   # assign stress
   if ary[-1][:orthography] == "!" # Manual override for final stress
     ary.find_all { |segment| segment.vocalic? }[-1][:stress] = true
@@ -2045,13 +2045,13 @@ def convert_LL str
   # /gw/
   ary.change('g', { IPA: 'gw', orthography: 'gu' }, lambda do |segm|
     segm.next.delete
-  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with.vowel? } 
+  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with.vowel? }
 
   # /gw/ in LL verb forms
   ary.change('g', {}, lambda do |segm|
     segm[:orthography] = 'gu' unless segm.after_next =~ '>'
     segm.next.delete
-  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with =~ ['>', 'j'] } 
+  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with =~ ['>', 'j'] }
 
   # jot
   ary.change(%w[t s ks], { IPA: 'ʃʃ' }, lambda do |segm|
@@ -2064,7 +2064,7 @@ def convert_LL str
     initial = ary[0...mark.pos].reverse_each.find {|s| s =~ :initial }
     word = ary[initial.pos..mark.pos]
     vowels = word.find_all { |segm| segm.vocalic? }
-    
+
     if mark =~ '!'
       vowels[-1][:stress] = true
       mark.delete
@@ -2090,7 +2090,7 @@ def convert_LL str
         (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2][:stress] = true : vowels[-3][:stress] = true
       end
     end
-    
+
     if vowels[-2]&.stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
       case vowels[-2][:IPA]
       when 'ɛ'
@@ -2322,7 +2322,7 @@ def transform(str, since = "L", plural = false)
   if ["OLF", "FRO", "L"].include?(since)
     @steps[38] = convert_OLF(str) if since == "OLF"
     @steps[38] = convert_FRO(str) if since == "FRO"
-    
+
     @steps[39] = step_oix1(deep_dup(@steps[38]))
     @steps[40] = step_oix2(deep_dup(@steps[39]))
     @steps[41] = step_oix3(deep_dup(@steps[40]))
@@ -2374,10 +2374,10 @@ def transform(str, since = "L", plural = false)
   [@steps[53], @roesan_steps[-1], @paysan_steps[-1]]
 end
 
-# IDEAL TO KEEP: 
+# IDEAL TO KEEP:
 # 1.  THE CHANGED ORTHOGRAPHY WITH THE CHANGED PRONUNCIATION.           [Pólo => polo]
 # 2.  THE CONSERVATIVE ORTHOGRAPHY WITH THE SPELLING PRONUNCIATION.     [Paulo => paulo]
-#     THIS LATTER IS NOT TRIVIAL, AS IT MAY NOT MATCH THE CONSERVATIVE PRONUNCIATION.  
+#     THIS LATTER IS NOT TRIVIAL, AS IT MAY NOT MATCH THE CONSERVATIVE PRONUNCIATION.
 def interactive_process(steps, first_step)
   steps.each_with_index do |step, i|
     @outcomes.concat(@outcomes.collect.with_index do |prior, j|
@@ -2400,9 +2400,9 @@ def interactive_process(steps, first_step)
         end
       end
     end
-    
+
     @prior_outcome_size = @outcomes.size
-          
+
     @steps[i + first_step] = @outcomes.last # for show
   end
 end
@@ -2423,7 +2423,7 @@ def name_transform(str, since = "L", plural = false)
                step_oi1 step_oi2 step_oi3 step_oi4 step_oi5 step_oi6 step_oi7 step_oi8 step_oi9 step_oi10
                step_oi11 step_oi12 step_oi13 step_oi14 step_oi15 step_oi16 step_oi17 step_oi18 step_oi19 step_oi20
                step_oi21 step_oi22 step_oi23 step_oi24 step_oi25 step_oi26 step_oi27 step_oi28 step_oi29]
-    @outcomes << deep_dup(@steps[0]) 
+    @outcomes << deep_dup(@steps[0])
 
     interactive_process(steps, 1)
   end
@@ -2455,7 +2455,7 @@ def name_transform(str, since = "L", plural = false)
       @roesan_steps[11] = step_ri12(deep_dup(@roesan_steps[10]))
       @roesan_steps[12] = step_ri13(deep_dup(@roesan_steps[11]))
       @roesan_steps[13] = step_ri14(deep_dup(@roesan_steps[12]))
-      
+
       @paysan_steps[0] = step_pi1(deep_dup(oc))
       @paysan_steps[1] = step_pi2(deep_dup(@paysan_steps[0]))
       @paysan_steps[2] = step_pi3(deep_dup(@paysan_steps[1]))
@@ -2466,7 +2466,7 @@ def name_transform(str, since = "L", plural = false)
       @paysan_steps[7] = step_pi8(deep_dup(@paysan_steps[6]))
       @paysan_steps[8] = step_pi9(deep_dup(@paysan_steps[7]))
       @paysan_steps[9] = step_pi10(deep_dup(@paysan_steps[8]))
-      
+
       puts "###{ " " << since unless since == "L"} #{caps(str)} > PI #{@paysan_steps[-1].join} [#{@paysan_steps[-1].to_ipa}], RI #{cyrillize(@roesan_steps[-1])} / #{@roesan_steps[-1].join} [#{@roesan_steps[-1].to_ipa}]"
     end
   end
