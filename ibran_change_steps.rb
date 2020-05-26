@@ -508,14 +508,15 @@ class OldIbran
   def self.post_stress_cluster_changes(segm)
     prev = segm.prev
     nxt = segm.next
+    orth = segm.orth
 
     if prev =~ %w[i u] then assim = segm.ends_with.phon
     else OldIbran.cluster_change(prev)
     end
 
     outcomes = { 'ks' => %W[#{assim}s #{nxt.vowel? ? 'ss' : 's'}],
-                 'dʒ' => %W[#{assim}ʒ #{'s' if assim}#{segm.orth}],
-                 'tʃ' => %W[#{assim}ʃ #{'s' if assim}#{segm.orth}] }
+                 'dʒ' => %W[#{assim}ʒ #{'s' if assim}#{orth}],
+                 'tʃ' => %W[#{assim}ʃ #{'s' if assim}#{orth}] }
 
     outcomes.default = %W[#{nxt.phon if assim} #{assim}]
 
