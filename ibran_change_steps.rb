@@ -1269,10 +1269,8 @@ end
 # resolution of diphthongs in /E e i/
 def step_oix6(ary)
   ary.change(/j?[ɛeiy]w\u0303?$/, { long: true }, lambda do |segm|
-    segm.phon.sub!(/ɛw/, 'œ')
-    segm.phon.sub!(/ew/, 'ø')
-    segm.phon.sub!(/iw/, 'y')
-    segm.phon.sub!(/yw/, 'y')
+    outcomes = { 'ɛw' => 'œ', 'ew' => 'ø', 'iw' => 'y', 'yw' => 'y' }
+    segm.phon.sub!(/ɛw|ew|iw|yw/, outcomes)
   end)
 
   ary.change(:diphthong, {}, lambda do |segm|
