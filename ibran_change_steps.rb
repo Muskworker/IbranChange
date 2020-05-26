@@ -491,93 +491,8 @@ class Latin
   end
 end
 
-# Complex exceptions to regular Ibran changes
+# Complex Ibran conditions
 class OldIbran
-  # Outcomes of vowels before /k g l/ before dentals and nasals
-  def self.cluster_change(segm)
-    ipa = segm.phon
-    orig = %w[a ɑ e ɛ o ɔ i u]
-    phon = %w[ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj]
-    orth = %w[ae ae ei ei oe oe éi ói]
-    outcomes = Hash[orig.zip(phon.zip(orth))]
-
-    segm.replace!(outcomes[ipa])
-  end
-
-  # Outcome of clusters following stressed vowels
-  def self.post_stress_cluster_changes(segm)
-    prv = segm.prev
-    nxt = segm.next
-    orth = segm.orth
-
-    prv =~ %w[i u] ? assim = segm.ends_with.phon : OldIbran.cluster_change(prv)
-
-    outcomes = { 'ks' => %W[#{assim}s #{nxt.vowel? ? 'ss' : 's'}],
-                 'dʒ' => %W[#{assim}ʒ #{'s' if assim}#{orth}],
-                 'tʃ' => %W[#{assim}ʃ #{'s' if assim}#{orth}] }
-
-    outcomes.default = %W[#{nxt.phon if assim} #{assim}]
-
-    segm.replace!(outcomes[segm.phon])
-  end
-
-  def self.unstressed_cluster_changes(segm)
-    return unless (segm.velar? && segm.before?(%i[dental nasal])) \
-                  || (segm =~ %i[dental velar] && segm.before?(:sibilant))
-
-    segm.update(segm.next.starts_with)
-    segm[:orthography] = 's' if segm.before?(final: true, sibilant: true)
-  end
-
-  def self.unstressed_affricate_changes(segm)
-    return unless segm =~ ['ks', :affricate]
-
-    segm[:orthography] = "s#{(segm.orth unless segm =~ 'ks') \
-                             || ('s' if segm.before?(:vowel))}"
-    segm[:IPA] = segm.ends_with.phon * 2
-  end
-
-  # Intervocalic T becomes L, generally.
-  # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
-  # (In other words, T becomes D after intervocalic T
-  # and L becomes D before intervocalic T.)
-  def self.intervocalic_t_changes(word)
-    word.change('t', Segment.new('l'), lambda do |t|
-      { 't' => t.after_next, 'l' => t.before_prev }.each do |match, cons|
-        cons.update(Segment.new('d')) if cons.match_all(match, :intervocalic)
-      end
-    end, &:intervocalic?)
-  end
-
-  def self.diphthongize_e(segm)
-    return if segm.after?([:sibilant, :affricate, { palatalized: true }]) \
-           || segm.prev.ends_with =~ %w[ʎ j i]
-
-    segm[:IPA] = "j#{segm[:IPA]}"
-    segm[:orthography] = "i#{segm[:orthography]}"
-  end
-
-  def self.diphthongize_open_o(segm)
-    if segm.before?(:sonorant) \
-    && (segm.before?(:final) || segm.after_next.consonantal?)
-      segm[:IPA] = 'wɛ'
-      segm[:orthography] = 'ue'
-    else
-      segm[:IPA] = 'ɔj'
-      segm[:orthography] = 'oi'
-    end
-  end
-
-  def self.diphthongize_closed_o(segm)
-    return unless segm.final?                                        \
-               || segm.before?(%i[vocalic intervocalic])             \
-               || (segm.before?('s') && segm.after_next.consonantal? \
-                   && segm.next.after_next.vowel?)
-
-    segm.update(IPA: 'u', orthography: 'uo', long: true)
-    segm.prev.orth.sub!(/q?u$/, 'u' => '', 'qu' => 'c')
-  end
-
   # For the purpose of unstressed vowel dropping,
   # these environments prevent that from happening.
   def self.in_stop_cluster?(segm)
@@ -600,13 +515,13 @@ class OldIbran
   end
 
   # Test for Vm#, VmC; VRm#, VRmC as used in oix3
-  def self.takes_m_change(segm)
+  def self.takes_m_change?(segm)
     segm.sonorant? && [segm, segm.next].any? do |s|
       s =~ 'm' && (s.next.starts_with.consonantal? || s.final?)
     end
   end
 
-  def self.takes_l_change(segm)
+  def self.takes_l_change?(segm)
     after_next = segm.after_next
 
     (segm.next =~ [:labial, 'l']                     \
@@ -614,8 +529,96 @@ class OldIbran
     || (after_next =~ [:labial, 'l']                 \
     && after_next.between?(:sonorant, [:consonantal, '']))
   end
+end
 
-  def self.vowel_fronting!(segm)
+# Complex exceptions to regular Ibran changes
+class OldIbranChange
+  # Outcomes of vowels before /k g l/ before dentals  and nasals
+  def self.uncluster!(segm)
+    ipa = segm.phon
+    orig = %w[a ɑ e ɛ o ɔ i u]
+    phon = %w[ɑɛ̯ ɑɛ̯ ɛj ɛj ɔɛ̯ ɔɛ̯ ej oj]
+    orth = %w[ae ae ei ei oe oe éi ói]
+    outcomes = Hash[orig.zip(phon.zip(orth))]
+
+    segm.replace!(outcomes[ipa])
+  end
+
+  # Outcome of clusters following stressed vowels
+  def self.post_stress_uncluster!(segm)
+    prv = segm.prev
+    nxt = segm.next
+    orth = segm.orth
+
+    prv =~ %w[i u] ? gemn = segm.ends_with.phon : OldIbranChange.uncluster!(prv)
+
+    outcomes = { 'ks' => %W[#{gemn}s #{nxt.vowel? ? 'ss' : 's'}],
+                 'dʒ' => %W[#{gemn}ʒ #{'s' if gemn}#{orth}],
+                 'tʃ' => %W[#{gemn}ʃ #{'s' if gemn}#{orth}] }
+
+    outcomes.default = %W[#{nxt.phon if gemn} #{gemn}]
+
+    segm.replace!(outcomes[segm.phon])
+  end
+
+  def self.unstressed_uncluster!(segm)
+    return unless (segm.velar? && segm.before?(%i[dental nasal])) \
+                  || (segm =~ %i[dental velar] && segm.before?(:sibilant))
+
+    segm.update(segm.next.starts_with)
+    segm[:orthography] = 's' if segm.before?(final: true, sibilant: true)
+  end
+
+  def self.unstressed_deaffricate!(segm)
+    return unless segm =~ ['ks', :affricate]
+
+    segm[:orthography] = "s#{(segm.orth unless segm =~ 'ks') \
+                             || ('s' if segm.before?(:vowel))}"
+    segm[:IPA] = segm.ends_with.phon * 2
+  end
+
+  # Intervocalic T becomes L, generally.
+  # But original VtVtV becomes VlVdV, and original VlVtV becomes VdVlV.
+  # (In other words, T becomes D after intervocalic T
+  # and L becomes D before intervocalic T.)
+  def self.lateralize_t!(word)
+    word.change('t', Segment.new('l'), lambda do |t|
+      { 't' => t.after_next, 'l' => t.before_prev }.each do |match, cons|
+        cons.update(Segment.new('d')) if cons.match_all(match, :intervocalic)
+      end
+    end, &:intervocalic?)
+  end
+
+  def self.diphthongize_e!(segm)
+    return if segm.after?([:sibilant, :affricate, { palatalized: true }]) \
+           || segm.prev.ends_with =~ %w[ʎ j i]
+
+    segm[:IPA] = "j#{segm[:IPA]}"
+    segm[:orthography] = "i#{segm[:orthography]}"
+  end
+
+  def self.diphthongize_open_o!(segm)
+    if segm.before?(:sonorant) \
+    && (segm.before?(:final) || segm.after_next.consonantal?)
+      segm[:IPA] = 'wɛ'
+      segm[:orthography] = 'ue'
+    else
+      segm[:IPA] = 'ɔj'
+      segm[:orthography] = 'oi'
+    end
+  end
+
+  def self.diphthongize_closed_o!(segm)
+    return unless segm.final?                                        \
+               || segm.before?(%i[vocalic intervocalic])             \
+               || (segm.before?('s') && segm.after_next.consonantal? \
+                   && segm.next.after_next.vowel?)
+
+    segm.update(IPA: 'u', orthography: 'uo', long: true)
+    segm.prev.orth.sub!(/q?u$/, 'u' => '', 'qu' => 'c')
+  end
+
+  def self.umlaut!(segm)
     outcomes = { 'ɑ' => %w[a ài], 'a' => %w[a ài], 'ɛ' => %w[ɛ ei],
                  'e' => %w[ɛ ei], 'ɔ' => %w[œ eu], 'o' => %w[œ eu],
                  'u' => %w[y ui] }
@@ -1041,7 +1044,7 @@ end
 
 # Intervocalic consonants
 def step_oi14(ary)
-  OldIbran.intervocalic_t_changes(ary)
+  OldIbranChange.lateralize_t!(ary)
 
   ary.change('s', IPA: 'z', &:intervocalic?)
   ary.change({ back: true }, { IPA: 'g', orthography: 'gu' }, &:intervocalic?)
@@ -1075,7 +1078,7 @@ end
 # Clusters
 def step_oi18(ary)
   ary.change(:stressed, {}, lambda do |s|
-    OldIbran.cluster_change(s)
+    OldIbranChange.uncluster!(s)
     s.next.delete
   end) do |s|
     nxt = s.next
@@ -1093,11 +1096,11 @@ def step_oi19(ary)
     nxt = segm.next
 
     if segm.unstressed?
-      OldIbran.unstressed_cluster_changes(nxt)
-      OldIbran.unstressed_affricate_changes(nxt)
+      OldIbranChange.unstressed_uncluster!(nxt)
+      OldIbranChange.unstressed_deaffricate!(nxt)
     elsif segm.before?(['ks', :affricate]) \
        || (segm.before?(%i[dental velar]) && segm.after_next.sibilant?)
-      OldIbran.post_stress_cluster_changes(nxt)
+      OldIbranChange.post_stress_uncluster!(nxt)
     end
   end)
 end
@@ -1130,7 +1133,7 @@ def step_oi22(ary)
   ary.change(%w[ɑ a ɛ e ɔ o u], { long: true }, lambda do |segm|
     anxt = segm.after_next
 
-    OldIbran.vowel_fronting!(segm)
+    OldIbranChange.umlaut!(segm)
     (anxt =~ 'j' ? anxt : anxt.next).delete
   end) do |iff|
     anxt = iff.after_next
@@ -1153,9 +1156,9 @@ end
 def step_oi24(ary)
   ary.change(%w[ɛ e ɔ o], {}, lambda do |segm|
     case segm[:IPA]
-    when 'ɛ', 'e' then OldIbran.diphthongize_e(segm)
-    when 'ɔ'      then OldIbran.diphthongize_open_o(segm)
-    when 'o'      then OldIbran.diphthongize_closed_o(segm)
+    when 'ɛ', 'e' then OldIbranChange.diphthongize_e!(segm)
+    when 'ɔ'      then OldIbranChange.diphthongize_open_o!(segm)
+    when 'o'      then OldIbranChange.diphthongize_closed_o!(segm)
     end
   end) { |iff| iff.stressed? && !iff[:long] }
 end
@@ -1243,7 +1246,7 @@ def step_oix3(ary)
 
     segm.append('w̃', 'ũ')
     nxt.delete
-  end) { |iff| OldIbran.takes_m_change(iff.next) }
+  end) { |iff| OldIbran.takes_m_change?(iff.next) }
 end
 
 # labials & L > /w/ before consonants/finally
@@ -1255,7 +1258,7 @@ def step_oix4(ary)
     segm[:orthography] = segm[:orthography].sub(/(.)i$/, '\1y')
     segm.append('w', 'u')
     nxt.delete
-  end) { |iff| OldIbran.takes_l_change(iff) }
+  end) { |iff| OldIbran.takes_l_change?(iff) }
 end
 
 # resolution of diphthongs in /a A @ V/
