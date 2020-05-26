@@ -506,13 +506,11 @@ class OldIbran
 
   # Outcome of clusters following stressed vowels
   def self.post_stress_cluster_changes(segm)
-    prev = segm.prev
+    prv = segm.prev
     nxt = segm.next
     orth = segm.orth
 
-    if prev =~ %w[i u] then assim = segm.ends_with.phon
-    else OldIbran.cluster_change(prev)
-    end
+    prv =~ %w[i u] ? assim = segm.ends_with.phon : OldIbran.cluster_change(prv)
 
     outcomes = { 'ks' => %W[#{assim}s #{nxt.vowel? ? 'ss' : 's'}],
                  'dʒ' => %W[#{assim}ʒ #{'s' if assim}#{orth}],
