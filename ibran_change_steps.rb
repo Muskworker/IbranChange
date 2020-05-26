@@ -769,12 +769,10 @@ def step_vl0(lemma)
   lemma = Latin.to_dictum(lemma)
 
   # /nf/ acts like /mf/
-  lemma.change({ IPA: 'n' }, IPA: 'm') { |segm| segm.next.phon == 'f' }
+  lemma.change({ IPA: 'n' }, IPA: 'm') { |segm| segm.next =~ 'f' }
 
   # /ps/ and /pt/ act like /ks/ and /kt/
-  lemma.change({ IPA: 'p' }, IPA: 'k') do |segm|
-    ['s', 't'].include? segm.next.phon
-  end
+  lemma.change({ IPA: 'p' }, IPA: 'k') { |segm| segm.next =~ %w[s t] }
 
   # assign stress to each word
   lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
