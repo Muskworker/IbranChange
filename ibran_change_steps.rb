@@ -744,8 +744,10 @@ def respell_palatal(segm)
   prec = segm.phon[-1]
 
   case prec
-  when 'ʃ', 'ʒ' then segm[:orthography] = segm[:orthography].chop + res[prec][front] # segm[:orthography][-1] = res[prec][front]
-  when 'k', 'g' then segm[:orthography] = res[prec][front]
+  when 'ʃ', 'ʒ' 
+    segm[:orthography] = segm[:orthography].chop + res[prec][front]
+  when 'k', 'g' 
+    segm[:orthography] = res[prec][front]
   end
 end
 
@@ -770,7 +772,9 @@ def step_vl0(lemma)
   lemma.change({ IPA: 'n' }, IPA: 'm') { |segm| segm.next.phon == 'f' }
   
   # /ps/ and /pt/ act like /ks/ and /kt/
-  lemma.change({ IPA: 'p' }, IPA: 'k') { |segm| ['s', 't'].include? segm.next.phon }
+  lemma.change({ IPA: 'p' }, IPA: 'k') do |segm| 
+    ['s', 't'].include? segm.next.phon
+  end
 
   # assign stress to each word
   lemma.slice_before { |word| word[:IPA] == ' ' }.each do |word|
@@ -818,7 +822,9 @@ end
 def step_vl4(ary)
   ary.each do |segment|
     segment[:IPA] = segment[:IPA].delete 'h'
-    segment[:orthography] = segment[:orthography].delete 'h' unless segment.orth == 'ph'
+    unless segment.orth == 'ph'
+      segment[:orthography] = segment[:orthography].delete 'h' 
+    end
   end
 
   ary.delete_if { |segment| segment[:IPA] == '' }
@@ -1279,8 +1285,9 @@ end
 # resolution of diphthongs in /O o u/
 def step_oix7(ary)
   ary.change(/[ɔouw]w\u0303?\Z/, { long: true }, lambda do |segm|
-    segm[:IPA] = segm.phon.gsub(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o', 'uw' => 'u',
-                                      'ɔw̃' => 'õ', 'ow̃' => 'õ', 'uw̃' => 'ũ')
+    segm[:IPA] = segm.phon.gsub(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o',
+                                                  'uw' => 'u', 'ɔw̃' => 'õ', 
+                                                  'ow̃' => 'õ', 'uw̃' => 'ũ')
   end)
 
   ary.change(/w\u0303?w/, {}, lambda do |segm|
@@ -1404,7 +1411,8 @@ def step_ri3(ary)
                  end
   end) do |iff|
     !iff[:long] &&
-      ((iff.after?(:vocalic) || iff.initial?) && (iff.before?(:consonantal) || iff.final?))
+      ((iff.after?(:vocalic) || iff.initial?) && 
+       (iff.before?(:consonantal) || iff.final?))
   end
 end
 
