@@ -93,7 +93,7 @@ class Dictum < Array
         output += 'ˈ' unless output =~ /ˈ\S*$/ # Don't add more than one
       end
 
-      output += segm.to_ipa
+      output + segm.to_ipa
     end
   end
 
