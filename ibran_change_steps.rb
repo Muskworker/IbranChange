@@ -625,6 +625,19 @@ class OldIbranChange
 
     segm.replace!(outcomes[segm.phon])
   end
+
+  def self.dediphthongize!(word)
+    word.change(/[ɔouw]w\u0303?\Z/, { long: true }, lambda do |segm|
+      outcomes = { 'ɔw' => 'o', 'ow' => 'o', 'uw' => 'u',
+                   'ɔw̃' => 'õ', 'ow̃' => 'õ', 'uw̃' => 'ũ' }
+      segm[:IPA] = segm.phon.gsub(/[ɔouw]w\u0303?/, outcomes)
+    end)
+
+    word.change(/w\u0303?w/, Segment.new, lambda do |segm|
+      segm[:IPA].chop!
+      segm[:orthography].sub!(/uu|ũu/, 'uu' => 'w', 'ũu' => 'w̃')
+    end)
+  end
 end
 
 # Complex conditions in Common Ibran
@@ -1284,16 +1297,7 @@ end
 
 # resolution of diphthongs in /O o u/
 def step_oix7(ary)
-  ary.change(/[ɔouw]w\u0303?\Z/, { long: true }, lambda do |segm|
-    segm[:IPA] = segm.phon.gsub(/[ɔouw]w\u0303?/, 'ɔw' => 'o', 'ow' => 'o',
-                                                  'uw' => 'u', 'ɔw̃' => 'õ',
-                                                  'ow̃' => 'õ', 'uw̃' => 'ũ')
-  end)
-
-  ary.change(/w\u0303?w/, {}, lambda do |segm|
-    segm[:IPA].chop!
-    segm[:orthography].sub!(/uu|ũu/, 'uu' => 'w', 'ũu' => 'w̃')
-  end)
+  OldIbranChange.dediphthongize!(ary)
 
   # Assign stress if there are multiple
   ary.change(:stressed, { stress: false }, nil, &:pretonic?)
