@@ -420,7 +420,7 @@ end
 
 # Methods for converting Latin input into data
 class Latin
-  DIGRAPHS = /[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i
+  DIGRAPHS = /[ao]e|[ae]u|[ey][ij]|qu|[ckprt]h|./i.freeze
 
   # Convert Latin character to IPA
   def self.to_ipa(str)
