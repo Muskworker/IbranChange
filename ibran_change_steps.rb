@@ -286,8 +286,8 @@ class Segment < Hash
   attr_accessor :dictum, :pos
 
   def initialize(*args)
-    @dictum ||= Dictum.new(self)
-    @pos ||= 0
+    @dictum = Dictum.new(self)
+    @pos = 0
     update(IPA: args[0] || '', orthography: args[1] || args[0].dup) if args.any?
   end
 
