@@ -2362,6 +2362,11 @@ def transform(str, since = "L", plural = false)
 
   [@steps[53], @roesan_steps[-1], @paysan_steps[-1]]
 end
+
+# IDEAL TO KEEP: 
+# 1.  THE CHANGED ORTHOGRAPHY WITH THE CHANGED PRONUNCIATION.           [Pólo => polo]
+# 2.  THE CONSERVATIVE ORTHOGRAPHY WITH THE SPELLING PRONUNCIATION.     [Paulo => paulo]
+#     THIS LATTER IS NOT TRIVIAL, AS IT MAY NOT MATCH THE CONSERVATIVE PRONUNCIATION.  
 def interactive_process(steps, first_step)
   steps.each_with_index do |step, i|
     @outcomes.concat(@outcomes.collect.with_index do |prior, j|
@@ -2390,6 +2395,8 @@ def interactive_process(steps, first_step)
     @steps[i + first_step] = @outcomes.last # for show
   end
 end
+
+## TODO: INCREDIBLY INCOMPLETE
 def name_transform(str, since = "L", plural = false)
   @steps = []
   @current = []
