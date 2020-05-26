@@ -30,7 +30,7 @@ class Dictum < Array
       next unless segm.match(origin) && (block_given? ? yield(segm) : true)
 
       segm.merge!(target)
-      consequence.call(segm) if consequence
+      consequence&.call(segm)
     end
   end
 
@@ -39,7 +39,7 @@ class Dictum < Array
       next unless segm.match(origin) && (block_given? ? yield(segm) : true)
 
       segm.merge!(target)
-      consequence.call(segm) if consequence
+      consequence&.call(segm)
     end
   end
 
@@ -2080,7 +2080,7 @@ def convert_LL str
       end
     end
     
-    if vowels[-2] && vowels[-2].stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
+    if vowels[-2]&.stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
       case vowels[-2][:IPA]
       when 'ɛ'
         vowels[-2][:IPA] = 'e'
