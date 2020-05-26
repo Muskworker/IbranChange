@@ -1427,6 +1427,7 @@ class IbranChangeTest < Minitest::Test
     end
     
     fro_words = [
+      { w: "bebe!", RI_IPA: "beˈbe", RI_Cyrl: "биби", RI_Latn: "bebe", PI_IPA: "bəˈbe", PI: "bebe" },
       { w: "race", RI_IPA: "ras", RI_Cyrl: "ряс", RI_Latn: "race", PI_IPA: "ˈræsə", PI: "rassă" }
     ]
     
