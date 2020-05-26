@@ -181,7 +181,7 @@ module PhoneticFeature
     vowel_count = count('aeiouyæɑɐəɛɔøœ')
     modifier_count = count("jwɥ\u032fː")
     neither_count = count("^aeiouyæɑɐəɛɔøœjwɥ\u0303\u032fː")
-    vowel_count > 0 && modifier_count > 0 && neither_count.zero?
+    vowel_count.positive? && modifier_count.positive? && neither_count.zero?
   end
 
   def rising_diphthong?
@@ -658,7 +658,7 @@ class RoesanIbran
                         segm.after?([:dental, :vocalic, lambda do |s|
                           s.match_all('r', :intervocalic)
                         end]) &&
-                        segm.vowels_before > 0)
+                        segm.vowels_before.positive?)
 
     not_lj && prevocalic && after_appropriate
   end
@@ -1197,7 +1197,7 @@ def step_oi29(ary)
 
     respell_palatal(segm.prev)
   end) do |segm|
-    segm.vowels_before > 0 && segm.vowels_after > 0 \
+    segm.vowels_before.positive? && segm.vowels_after.positive? \
     && segm !~ [:stressed, 'ə']
   end
 end
@@ -1939,9 +1939,9 @@ def convert_OLF str
   elsif @current[-1][:orthography] == ">" # Move stress one syllable towards the end
     @current[-1][:IPA] = nil
     @current[-1][:orthography] = nil
-    vowels[1][:stress] = true unless @current.count(&:stressed?) > 0 || vowels.length < 2  # Don't assign new stress if ending has.
+    vowels[1][:stress] = true unless @current.count(&:stressed?).positive? || vowels.length < 2  # Don't assign new stress if ending has.
   else
-    vowels[0][:stress] = true unless @current.count(&:stressed?) > 0  # Don't assign new stress if ending has.
+    vowels[0][:stress] = true unless @current.count(&:stressed?).positive?  # Don't assign new stress if ending has.
   end
 
   postinitial = false
