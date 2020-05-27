@@ -671,6 +671,24 @@ class CommonIbran
   end
 end
 
+# Complex conditions in Paysan Ibran
+class PaysanIbran
+  def self.s_drop!(ess)
+    prev = ess.prev
+    prev_long = prev[:long]
+    outcomes = if prev_long then { 'e' => 'eî', 'o' => 'oû', 'æ' => 'àî' }
+               else { 'e' => 'ê', 'o' => 'ô', 'æ' => 'àî' }
+               end
+
+    prev[:orthography] \
+      = prev.orth.gsub(/(#{'.?' if prev_long}.)\Z/,
+                       (outcomes[prev.ends_with.phon] || "\\1\u0302"))
+    prev[:IPA] = prev.phon.tr('eo', 'ɛɔ')
+
+    ess.delete
+  end
+end
+
 # Complex conditions in Roesan Ibran
 class RoesanIbran
   def self.jot_to_harden?(segm)
@@ -1565,18 +1583,9 @@ end
 
 # assimilation of /s/
 def step_pi3(ary)
-  outcomes = { 'e' => %w[ê eî], 'o' => %w[ô oû], 'æ' => %w[àî àî] }
-
-  ary.change('s', {}, lambda do |segm|
-    prev = segm.prev
-
-    prev[:orthography] = prev.orth.gsub(/(#{'.?' if prev[:long]}.)\Z/,
-                    (outcomes.dig(prev.ends_with.phon, prev[:long] ? 1 : 0) \
-                    || "\\1\u0302"))
-    prev[:IPA] = prev.phon.tr('eo', 'ɛɔ')
-
-    segm.delete
-  end) { |iff| !iff[:long] && iff.between?(:vocalic, :consonantal) }
+  ary.change('s', {}, ->(segm) { PaysanIbran.s_drop!(segm) }) do |iff|
+    !iff[:long] && iff.between?(:vocalic, :consonantal)
+  end
 end
 
 # je wo wø > i u y in closed syllables
