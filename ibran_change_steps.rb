@@ -1411,11 +1411,7 @@ end
 # assimilation of /s/
 def step_ri3(ary)
   ary.change('s', {}, lambda do |segm|
-    segm[:IPA] = if segm.final? || segm.initial?
-                   'ʰ'
-                 else
-                   segm.next.phon[0]
-                 end
+    segm[:IPA] = segm =~ %i[final initial] ? 'ʰ' : segm.next.phon[0]
   end) do |iff|
     !iff[:long] &&
       ((iff.after?(:vocalic) || iff.initial?) &&
