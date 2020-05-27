@@ -1589,70 +1589,35 @@ def step_pi3(ary)
 end
 
 # je wo wø > i u y in closed syllables
-def step_pi4 ary
-  @current = ary.each_with_index do |segm, idx|
-    if (%w{je jẽ wo wõ wø wø̃}.include?(segm[:IPA]) || ((segm.prev.phon == 'w' && (%w{o ø õ ø̃}.include?(segm[:IPA])) || (segm.prev.phon == 'j' && %w{e ẽ}.include?(segm[:IPA]))))) && ary[idx+1] && segm.next.consonantal? &&
-        (segm.next.final? || segm.after_next.consonantal?)
-      case segm[:IPA]
-      when "je"
-        segm[:IPA] = 'i'
-        segm[:orthography] = segm.prev.vocalic? ? 'y' : 'i'
-      when "jẽ"
-        segm[:IPA] = 'ĩ'
-        segm[:orthography] = segm.prev.vocalic? ? 'yn' : 'in'
-      when "e"
-        segm[:IPA] = 'i'
-        segm[:orthography] = segm.before_prev.vocalic? ? 'y' : 'i'
+def step_pi4(ary)
+  outcomes = { 'je' => %w[i i], 'jẽ' => %w[ĩ in], 'e' => %w[i i],
+               'ẽ' => %w[ĩ in], 'wo' => %w[u uo], 'wõ' => %w[ũ uon],
+               'o' => %w[u uo], 'õ' => %w[ũ uon], 'wø' => %w[y u],
+               'wø̃' => %w[ỹ un], 'ø' => %w[y u], 'ø̃' => %w[ỹ un] }
 
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      when "ẽ"
-        segm[:IPA] = 'ĩ'
-        segm[:orthography] = segm.before_prev.vocalic? ? 'yn' : 'in'
+  ary.change(/\Aj?(e|ẽ)\Z|\Aw?(o|õ|ø|ø̃\Z)/, {}, lambda do |segm|
+    if segm =~ /je/
+      outcome = outcomes[segm.phon]
+      outcome[1] = outcome[1].tr('i', 'y') if segm.after?(:vocalic)
 
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      when "wo"
-        segm[:IPA] = 'u'
-        segm[:orthography] = 'uo'
-      when "wõ"
-        segm[:IPA] = 'ũ'
-        segm[:orthography] = 'uon'
-      when "o"
-        segm[:IPA] = 'u'
-        segm[:orthography] = 'uo'
+      segm.replace!(outcome)
+    elsif (segm.after?('j') && segm =~ /e/) \
+          || (segm.after?('w') && segm =~ [/o/, /ø/])
+      outcome = outcomes[segm.phon]
+      outcome[1] = outcome[1].tr('i', 'y') if segm.before_prev.vocalic?
 
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      when "õ"
-        segm[:IPA] = 'ũ'
-        segm[:orthography] = 'uon'
-
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      when "wø"
-        segm[:IPA] = 'y'
-        segm[:orthography] = 'u'
-      when "wø̃"
-        segm[:IPA] = 'ỹ'
-        segm[:orthography] = 'un'
-      when "ø"
-        segm[:IPA] = 'y'
-        segm[:orthography] = 'u'
-
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      when "ø̃"
-        segm[:IPA] = 'ỹ'
-        segm[:orthography] = 'un'
-
-        segm.prev[:IPA] = nil
-        segm.prev[:orthography] = nil
-      end
+      segm.replace!(outcome)
+      segm.prev.delete
+    else
+      segm.replace!(outcomes[segm.phon])
     end
+  end) do |iff|
+    iff.before?(:consonantal) \
+    && (iff.next.final? || iff.after_next.consonantal?) \
+    && (iff.starts_with =~ %w[j w] \
+        || (iff.prev =~ 'j' && iff.starts_with =~ 'e') \
+        || (iff.prev =~ 'w' && iff.starts_with =~ %w[o ø]))
   end
-
-  @current.delete_if {|segment| segment[:IPA].nil? }
 end
 
 # reduce unstressed vowels
