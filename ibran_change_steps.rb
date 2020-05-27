@@ -1308,10 +1308,11 @@ end
 
 # now lose all those precious nasals
 def step_ci1(ary)
+  outcomes = { 'w̃' => 'w', 'ũ' => 'u', 'õ' => 'o', 'œ̃' => 'œ',
+               'œ̯̃' => 'œ̯', 'ø̃' => 'ø', 'ỹ' => 'y', 'ɥ̃' => 'ɥ' }
+
   ary.change(:vocalic, {}, lambda do |segm|
-    segm[:IPA] = segm.phon.gsub(/(w̃|ũ|õ|œ̃|œ̯̃|ø̃|ỹ|ɥ̃)/,
-                    'w̃' => 'w', 'ũ' => 'u', 'õ' => 'o', 'œ̃' => 'œ',
-                    'œ̯̃' => 'œ̯', 'ø̃' => 'ø', 'ỹ' => 'y', 'ɥ̃' => 'ɥ')
+    segm[:IPA] = segm.phon.gsub(/(w̃|ũ|õ|œ̃|œ̯̃|ø̃|ỹ|ɥ̃)/, outcomes)
   end) { |iff| iff.orth =~ /ũ|w̃/ }
 end
 
