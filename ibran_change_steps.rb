@@ -1345,8 +1345,10 @@ end
 # short u(~) > y
 def step_ci4(ary)
   ary.change(/u/, {}, lambda do |s|
-    s[:orthography] = s[:orthography].tr('o', 'i') # French ou -> iu, which is already /y/
     s[:IPA] = s[:IPA].tr('u', 'y')
+
+    # French ou -> iu, which is already /y/
+    s[:orthography] = s[:orthography].tr('o', 'i')
   end) { |iff| !iff[:long] }
 end
 
