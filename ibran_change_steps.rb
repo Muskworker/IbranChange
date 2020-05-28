@@ -358,6 +358,16 @@ class Segment < Hash
     target.send("#{feat[-1]}?")
   end
 
+  def [](feat)
+    fetch(feat) do
+      begin
+        parse_sym(feat)
+      rescue NoMethodError
+        default
+      end
+    end
+  end
+
   def match_all(*ary)
     ary.all? { |criterion| match(criterion) }
   end
@@ -1596,27 +1606,16 @@ def step_pi4(ary)
                'wø̃' => %w[ỹ un], 'ø' => %w[y u], 'ø̃' => %w[ỹ un] }
 
   ary.change(/\Aj?(e|ẽ)\Z|\Aw?(o|õ|ø|ø̃\Z)/, {}, lambda do |segm|
-    if segm =~ /je/
-      outcome = outcomes[segm.phon]
-      outcome[1] = outcome[1].tr('i', 'y') if segm.after?(:vocalic)
+    outcome = outcomes[segm.phon]
 
-      segm.replace!(outcome)
-    elsif (segm.after?('j') && segm =~ /e/) \
-          || (segm.after?('w') && segm =~ [/o/, /ø/])
-      outcome = outcomes[segm.phon]
-      outcome[1] = outcome[1].tr('i', 'y') if segm.before_prev.vocalic?
+    outcome[1] = outcome[1].tr('i', 'y') if segm.after?([:vocalic, { IPA: 'j', intervocalic: true }])
 
-      segm.replace!(outcome)
-      segm.prev.delete
-    else
-      segm.replace!(outcomes[segm.phon])
-    end
+    segm.prev.delete if segm.after? %w[j w]
+
+    segm.replace!(outcome)
   end) do |iff|
-    iff.before?(:consonantal) \
-    && (iff.next.final? || iff.after_next.consonantal?) \
-    && (iff.starts_with =~ %w[j w] \
-        || (iff.prev =~ 'j' && iff.starts_with =~ 'e') \
-        || (iff.prev =~ 'w' && iff.starts_with =~ %w[o ø]))
+    iff.before?(consonantal: true, intervocalic: false) \
+    && (iff.starts_with =~ %w[j w] || (iff.prev =~ %w[j w] && iff =~ :starts_with_vocalic))
   end
 end
 
