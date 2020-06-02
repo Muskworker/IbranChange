@@ -1646,15 +1646,9 @@ def step_pi5(ary)
         next
       end
 
-      if segm =~ /(ɥ|œ̯)\Z/
+      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do |match|
         ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'a'])
-        if segm[:IPA][-1] == 'ɥ'
-          segm[:IPA][-1] = ''
-          segm[:orthography][-1] = ''
-        else
-          segm[:IPA][-2..-1] = ''
-          segm[:orthography][-2..-1] = ''
-        end
+        segm[:orthography][-match.length..-1] = '' # IPA also ''
       end
 
       if !segm[:long] || segm.rising_diphthong?
