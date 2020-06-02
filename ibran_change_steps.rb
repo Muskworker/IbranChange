@@ -697,6 +697,20 @@ class PaysanIbran
 
     ess.delete
   end
+
+  def self.close_diphthong(segm)
+    outcomes = { 'je' => %w[i i], 'jẽ' => %w[ĩ in], 'e' => %w[i i],
+                 'ẽ' => %w[ĩ in], 'wo' => %w[u uo], 'wõ' => %w[ũ uon],
+                 'o' => %w[u uo], 'õ' => %w[ũ uon], 'wø' => %w[y u],
+                 'wø̃' => %w[ỹ un], 'ø' => %w[y u], 'ø̃' => %w[ỹ un] }
+
+    outcome = outcomes[segm.phon]
+    if segm.after?([:vocalic, { IPA: 'j', intervocalic: true }])
+      outcome[1] = outcome[1].tr('i', 'y')
+    end
+
+    outcome
+  end
 end
 
 # Complex conditions in Roesan Ibran
@@ -1600,22 +1614,13 @@ end
 
 # je wo wø > i u y in closed syllables
 def step_pi4(ary)
-  outcomes = { 'je' => %w[i i], 'jẽ' => %w[ĩ in], 'e' => %w[i i],
-               'ẽ' => %w[ĩ in], 'wo' => %w[u uo], 'wõ' => %w[ũ uon],
-               'o' => %w[u uo], 'õ' => %w[ũ uon], 'wø' => %w[y u],
-               'wø̃' => %w[ỹ un], 'ø' => %w[y u], 'ø̃' => %w[ỹ un] }
-
   ary.change(/\Aj?(e|ẽ)\Z|\Aw?(o|õ|ø|ø̃\Z)/, {}, lambda do |segm|
-    outcome = outcomes[segm.phon]
-
-    outcome[1] = outcome[1].tr('i', 'y') if segm.after?([:vocalic, { IPA: 'j', intervocalic: true }])
-
+    segm.replace!(PaysanIbran.close_diphthong(segm))
     segm.prev.delete if segm.after? %w[j w]
-
-    segm.replace!(outcome)
   end) do |iff|
-    iff.before?(consonantal: true, intervocalic: false) \
-    && (iff.starts_with =~ %w[j w] || (iff.prev =~ %w[j w] && iff =~ :starts_with_vocalic))
+    iff =~ [:rising_diphthong,
+            ->(s) { s.prev =~ %w[j w] && s =~ :starts_with_vocalic }] \
+    && iff.before?(consonantal: true, intervocalic: false)
   end
 end
 
