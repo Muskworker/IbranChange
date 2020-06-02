@@ -1626,14 +1626,11 @@ end
 
 # reduce unstressed vowels
 def step_pi5(ary)
-  posttonic = ary.count(&:stressed?).zero?
   any_breve = false
 
   ary.change(:vocalic, {}, lambda do |segm|
     case segm.stressed?
     when true
-      posttonic = true
-
       if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯'
         ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
         any_breve = true
@@ -1674,7 +1671,7 @@ def step_pi5(ary)
         vowel_pos = segm.starts_with.vowel? ? 0 : 1
         segm[:IPA] = segm[:IPA].dup
         segm[:IPA][vowel_pos] = 'ə'
-        if posttonic && segm[:orthography] != 'ă'
+        if segm.posttonic? && segm[:orthography] != 'ă'
           segm[:orthography] = segm[:orthography].dup
           segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
 
