@@ -1629,34 +1629,24 @@ def step_pi5(ary)
   any_breve = false
 
   ary.change(:vocalic, {}, lambda do |segm|
-    case segm.stressed?
-    when true
-      if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯'
-        ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
-        any_breve = true
-        if segm[:IPA][-1] == 'ɥ'
-          segm[:IPA][-1] = ''
-        else
-          segm[:IPA][-2..-1] = ''
-        end
-        segm[:orthography][-2..-1] = ''
-      end
-    else
-      segm[:long] = true if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯' || (segm.next.vowel? && !segm.next.stressed? && segm.pretonic?)
+    if segm.match_all(:stressed, /(ɥ|œ̯)\Z/)
+      ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
+      any_breve = true
+      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/, '')
+      segm[:orthography][-2..-1] = ''
+      next
+    elsif segm.unstressed?
+      segm[:long] = true if segm =~ /(ɥ|œ̯)\Z/ || (segm.next.match_all(:vowel, :unstressed) && segm.pretonic?)
 
       # hiatus
-      if segm.next.starts_with.vowel? && segm.posttonic?
-        case segm.phon
-        when 'i', 'ɛ', 'je'
-          segm.next[:IPA] = 'j' + segm.next.phon
-          segm.next[:orthography] = segm.orth + segm.next.orth
-          segm[:IPA] = nil
-          segm[:orthography] = nil
-          next
-        end
+      if segm.before?(:vowel) && segm.match_all(:posttonic, %w[i ɛ je])
+        segm.next.prepend('j', segm.orth)
+        segm[:IPA] = nil
+        segm[:orthography] = nil
+        next
       end
 
-      if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯'
+      if segm =~ /(ɥ|œ̯)\Z/
         ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'a'])
         if segm[:IPA][-1] == 'ɥ'
           segm[:IPA][-1] = ''
@@ -1683,10 +1673,8 @@ def step_pi5(ary)
             %w[a à o ó u ă].include?(segm[:orthography][0]) &&
             !%w[i j].include?(segm.prev.orth[-1]) # LL |tiV|; pluvia > plusja
           case segm.prev.phon[-1]
-          when 'ʃ', 'ç'
+          when 'ʃ', 'ç', 'ʒ', 'ʝ'
             segm.prev.orth[-1] = 'ç' unless segm.prev.orth == 'ch'
-          when 'ʒ', 'ʝ'
-            segm.prev.orth[-1] = 'ç'
           when 'g' # gu
             segm.prev[:orthography] = 'g'
           when 'k' # qu
@@ -1699,7 +1687,7 @@ def step_pi5(ary)
     end
   end)
 
-  ary.delete_if { |segment| segment[:IPA].nil? }
+  ary.compact
 end
 
 # k_j g_j > tS dZ
