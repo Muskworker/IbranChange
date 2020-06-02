@@ -1629,13 +1629,13 @@ def step_pi5(ary)
   any_breve = false
 
   ary.change(:vocalic, {}, lambda do |segm|
-    if segm.match_all(:stressed, /(ɥ|œ̯)\Z/)
-      ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
-      any_breve = true
-      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/, '')
-      segm[:orthography][-2..-1] = ''
-      next
-    elsif segm.unstressed?
+    if segm.stressed?
+      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do |match|
+        ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
+        any_breve = true
+        segm[:orthography][-2..-1] = '' # IPA also ''
+      end
+    else
       segm[:long] = true if segm =~ /(ɥ|œ̯)\Z/ || (segm.next.match_all(:vowel, :unstressed) && segm.pretonic?)
 
       # hiatus
