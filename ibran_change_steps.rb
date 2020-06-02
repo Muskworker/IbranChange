@@ -1630,10 +1630,10 @@ def step_pi5(ary)
 
   ary.change(:vocalic, {}, lambda do |segm|
     if segm.stressed?
-      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do |match|
+      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do
         ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
         any_breve = true
-        segm[:orthography][-2..-1] = '' # IPA also ''
+        segm[:orthography][-2..-1] = '' # also sets IPA ''
       end
     else
       segm[:long] = true if segm =~ /(ɥ|œ̯)\Z/ || (segm.next.match_all(:vowel, :unstressed) && segm.pretonic?)
@@ -1648,7 +1648,7 @@ def step_pi5(ary)
 
       segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do |match|
         ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'a'])
-        segm[:orthography][-match.length..-1] = '' # IPA also ''
+        segm[:orthography][-match.length..-1] = '' # also sets IPA ''
       end
 
       if !segm[:long] || segm.rising_diphthong?
@@ -1663,9 +1663,8 @@ def step_pi5(ary)
           any_breve = true
         end
 
-        if %w[ʃ ʒ ç ʝ k g s].include?(segm.prev.phon[-1]) &&
-            %w[a à o ó u ă].include?(segm[:orthography][0]) &&
-            !%w[i j].include?(segm.prev.orth[-1]) # LL |tiV|; pluvia > plusja
+        if %w[a à o ó u ă].include?(segm.starts_with.orth) \
+           && !%w[i j].include?(segm.prev.ends_with.orth)
           case segm.prev.phon[-1]
           when 'ʃ', 'ç', 'ʒ', 'ʝ'
             segm.prev.orth[-1] = 'ç' unless segm.prev.orth == 'ch'
@@ -1674,7 +1673,7 @@ def step_pi5(ary)
           when 'k' # qu
             segm.prev[:orthography] = 'c'
           when 's' # c in French loans
-            segm.prev[:orthography] = segm.prev.intervocalic? ? 'ss' : 's'
+            segm.prev[:orthography] = segm.after?(:intervocalic) ? 'ss' : 's'
           end
         end
       end
