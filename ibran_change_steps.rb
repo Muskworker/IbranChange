@@ -105,6 +105,25 @@ end
 
 # Determine the properties of a segment that depend on its surroundings.
 module PhoneticEnvironment
+  def prev
+    @dictum.renumber
+    @pos.zero? ? Segment.new : @dictum.fetch(@pos - 1, Segment.new)
+  end
+
+  def next
+    @dictum.renumber
+    @dictum.fetch(@pos + 1, Segment.new)
+  end
+  alias nxt next # 'next' is the best name, but it's a keyword
+
+  def before_prev
+    prev.prev
+  end
+
+  def after_next
+    nxt.nxt
+  end
+
   def intervocalic?
     prev.vocalic? && nxt.vocalic?
   end
@@ -293,25 +312,6 @@ class Segment < Hash
 
   def replace!(args)
     update(IPA: args[0], orthography: args[1] || args[0].dup)
-  end
-
-  def prev
-    @dictum.renumber
-    @pos.zero? ? Segment.new : @dictum.fetch(@pos - 1, Segment.new)
-  end
-
-  def next
-    @dictum.renumber
-    @dictum.fetch(@pos + 1, Segment.new)
-  end
-  alias nxt next # 'next' is the best name, but it's a keyword
-
-  def before_prev
-    prev.prev
-  end
-
-  def after_next
-    nxt.nxt
   end
 
   # TODO: Don't ever set this to nil.
