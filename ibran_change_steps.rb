@@ -1625,91 +1625,84 @@ def step_pi4(ary)
 end
 
 # reduce unstressed vowels
-def step_pi5 ary
-  posttonic = ary.count(&:stressed?) == 0
+def step_pi5(ary)
+  posttonic = ary.count(&:stressed?).zero?
   any_breve = false
 
-  @current = ary.each_with_index do |segm, idx|
-    if segm.vocalic?
-      case segm.stressed?
-      when true
-        posttonic = true
+  ary.change(:vocalic, {}, lambda do |segm|
+    case segm.stressed?
+    when true
+      posttonic = true
 
-        if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯"
-          ary.insert(idx+1, Segment[IPA: 'ə', orthography: 'ă'])
+      if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯'
+        ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
+        any_breve = true
+        if segm[:IPA][-1] == 'ɥ'
+          segm[:IPA][-1] = ''
+        else
+          segm[:IPA][-2..-1] = ''
+        end
+        segm[:orthography][-2..-1] = ''
+      end
+    else
+      segm[:long] = true if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯' || (segm.next.vowel? && !segm.next.stressed? && segm.pretonic?)
+
+      # hiatus
+      if segm.next.starts_with.vowel? && segm.posttonic?
+        case segm.phon
+        when 'i', 'ɛ', 'je'
+          segm.next[:IPA] = 'j' + segm.next.phon
+          segm.next[:orthography] = segm.orth + segm.next.orth
+          segm[:IPA] = nil
+          segm[:orthography] = nil
+          next
+        end
+      end
+
+      if segm[:IPA][-1] == 'ɥ' || segm[:IPA][-2..-1] == 'œ̯'
+        ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'a'])
+        if segm[:IPA][-1] == 'ɥ'
+          segm[:IPA][-1] = ''
+          segm[:orthography][-1] = ''
+        else
+          segm[:IPA][-2..-1] = ''
+          segm[:orthography][-2..-1] = ''
+        end
+      end
+
+      if !segm[:long] || segm.rising_diphthong?
+        vowel_pos = segm.starts_with.vowel? ? 0 : 1
+        segm[:IPA] = segm[:IPA].dup
+        segm[:IPA][vowel_pos] = 'ə'
+        if posttonic && segm[:orthography] != 'ă'
+          segm[:orthography] = segm[:orthography].dup
+          segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
+
+          segm[:orthography] = segm[:orthography].gsub(/ă\u0302/, 'ă') # no ă̂
           any_breve = true
-          case
-          when segm[:IPA][-1] == "ɥ"
-            segm[:IPA][-1] = ''
-            segm[:orthography][-2..-1] = ''
-          else
-            segm[:IPA][-2..-1] = ''
-            segm[:orthography][-2..-1] = ''
-          end
-        end
-      else
-        segm[:long] = true if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯" || (segm.next.vowel? && !segm.next.stressed? && segm.pretonic?)
-
-        # hiatus
-        if segm.next.starts_with.vowel? && segm.posttonic?
-          case segm.phon
-          when 'i', 'ɛ', 'je'
-            segm.next[:IPA] = 'j' + segm.next.phon
-            segm.next[:orthography] = segm.orth + segm.next.orth
-            segm[:IPA] = nil
-            segm[:orthography] = nil
-            next
-          end
         end
 
-        if segm[:IPA][-1] == "ɥ" || segm[:IPA][-2..-1] == "œ̯"
-          ary.insert(idx+1, Segment[IPA: 'ə', orthography: 'a'])
-          case
-          when segm[:IPA][-1] == "ɥ"
-            segm[:IPA][-1] = ''
-            #segm[:orthography][-2..-1] = ''
-            segm[:orthography][-1] = ''
-          else
-            segm[:IPA][-2..-1] = ''
-            segm[:orthography][-2..-1] = ''
-          end
-        end
-
-        if !segm[:long] || segm.rising_diphthong?
-          #segm[:IPA].include?("\u0303") ? segm[:IPA][0] = 'ə̃' :
-          vowel_pos = segm.starts_with.vowel? ? 0 : 1
-          segm[:IPA] = segm[:IPA].dup
-          segm[:IPA][vowel_pos] = 'ə'
-          if posttonic && segm[:orthography] != 'ă'
-            segm[:orthography] = segm[:orthography].dup
-            segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
-
-            segm[:orthography] = segm[:orthography].gsub(/ă\u0302/, "ă")  # no ă̂
-            any_breve = true
-          end
-
-          if %w{ʃ ʒ ç ʝ k g s}.include?(segm.prev.phon[-1]) &&
-              %w{a à o ó u ă}.include?(segm[:orthography][0]) &&
-              !%w{i j}.include?(segm.prev.orth[-1]) # LL |tiV|; pluvia > plusja
-            case segm.prev.phon[-1]
-            when 'ʃ', 'ç'
-              segm.prev.orth[-1] = 'ç' unless segm.prev.orth == 'ch'
-            when 'ʒ', 'ʝ'
-              segm.prev.orth[-1] = 'ç'
-            when 'g' # gu
-              segm.prev[:orthography] = 'g'
-            when 'k' # qu
-              segm.prev[:orthography] = 'c'
-            when 's' # c in French loans
-              segm.prev[:orthography] = segm.prev.intervocalic? ? 'ss' : 's'
-            end
+        if %w[ʃ ʒ ç ʝ k g s].include?(segm.prev.phon[-1]) &&
+            %w[a à o ó u ă].include?(segm[:orthography][0]) &&
+            !%w[i j].include?(segm.prev.orth[-1]) # LL |tiV|; pluvia > plusja
+          case segm.prev.phon[-1]
+          when 'ʃ', 'ç'
+            segm.prev.orth[-1] = 'ç' unless segm.prev.orth == 'ch'
+          when 'ʒ', 'ʝ'
+            segm.prev.orth[-1] = 'ç'
+          when 'g' # gu
+            segm.prev[:orthography] = 'g'
+          when 'k' # qu
+            segm.prev[:orthography] = 'c'
+          when 's' # c in French loans
+            segm.prev[:orthography] = segm.prev.intervocalic? ? 'ss' : 's'
           end
         end
       end
     end
-  end
+  end)
 
-  @current.delete_if {|segment| segment[:IPA].nil? }
+  ary.delete_if { |segment| segment[:IPA].nil? }
 end
 
 # k_j g_j > tS dZ
