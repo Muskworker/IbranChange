@@ -1653,13 +1653,11 @@ def step_pi5(ary)
 
       if !segm[:long] || segm.rising_diphthong?
         vowel_pos = segm.starts_with.vowel? ? 0 : 1
-        segm[:IPA] = segm[:IPA].dup
-        segm[:IPA][vowel_pos] = 'ə'
+        segm.phon[vowel_pos] = 'ə'
         if segm.posttonic? && segm[:orthography] != 'ă'
-          segm[:orthography] = segm[:orthography].dup
-          segm[:orthography][vowel_pos] = (any_breve ? 'a' : 'ă')
+          segm.orth[vowel_pos] = (any_breve ? 'a' : 'ă')
 
-          segm[:orthography] = segm[:orthography].gsub(/ă\u0302/, 'ă') # no ă̂
+          segm.orth.gsub!(/ă\u0302/, 'ă') # no ă̂
           any_breve = true
         end
 
