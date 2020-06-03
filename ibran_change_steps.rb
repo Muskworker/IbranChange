@@ -311,7 +311,7 @@ class Segment < Hash
   end
 
   def replace!(args)
-    update(IPA: args[0], orthography: args[1] || args[0].dup)
+    update(IPA: args[0], orthography: (args[1] || args[0]).dup)
   end
 
   # TODO: Don't ever set this to nil.
@@ -1913,8 +1913,7 @@ def convert_OLF str
     # unstressed schwas - non-initial
     if segm.vocalic? && !segm.stressed? && postinitial
       if !segm[:long] && !segm.diphthong? && segm[:IPA] != 'ə'
-        segm[:IPA] = 'ə'
-        segm[:orthography] = 'e'
+        segm.replace!(%w[ə e])
 
         # metathesis of @C > C@
         if segm.prev.intervocalic? && segm.next.final? && @current[idx+1] && segm.next.consonantal?
