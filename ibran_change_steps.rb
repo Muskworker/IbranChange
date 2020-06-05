@@ -714,6 +714,63 @@ class PaysanIbran
 
     outcome
   end
+
+  def self.break_semivowels(ary)
+    ary.change(/(ɥ|œ̯)\Z/, {}, lambda do |segm|
+      segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do |match|
+        stress = segm.stressed?
+
+        segm[:long] = true unless stress
+        ary.insert(segm.pos + 1,
+                   Segment[IPA: 'ə', orthography: stress ? 'ă' : 'a'])
+        segm[:orthography][-(stress ? 2 : match.length)..-1] = '' # also IPA ''
+      end
+    end)
+  end
+
+  def self.resolve_hiatus(ary)
+    ary.change(:unstressed, {}, lambda do |segm|
+      ## Lengthen vowels before pretonic vowels in hiatus before unstressed
+      if segm.next.match_all(:vowel, :unstressed) && segm.pretonic?
+        segm[:long] = true
+      end
+
+      if segm.before?(:vowel) && segm.match_all(:posttonic, %w[i ɛ je])
+        segm.next.prepend('j', segm.orth)
+        segm.delete
+        next
+      end
+    end)
+  end
+
+  # make sure the spelling of the previous segment matches the given vowel
+  def self.respell_velars(segm)
+    prev = segm.prev
+
+    return unless %w[a à o ó u ă].include?(segm.starts_with.orth) \
+               && !%w[i j h].include?(prev.ends_with.orth)        \
+               && prev.ends_with =~ %w[ʃ ç ʒ ʝ g k s]
+
+    outcomes = { 'g' => 'g', 'k' => 'c', 'ʒʒ' => 'sç',
+                 's' => prev[:intervocalic] ? 'ss' : 's' }
+
+    prev[:orthography] = outcomes[prev.phon] || 'ç'
+  end
+
+  # Shorten and apply breves
+  def self.reduce_unstressed(segm)
+    vowel_pos = segm.starts_with.vowel? ? 0 : 1
+    segm[:IPA] = segm[:IPA].dup # why is this frozen
+    segm[:IPA][vowel_pos] = 'ə'
+    if segm.posttonic? && segm[:orthography] != 'ă'
+      # The check for \u0302 is to get rid of "ă̂"
+      # The "main" vowel may not exist, e.g. if the orth is |y| [jV]
+      segm.orth.sub!(/(.{#{vowel_pos}})(.\u0302?)?/,
+                     segm.dictum.join =~ /ă/ ? '\\1a' : '\\1ă')
+    end
+
+    PaysanIbran.respell_velars(segm)
+  end
 end
 
 # Complex conditions in Roesan Ibran
@@ -1629,55 +1686,12 @@ end
 
 # reduce unstressed vowels
 def step_pi5(ary)
-  ary.change(/(ɥ|œ̯)\Z/, {}, lambda do |segm|
-    segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do
-      ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'ă'])
-      segm[:orthography][-2..-1] = '' # also sets IPA ''
-    end
-  end, &:stressed?)
+  PaysanIbran.break_semivowels(ary)
+  PaysanIbran.resolve_hiatus(ary)
 
   ary.change(:unstressed, {}, lambda do |segm|
-    segm[:long] = true if segm =~ /(ɥ|œ̯)\Z/ || (segm.next.match_all(:vowel, :unstressed) && segm.pretonic?)
-
-    # hiatus
-    if segm.before?(:vowel) && segm.match_all(:posttonic, %w[i ɛ je])
-      segm.next.prepend('j', segm.orth)
-      segm[:IPA] = nil
-      segm[:orthography] = nil
-      next
-    end
-
-    segm[:IPA] = segm.phon.sub(/(ɥ|œ̯)\Z/) do |match|
-      ary.insert(segm.pos + 1, Segment[IPA: 'ə', orthography: 'a'])
-      segm[:orthography][-match.length..-1] = '' # also sets IPA ''
-    end
-
-    if !segm[:long] || segm.rising_diphthong?
-      vowel_pos = segm.starts_with.vowel? ? 0 : 1
-      segm.phon[vowel_pos] = 'ə'
-      if segm.posttonic? && segm[:orthography] != 'ă'
-        segm.orth[vowel_pos] = (ary.join =~ /ă/ ? 'a' : 'ă')
-
-        segm.orth.gsub!(/ă\u0302/, 'ă') # no ă̂
-      end
-
-      if %w[a à o ó u ă].include?(segm.starts_with.orth) \
-         && !%w[i j].include?(segm.prev.ends_with.orth)
-        case segm.prev.phon[-1]
-        when 'ʃ', 'ç', 'ʒ', 'ʝ'
-          segm.prev.orth[-1] = 'ç' unless segm.prev.orth == 'ch'
-        when 'g' # gu
-          segm.prev[:orthography] = 'g'
-        when 'k' # qu
-          segm.prev[:orthography] = 'c'
-        when 's' # c in French loans
-          segm.prev[:orthography] = segm.after?(:intervocalic) ? 'ss' : 's'
-        end
-      end
-    end
-  end)
-
-  ary.compact
+    PaysanIbran.reduce_unstressed(segm)
+  end) { |iff| iff.rising_diphthong? || !iff[:long] }
 end
 
 # k_j g_j > tS dZ
