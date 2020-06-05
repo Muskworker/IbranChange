@@ -307,20 +307,23 @@ class Segment < Hash
   def initialize(*args)
     @dictum = Dictum.new(self)
     @pos = 0
-    update(IPA: args[0] || '', orthography: args[1] || args[0].dup) if args.any?
+
+    return unless args.any?
+
+    update(IPA: (args[0] || '').dup, orthography: (args[1] || args[0]).dup)
   end
 
   def replace!(args)
-    update(IPA: args[0], orthography: (args[1] || args[0]).dup)
+    update(IPA: args[0].dup, orthography: (args[1] || args[0]).dup)
   end
 
   # TODO: Don't ever set this to nil.
   def phon
-    +(fetch(:IPA, String.new) || String.new)
+    fetch(:IPA, String.new) || String.new
   end
 
   def orth
-    +(fetch(:orthography, String.new) || String.new)
+    fetch(:orthography, String.new) || String.new
     # @orth
   end
 
@@ -1328,12 +1331,12 @@ end
 def step_oix6(ary)
   ary.change(/j?[ɛeiy]w\u0303?$/, { long: true }, lambda do |segm|
     outcomes = { 'ɛw' => 'œ', 'ew' => 'ø', 'iw' => 'y', 'yw' => 'y' }
-    segm.phon.sub!(/ɛw|ew|iw|yw/, outcomes)
+    segm[:IPA] = segm.phon.sub(/ɛw|ew|iw|yw/, outcomes)
   end)
 
   ary.change(:diphthong, {}, lambda do |segm|
-    segm.phon.sub!(/jw/, 'ɥ')
-    segm.phon.sub!(/ɛ̯w/, 'œ̯')
+    segm[:IPA] = segm.phon.sub(/jw/, 'ɥ')
+    segm[:IPA] = segm.phon.sub(/ɛ̯w/, 'œ̯')
   end)
 end
 
