@@ -1712,15 +1712,11 @@ def step_pi7(ary)
 end
 
 # OE~ AE~ > O:~ a:~
-def step_pi8 ary
-  @current = ary.each do |segm|
-    if segm[:IPA].include?("ɑɛ̯\u0303") || segm[:IPA].include?("ɔɛ̯\u0303")
-      segm[:IPA] = segm[:IPA].gsub(/ɑɛ̯\u0303/, 'æ')
-      segm[:IPA] = segm[:IPA].gsub(/ɔɛ̯\u0303/, 'ɔ')
-
-      segm[:long] = true
-    end
-  end
+def step_pi8(ary)
+  ary.change(/[ɑɔ]ɛ̯\u0303/, { long: true }, lambda do |segm|
+    segm[:IPA] = segm[:IPA].gsub(/ɑɛ̯\u0303/, 'æ')
+    segm[:IPA] = segm[:IPA].gsub(/ɔɛ̯\u0303/, 'ɔ')
+  end)
 end
 
 # OE oj AE > Oj Oj Aj
