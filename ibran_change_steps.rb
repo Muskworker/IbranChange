@@ -1695,21 +1695,15 @@ def step_pi5(ary)
 end
 
 # k_j g_j > tS dZ
-def step_pi6 ary
-  @current = ary.each do |segm|
-    if segm[:palatalized]
-      case segm[:IPA]
-      when 'k'
-        segm[:IPA] = 'tʃ'
-        segm[:palatalized] = false
-        segm[:orthography] = 'ch'
-      when 'g'
-        segm[:IPA] = 'dʒ'
-        segm[:palatalized] = false
-        segm[:orthography] = 'dj'
-      end
+def step_pi6(ary)
+  ary.change(%w[k g], { palatalized: false }, lambda do |segm|
+    case segm[:IPA]
+    when 'k'
+      segm.replace!(%w[tʃ ch])
+    when 'g'
+      segm.replace!(%w[dʒ dj])
     end
-  end
+  end) { |iff| iff[:palatalized] }
 end
 
 # k- g- > k g
