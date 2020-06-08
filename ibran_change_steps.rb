@@ -1720,15 +1720,13 @@ def step_pi8(ary)
 end
 
 # OE oj AE > Oj Oj Aj
-def step_pi9 ary
-  @current = ary.each do |segm|
-    if segm[:IPA].include?('ɑɛ̯') || segm[:IPA].include?('ɔɛ̯') || segm[:IPA].include?('oj')
-      segm[:IPA] = segm[:IPA].gsub(/ɑɛ̯/, 'ɑj')
-      segm[:IPA] = segm[:IPA].gsub(/ɔɛ̯/, 'ɔj')
-      segm[:IPA] = segm[:IPA].gsub(/oj/, 'ɔj')
-      segm[:orthography] = segm[:orthography].gsub(/ói/, 'oi')
-    end
-  end
+def step_pi9(ary)
+  ary.change(/[ɑɔ]ɛ̯|oj/, {}, lambda do |segm|
+    segm[:IPA] = segm[:IPA].gsub(/ɑɛ̯/, 'ɑj')
+    segm[:IPA] = segm[:IPA].gsub(/ɔɛ̯/, 'ɔj')
+    segm[:IPA] = segm[:IPA].gsub(/oj/, 'ɔj')
+    segm[:orthography] = segm[:orthography].gsub(/ói/, 'oi')
+  end)
 end
 
 # g > x
