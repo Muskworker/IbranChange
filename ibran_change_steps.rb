@@ -1707,17 +1707,8 @@ def step_pi6(ary)
 end
 
 # k- g- > k g
-def step_pi7 ary
-  @current = ary.each do |segm|
-    if segm[:back]
-      case segm[:IPA]
-      when 'k'
-        segm[:back] = false
-      when 'g'
-        segm[:back] = false
-      end
-    end
-  end
+def step_pi7(ary)
+  ary.change({ back: true }, back: false)
 end
 
 # OE~ AE~ > O:~ a:~
