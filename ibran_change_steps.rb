@@ -771,6 +771,48 @@ class PaysanIbran
 
     PaysanIbran.respell_velars(segm)
   end
+
+  def self.respell_q(ary)
+    ary.change({ IPA: 'kw', orthography: 'qu' }, orthography: 'cu')
+
+    ary.change({ orthography: 'qu' }, orthography: 'c') do |iff|
+      %w[a à o ó u].include?(iff.next.orth[0])
+    end
+  end
+
+  def self.respell_y_after_jot(ary)
+    ary.change(->(s) { s.orth =~ /i/ }, {}, lambda do |segm|
+      segm[:orthography] = segm.orth.gsub(/i/, 'y')
+    end) { |iff| iff.after?('j') }
+  end
+
+  def self.drop_breves_after_accents(ary)
+    ary.change(->(s) { s.orth =~ /ă/ }, {}, lambda do |segm|
+      segm[:orthography] = segm.orth.gsub(/ă/, 'a')
+    end) { |iff| %w[é ó].include?(iff.prev.orth[-1]) }
+  end
+
+  def self.respell_vowels(ary)
+    outcomes = { 'll' => 'y', 'iy' => 'y', 'ũ' => 'u',
+                 'w̃' => 'w', 'uou' => 'uo', 'àu' => 'au' }
+
+    # Orthography changes
+    ary.change([:vocalic, 'j'], {}, lambda do |segm|
+      # several changes happening in 'order'
+      outcomes.keys.each do |key|
+        segm[:orthography] = segm.orth.gsub(/#{key}/, outcomes)
+      end
+    end)
+  end
+
+  def self.orthographic_changes(ary)
+    ary.change('l', orthography: 'l') # |gl| /ll/
+    ary.change('ji', orthography: 'y')
+    respell_q(ary)
+    respell_y_after_jot(ary)
+    drop_breves_after_accents(ary)
+    respell_vowels(ary)
+  end
 end
 
 # Complex conditions in Roesan Ibran
@@ -1732,32 +1774,7 @@ end
 # g > x
 def step_pi10(ary)
   ary.change('g', IPA: 'x')
-  ary.change('l', orthography: 'l') # |gl| /ll/
-  ary.change('ji', orthography: 'y')
-  ary.change({ IPA: 'kw', orthography: 'qu' }, orthography: 'cu')
-
-  ary.change({ orthography: 'qu' }, orthography: 'c') do |iff|
-    %w[a à o ó u].include?(iff.next.orth[0])
-  end
-
-  ary.change(->(s) { s.orth =~ /i/ }, {}, lambda do |segm|
-    segm[:orthography] = segm.orth.gsub(/i/, 'y')
-  end) { |iff| iff.after?('j') }
-
-  ary.change(->(s) { s.orth =~ /ă/ }, {}, lambda do |segm|
-    segm[:orthography] = segm.orth.gsub(/ă/, 'a')
-  end) { |iff| %w[é ó].include?(iff.prev.orth[-1]) }
-
-  outcomes = { 'll' => 'y', 'iy' => 'y', 'ũ' => 'u', 
-               'w̃' => 'w', 'uou' => 'uo', 'àu' => 'au' }
-
-  # Orthography changes
-  ary.change(%i[vocalic consonantal], {}, lambda do |segm|
-    # several changes happening in 'order'
-    outcomes.keys.each do |key|
-      segm[:orthography] = segm.orth.gsub(/#{key}/, outcomes)
-    end
-  end)
+  PaysanIbran.orthographic_changes(ary)
 end
 
 # TODO: convert_fro
