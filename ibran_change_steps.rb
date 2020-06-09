@@ -1736,17 +1736,27 @@ def step_pi10(ary)
   ary.change('ji', orthography: 'y')
   ary.change({ IPA: 'kw', orthography: 'qu' }, orthography: 'cu')
 
+  ary.change({ orthography: 'qu' }, orthography: 'c') do |iff|
+    %w[a à o ó u].include?(iff.next.orth[0])
+  end
+
+  ary.change(->(s) { s.orth =~ /i/ }, {}, lambda do |segm|
+    segm[:orthography] = segm.orth.gsub(/i/, 'y')
+  end) { |iff| iff.after?('j') }
+
+  ary.change(->(s) { s.orth =~ /ă/ }, {}, lambda do |segm|
+    segm[:orthography] = segm.orth.gsub(/ă/, 'a')
+  end) { |iff| %w[é ó].include?(iff.prev.orth[-1]) }
+
+  outcomes = { 'll' => 'y', 'iy' => 'y', 'ũ' => 'u', 
+               'w̃' => 'w', 'uou' => 'uo', 'àu' => 'au' }
+
   # Orthography changes
   ary.change(%i[vocalic consonantal], {}, lambda do |segm|
-    segm[:orthography] = segm.orth.gsub(/i/, 'y') if segm.prev.phon == 'j'
-    segm[:orthography] = segm.orth.gsub(/ll/, 'y')
-    segm[:orthography] = segm.orth.gsub(/iy/, 'y')
-    segm[:orthography] = segm.orth.gsub(/ũ/, 'u')
-    segm[:orthography] = segm.orth.gsub(/w̃/, 'w')
-    segm[:orthography] = segm.orth.gsub(/uou/, 'uo')
-    segm[:orthography] = segm.orth.gsub(/ă/, 'a') if segm.prev.orth && %w[é ó].include?(segm.prev.orth[-1])
-    segm[:orthography] = segm.orth.gsub(/àu/, 'au')
-    segm[:orthography] = 'c' if segm[:orthography] == 'qu' && %w[a à o ó u].include?(segm.next.orth[0])
+    # several changes happening in 'order'
+    outcomes.keys.each do |key|
+      segm[:orthography] = segm.orth.gsub(/#{key}/, outcomes)
+    end
   end)
 end
 
