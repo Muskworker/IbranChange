@@ -851,6 +851,8 @@ class RoesanIbran
   end
 end
 
+# Operations for Old French words
+class OldFrench
 end
 
 def takes_stress_mark(segm)
