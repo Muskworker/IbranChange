@@ -1730,26 +1730,24 @@ def step_pi9(ary)
 end
 
 # g > x
-def step_pi10 ary
-  @current = ary.each do |segm|
-    segm[:IPA] = segm[:IPA].gsub(/g/, 'x')
-  end
+def step_pi10(ary)
+  ary.change('g', IPA: 'x')
+  ary.change('l', orthography: 'l') # |gl| /ll/
+  ary.change('ji', orthography: 'y')
+  ary.change({ IPA: 'kw', orthography: 'qu' }, orthography: 'cu')
 
   # Orthography changes
-  @current = ary.each do |segm|
+  ary.change(%i[vocalic consonantal], {}, lambda do |segm|
     segm[:orthography] = segm.orth.gsub(/i/, 'y') if segm.prev.phon == 'j'
     segm[:orthography] = segm.orth.gsub(/ll/, 'y')
     segm[:orthography] = segm.orth.gsub(/iy/, 'y')
     segm[:orthography] = segm.orth.gsub(/ũ/, 'u')
     segm[:orthography] = segm.orth.gsub(/w̃/, 'w')
     segm[:orthography] = segm.orth.gsub(/uou/, 'uo')
-    segm[:orthography] = "l" if segm[:IPA] == "l" # |gl| /ll/
-    segm[:orthography] = segm.orth.gsub(/ă/, 'a') if segm.prev.orth && %w{é ó}.include?(segm.prev.orth[-1])
+    segm[:orthography] = segm.orth.gsub(/ă/, 'a') if segm.prev.orth && %w[é ó].include?(segm.prev.orth[-1])
     segm[:orthography] = segm.orth.gsub(/àu/, 'au')
-    segm[:orthography] = "y" if segm[:IPA] == "ji"
-    segm[:orthography] = "cu" if segm[:orthography] == "qu" && segm =~ "kw"
-    segm[:orthography] = "c" if segm[:orthography] == "qu" && %w{a à o ó u}.include?(segm.next.orth[0])
-  end
+    segm[:orthography] = 'c' if segm[:orthography] == 'qu' && %w[a à o ó u].include?(segm.next.orth[0])
+  end)
 end
 
 # TODO: convert_fro
