@@ -851,8 +851,6 @@ class RoesanIbran
   end
 end
 
-def ipa(dict)
-  dict.join :IPA
 end
 
 def takes_stress_mark(segm)

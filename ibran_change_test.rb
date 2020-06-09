@@ -1575,4 +1575,11 @@ class IbranChangeTest < Minitest::Test
          p "#{word}: PI #{transform(word)[2].join} /#{transform(word)[2].to_ipa}/, RI #{cyrillize(transform(word)[1]) }, #{transform(word)[1].join} /#{transform(word)[1].to_ipa}/"
        end
   end
+  
+  # This should be replaced by word.to_ipa 
+  # but that gives things like stress marks 
+  # which the tests are not expecting
+  def ipa(word)
+    word.join :IPA
+  end
 end
