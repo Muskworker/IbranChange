@@ -853,6 +853,50 @@ end
 
 # Operations for Old French words
 class OldFrench
+  def self.to_dictum(word)
+    ary = word.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
+      supra = {}
+
+      phon = case obj
+             when 'ch' then 'tʃ'
+             when 'j' then 'dʒ'
+             when 'c' then 'k'
+             when 'qu' then 'k'
+             when 'ou' then 'u'
+             when 'eu' then 'ew'
+             when 'u' then 'y'
+             when 'o' then 'ɔ'
+             when 'z' then 'dz'
+             when 'y' then 'j'
+             when 'ai' then 'aj'
+             else obj.dup.downcase
+             end
+
+      orth = obj.dup
+
+      memo << Segment[IPA: phon, orthography: orth].merge(supra)
+    end
+
+    # c before front vowels
+    ary.change('k', IPA: 'ts') {|iff| iff.next.starts_with.front_vowel? && iff.orth !~ /q/ }
+    ary.change('g', IPA: 'dʒ') {|iff| iff.next.starts_with.front_vowel? }
+
+    # final schwa
+    ary.change('e', IPA: 'ə', &:final?)
+
+    # TODO: open vs closed /e/
+
+    # final dz
+    ary.change('dz', IPA: 'ts', &:final?)
+
+    # assign stress
+    if ary[-1][:orthography] == "!" # Manual override for final stress
+      ary.find_all { |segment| segment.vocalic? }[-1][:stress] = true
+      ary[-1].delete
+    else
+      ary.change(:vocalic, stress: true) {|iff| iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? {|segm| segm =~ [:consonantal, 'ə'] }}
+    end
+  end
 end
 
 def takes_stress_mark(segm)
@@ -1777,52 +1821,6 @@ def step_pi10(ary)
   PaysanIbran.orthographic_changes(ary)
 end
 
-# TODO: convert_fro
-def convert_FRO str
-  ary = str.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
-    supra = {}
-
-    phon = case obj
-           when 'ch' then 'tʃ'
-           when 'j' then 'dʒ'
-           when 'c' then 'k'
-           when 'qu' then 'k'
-           when 'ou' then 'u'
-           when 'eu' then 'ew'
-           when 'u' then 'y'
-           when 'o' then 'ɔ'
-           when 'z' then 'dz'
-           when 'y' then 'j'
-           when 'ai' then 'aj'
-           else obj.dup.downcase
-           end
-
-    orth = obj.dup
-
-    memo << Segment[IPA: phon, orthography: orth].merge(supra)
-  end
-
-  # c before front vowels
-  ary.change('k', IPA: 'ts') {|iff| iff.next.starts_with.front_vowel? && iff.orth !~ /q/ }
-  ary.change('g', IPA: 'dʒ') {|iff| iff.next.starts_with.front_vowel? }
-
-  # final schwa
-  ary.change('e', IPA: 'ə', &:final?)
-
-  # TODO: open vs closed /e/
-
-  # final dz
-  ary.change('dz', IPA: 'ts', &:final?)
-
-  # assign stress
-  if ary[-1][:orthography] == "!" # Manual override for final stress
-    ary.find_all { |segment| segment.vocalic? }[-1][:stress] = true
-    ary[-1].delete
-  else
-    ary.change(:vocalic, stress: true) {|iff| iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? {|segm| segm =~ [:consonantal, 'ə'] }}
-  end
-end
-
 # INCOMPLETE
 def convert_OLF str
   @current = str.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
@@ -2287,7 +2285,7 @@ def transform(str, since = "L", plural = false)
 
   if ["OLF", "FRO", "L"].include?(since)
     @steps[38] = convert_OLF(str) if since == "OLF"
-    @steps[38] = convert_FRO(str) if since == "FRO"
+    @steps[38] = OldFrench.to_dictum(str) if since == "FRO"
 
     @steps[39] = step_oix1(deep_dup(@steps[38]))
     @steps[40] = step_oix2(deep_dup(@steps[39]))
@@ -2396,7 +2394,7 @@ def name_transform(str, since = "L", plural = false)
 
   if ["OLF", "FRO", "L"].include?(since)
     @outcomes = [@steps[38] = convert_OLF(str)] if since == "OLF"
-    @outcomes = [@steps[38] = convert_FRO(str)] if since == "FRO"
+    @outcomes = [@steps[38] = OldFrench.to_dictum(str)] if since == "FRO"
     steps = %i[step_oix1 step_oix2 step_oix3 step_oix4 step_oix5 step_oix6 step_oix7
                step_ci1 step_ci2 step_ci3 step_ci4 step_ci5 step_ci6 step_ci7 step_ci8]
 
