@@ -854,48 +854,53 @@ end
 # Operations for Old French words
 class OldFrench
   def self.to_dictum(word)
+    outcomes = { 'ch' => 'tʃ', 'j' => 'dʒ', 'c' => 'k', 'qu' => 'k',
+                 'ou' => 'u',  'eu' => 'ew', 'u' => 'y', 'o' => 'ɔ',
+                 'z' => 'dz', 'y' => 'j', 'ai' => 'aj' }
+
+    # Raw IPA convert
     ary = word.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
-      supra = {}
+      phon = outcomes.fetch(obj, obj).dup.downcase
 
-      phon = case obj
-             when 'ch' then 'tʃ'
-             when 'j' then 'dʒ'
-             when 'c' then 'k'
-             when 'qu' then 'k'
-             when 'ou' then 'u'
-             when 'eu' then 'ew'
-             when 'u' then 'y'
-             when 'o' then 'ɔ'
-             when 'z' then 'dz'
-             when 'y' then 'j'
-             when 'ai' then 'aj'
-             else obj.dup.downcase
-             end
-
-      orth = obj.dup
-
-      memo << Segment[IPA: phon, orthography: orth].merge(supra)
+      memo << Segment[IPA: phon, orthography: obj.dup]
     end
 
     # c before front vowels
-    ary.change('k', IPA: 'ts') {|iff| iff.next.starts_with.front_vowel? && iff.orth !~ /q/ }
-    ary.change('g', IPA: 'dʒ') {|iff| iff.next.starts_with.front_vowel? }
+    ary.change({ IPA: 'k', orthography: 'c' }, IPA: 'ts') do |iff|
+      iff.next.orth =~ /^(i|e)/
+    end
+
+    ary.change('g', IPA: 'dʒ') { |iff| iff.next.orth =~ /^(i|e)/ }
 
     # final schwa
     ary.change('e', IPA: 'ə', &:final?)
 
-    # TODO: open vs closed /e/
+    # TODO: open vs closed /e/ (what? at this era?)
 
     # final dz
     ary.change('dz', IPA: 'ts', &:final?)
 
     # assign stress
-    if ary[-1][:orthography] == "!" # Manual override for final stress
-      ary.find_all { |segment| segment.vocalic? }[-1][:stress] = true
-      ary[-1].delete
-    else
-      ary.change(:vocalic, stress: true) {|iff| iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? {|segm| segm =~ [:consonantal, 'ə'] }}
+    final_stress = ary[-1] =~ '!'
+
+    ary.change(:vocalic, { stress: true }, lambda do |_|
+      ary[-1].delete if final_stress
+    end) do |iff|
+      (final_stress || iff !~ 'ə') \
+      && iff.dictum[iff.pos + 1...-1].all?(&:consonantal?)
     end
+
+    # if ary[-1][:orthography] == '!' # Manual override for final stress
+    #   
+    #   ary.find_all(&:vocalic?)[-1][:stress] = true
+    #   ary[-1].delete
+    # else
+    #   ary.change(:vocalic, stress: true) do |iff|
+    #     iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? do |segm|
+    #       segm =~ [:consonantal, 'ə']
+    #     end
+    #   end
+    # end
   end
 end
 
