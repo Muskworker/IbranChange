@@ -941,14 +941,9 @@ class OldDutch
     end) { |iff| iff.next.starts_with =~ [:front_vowel, 'j'] }
 
     # post-vocalic H
-    ary = ary.each_with_index do |segm, idx|
-      if ((segm.prev.vocalic? &&
-        segm.next.consonantal?) || segm.final?) &&
-        segm[:IPA] == 'h'
-        segm[:orthography] = "gh"  # How's this?
-        segm[:IPA] = segm.next.voiced? ? 'g' : 'k'
-      end
-    end
+    ary.change('h', { orthography: 'gh' }, lambda do |segm|
+      segm[:IPA] = segm.before?(:voiced) ? 'g' : 'k'
+    end) { |iff| iff.between?(:vocalic, :consonantal) || iff.final? }
 
     # Endings
     case ary.join
