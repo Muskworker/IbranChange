@@ -900,6 +900,128 @@ class OldFrench
   end
 end
 
+# Operations for Old Dutch words
+class OldDutch
+  def self.naive_ipa(str)
+    orth = %w[qu ch th aũ au eu ā a ié ie ei ē e iw īw ī uo ou o ō ū c ng ph nj]
+    phon = %w[kw k θ o o œ ɑ ɑ je jɛ ɛj e ɛ iw iw i u ɔw ɔ o u k ŋ f ɲ]
+    search = str.downcase
+
+    Hash[orth.zip(phon)].fetch(search, search).dup
+  end
+
+  # INCOMPLETE
+  def self.to_dictum(word)
+    ary = word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
+      supra = {}
+      supra.merge!({ long: true }) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
+
+      phon = OldDutch.naive_ipa(obj)
+
+      orth = case obj
+      when /k/i  then "c"
+      when /y/i  then "i"
+      when /ā/i  then "a"
+      when /ē/i  then "éi"
+      when /[īi]w/i  then "iu"
+      when /ī/i  then "i"
+      when /ō/i  then "ó"
+      when /ū/i  then "u"
+      when /nj/i then "nh"
+      when /j/i  then "y" # revisit this as needed
+      else obj.dup
+      end
+
+      memo << Segment[IPA: phon, orthography: orth].merge(supra)
+    end
+
+    # velar before front vowels
+    ary = ary.each do |segm|
+      if segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j'
+        case segm[:IPA]
+        when "k"
+          segm[:orthography] = "qu"
+          segm[:palatalized] = true
+        when "g"
+          segm[:orthography] = "gu"
+          segm[:palatalized] = true
+        end
+      end
+    end
+
+    # post-vocalic H
+    ary = ary.each_with_index do |segm, idx|
+      if ((segm.prev.vocalic? &&
+        segm.next.consonantal?) || segm.final?) &&
+        segm[:IPA] == 'h'
+        segm[:orthography] = "gh"  # How's this?
+        segm[:IPA] = segm.next.voiced? ? 'g' : 'k'
+      end
+    end
+
+    # Endings
+    case ary.join
+    when /are$/
+      ary.pop(3)
+      ary << Segment[IPA: "ɑ", orthography: "a", long: false, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
+    when /ariu(m|s)$/ #ariam, arium
+      ary.pop(5)
+      ary << Segment[IPA: "a", orthography: "ài", long: true, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
+    end
+
+
+    # assign stress
+    # This is not even close to universally true but will work for our initial case
+    vowels = ary.find_all{|segment| segment.vocalic?}
+    if ary[-1][:orthography] == "!" # Manual override for final stress
+      vowels[-1][:stress] = true
+      ary[-1][:IPA] = nil
+      ary[-1][:orthography] = nil
+    elsif ary[-1][:orthography] == ">" # Move stress one syllable towards the end
+      ary[-1][:IPA] = nil
+      ary[-1][:orthography] = nil
+      vowels[1][:stress] = true unless ary.count(&:stressed?).positive? || vowels.length < 2  # Don't assign new stress if ending has.
+    else
+      vowels[0][:stress] = true unless ary.count(&:stressed?).positive?  # Don't assign new stress if ending has.
+    end
+
+    postinitial = false
+
+    ary = ary.each_with_index do |segm, idx|
+      # unstressed schwas - non-initial
+      if segm.vocalic? && !segm.stressed? && postinitial
+        if !segm[:long] && !segm.diphthong? && segm[:IPA] != 'ə'
+          segm.replace!(%w[ə e])
+
+          # metathesis of @C > C@
+          if segm.prev.intervocalic? && segm.next.final? && ary[idx+1] && segm.next.consonantal?
+            segm.prev[:orthography] = case segm.prev.orth
+            when "qu" then "c"
+            when "gu" then "g"
+            else segm.prev.orth
+            end
+
+            ary[idx], ary[idx+1] = ary[idx+1], ary[idx]
+          end
+
+          if segm.prev && %w{e i é}.include?(segm[:orthography])
+            case segm.prev.phon
+            when "k"
+              segm.prev[:orthography] = "qu"
+            when "g"
+              segm.prev[:orthography] = "gu"
+            end
+          end
+        end
+      end
+
+      postinitial = true if segm.vocalic?
+    end
+
+    ary.delete_if {|segment| segment[:IPA].nil? }
+  end
+end
+
 def takes_stress_mark(segm)
   return true if segm.stressed?
 
@@ -1823,141 +1945,6 @@ def step_pi10(ary)
 end
 
 # INCOMPLETE
-def convert_OLF str
-  @current = str.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
-    supra = {}
-    supra.merge!({ long: true }) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
-
-    phon = case obj
-           when /qu/i then "kw"
-           when /ch/i then "k"
-           when /th/i then "θ"
-           when /aũ|au/i then "o"
-           when /eu/i   then "œ"
-           when /ā|a/i  then "ɑ"
-           when /ié/i   then "je"
-           when /ie/i   then "jɛ"
-           when /ei/    then "ɛj"
-           when /ē/i    then "e"
-           when /e/i    then "ɛ"
-           when /[iī]w/i then "iw"
-           when /ī/i    then "i"
-           when /uo/i   then "u"
-           when /ou/i   then "ɔw"
-           when /o/i    then "ɔ"
-           when /ō/i    then "o"
-           when /ū/i    then "u"
-           when /c/i    then "k"
-           when /ng/i   then 'ŋ'
-           when /ph/i   then 'f'
-           when /nj/i   then 'ɲ'
-           else obj.dup.downcase
-           end
-
-    orth = case obj
-           when /k/i  then "c"
-           when /y/i  then "i"
-           when /ā/i  then "a"
-           when /ē/i  then "éi"
-           when /[īi]w/i  then "iu"
-           when /ī/i  then "i"
-           when /ō/i  then "ó"
-           when /ū/i  then "u"
-           when /nj/i then "nh"
-           when /j/i  then "y" # revisit this as needed
-           else obj.dup
-           end
-
-    memo << Segment[IPA: phon, orthography: orth].merge(supra)
-  end
-
-  # velar before front vowels
-  @current = @current.each do |segm|
-    if segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j'
-      case segm[:IPA]
-      when "k"
-        segm[:orthography] = "qu"
-        segm[:palatalized] = true
-      when "g"
-        segm[:orthography] = "gu"
-        segm[:palatalized] = true
-      end
-    end
-  end
-
-  # post-vocalic H
-  @current = @current.each_with_index do |segm, idx|
-    if ((segm.prev.vocalic? &&
-        segm.next.consonantal?) || segm.final?) &&
-        segm[:IPA] == 'h'
-      segm[:orthography] = "gh"  # How's this?
-      segm[:IPA] = segm.next.voiced? ? 'g' : 'k'
-    end
-  end
-
-  # Endings
-  case @current.join
-  when /are$/
-    @current.pop(3)
-    @current << Segment[IPA: "ɑ", orthography: "a", long: false, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
-  when /ariu(m|s)$/ #ariam, arium
-    @current.pop(5)
-    @current << Segment[IPA: "a", orthography: "ài", long: true, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
-  end
-
-
-  # assign stress
-  # This is not even close to universally true but will work for our initial case
-  vowels = @current.find_all{|segment| segment.vocalic?}
-  if @current[-1][:orthography] == "!" # Manual override for final stress
-    vowels[-1][:stress] = true
-    @current[-1][:IPA] = nil
-    @current[-1][:orthography] = nil
-  elsif @current[-1][:orthography] == ">" # Move stress one syllable towards the end
-    @current[-1][:IPA] = nil
-    @current[-1][:orthography] = nil
-    vowels[1][:stress] = true unless @current.count(&:stressed?).positive? || vowels.length < 2  # Don't assign new stress if ending has.
-  else
-    vowels[0][:stress] = true unless @current.count(&:stressed?).positive?  # Don't assign new stress if ending has.
-  end
-
-  postinitial = false
-
-  @current = @current.each_with_index do |segm, idx|
-    # unstressed schwas - non-initial
-    if segm.vocalic? && !segm.stressed? && postinitial
-      if !segm[:long] && !segm.diphthong? && segm[:IPA] != 'ə'
-        segm.replace!(%w[ə e])
-
-        # metathesis of @C > C@
-        if segm.prev.intervocalic? && segm.next.final? && @current[idx+1] && segm.next.consonantal?
-          segm.prev[:orthography] = case segm.prev.orth
-                                    when "qu" then "c"
-                                    when "gu" then "g"
-                                    else segm.prev.orth
-                                    end
-
-          @current[idx], @current[idx+1] = @current[idx+1], @current[idx]
-        end
-
-        if segm.prev && %w{e i é}.include?(segm[:orthography])
-          case segm.prev.phon
-          when "k"
-            segm.prev[:orthography] = "qu"
-          when "g"
-            segm.prev[:orthography] = "gu"
-          end
-        end
-      end
-    end
-
-    postinitial = true if segm.vocalic?
-  end
-
-  @current.delete_if {|segment| segment[:IPA].nil? }
-end
-
-# INCOMPLETE
 def convert_LL str
   ary = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|[ln]j|./i).inject(Dictum.new) do |memo, obj|
     supra = {}
@@ -2285,7 +2272,7 @@ def transform(str, since = "L", plural = false)
   end
 
   if ["OLF", "FRO", "L"].include?(since)
-    @steps[38] = convert_OLF(str) if since == "OLF"
+    @steps[38] = OldDutch.to_dictum(str) if since == "OLF"
     @steps[38] = OldFrench.to_dictum(str) if since == "FRO"
 
     @steps[39] = step_oix1(deep_dup(@steps[38]))
@@ -2394,7 +2381,7 @@ def name_transform(str, since = "L", plural = false)
   end
 
   if ["OLF", "FRO", "L"].include?(since)
-    @outcomes = [@steps[38] = convert_OLF(str)] if since == "OLF"
+    @outcomes = [@steps[38] = OldDutch.to_dictum(str)] if since == "OLF"
     @outcomes = [@steps[38] = OldFrench.to_dictum(str)] if since == "FRO"
     steps = %i[step_oix1 step_oix2 step_oix3 step_oix4 step_oix5 step_oix6 step_oix7
                step_ci1 step_ci2 step_ci3 step_ci4 step_ci5 step_ci6 step_ci7 step_ci8]
