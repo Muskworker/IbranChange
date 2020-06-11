@@ -853,17 +853,33 @@ end
 
 # Operations for Old French words
 class OldFrench
-  def self.to_dictum(word)
+  def self.assign_stress(ary)
+    # assign stress
+    final_stress = ary[-1] =~ '!'
+
+    ary.change(:vocalic, { stress: true }, lambda do |_|
+      ary[-1].delete if final_stress
+    end) do |iff|
+      (final_stress || iff !~ 'ə') \
+      && iff.dictum[iff.pos + 1...-1].all?(&:consonantal?)
+    end
+  end
+
+  # This isn't properly separated.
+  def self.to_ipa(word)
     outcomes = { 'ch' => 'tʃ', 'j' => 'dʒ', 'c' => 'k', 'qu' => 'k',
                  'ou' => 'u',  'eu' => 'ew', 'u' => 'y', 'o' => 'ɔ',
                  'z' => 'dz', 'y' => 'j', 'ai' => 'aj' }
 
-    # Raw IPA convert
-    ary = word.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
-      phon = outcomes.fetch(obj, obj).dup.downcase
-
-      memo << Segment[IPA: phon, orthography: obj.dup]
+    word.scan(/ch|[eoq]u|ai|./).inject(Dictum.new) do |memo, obj|
+      memo << Segment[IPA: outcomes.fetch(obj, obj).dup.downcase,
+                      orthography: obj.dup]
     end
+  end
+
+  def self.to_dictum(word)
+    # Raw IPA convert
+    ary = OldFrench.to_ipa(word)
 
     # c before front vowels
     ary.change({ IPA: 'k', orthography: 'c' }, IPA: 'ts') do |iff|
@@ -880,27 +896,7 @@ class OldFrench
     # final dz
     ary.change('dz', IPA: 'ts', &:final?)
 
-    # assign stress
-    final_stress = ary[-1] =~ '!'
-
-    ary.change(:vocalic, { stress: true }, lambda do |_|
-      ary[-1].delete if final_stress
-    end) do |iff|
-      (final_stress || iff !~ 'ə') \
-      && iff.dictum[iff.pos + 1...-1].all?(&:consonantal?)
-    end
-
-    # if ary[-1][:orthography] == '!' # Manual override for final stress
-    #   
-    #   ary.find_all(&:vocalic?)[-1][:stress] = true
-    #   ary[-1].delete
-    # else
-    #   ary.change(:vocalic, stress: true) do |iff|
-    #     iff !~ 'ə' && iff.dictum[iff.pos + 1...-1].all? do |segm|
-    #       segm =~ [:consonantal, 'ə']
-    #     end
-    #   end
-    # end
+    OldFrench.assign_stress(ary)
   end
 end
 
