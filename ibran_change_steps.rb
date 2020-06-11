@@ -914,40 +914,31 @@ class OldDutch
   def self.to_dictum(word)
     ary = word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
       supra = {}
-      supra.merge!({ long: true }) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
+      supra.merge!(long: true) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
 
       phon = OldDutch.naive_ipa(obj)
 
       orth = case obj
-      when /k/i  then "c"
-      when /y/i  then "i"
-      when /ā/i  then "a"
-      when /ē/i  then "éi"
-      when /[īi]w/i  then "iu"
-      when /ī/i  then "i"
-      when /ō/i  then "ó"
-      when /ū/i  then "u"
-      when /nj/i then "nh"
-      when /j/i  then "y" # revisit this as needed
-      else obj.dup
-      end
+             when /k/i     then 'c'
+             when /y/i     then 'i'
+             when /ā/i     then 'a'
+             when /ē/i     then 'éi'
+             when /[īi]w/i then 'iu'
+             when /ī/i     then 'i'
+             when /ō/i     then 'ó'
+             when /ū/i     then 'u'
+             when /nj/i    then 'nh'
+             when /j/i     then 'y' # revisit this as needed
+             else obj.dup
+             end
 
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
     # velar before front vowels
-    ary = ary.each do |segm|
-      if segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j'
-        case segm[:IPA]
-        when "k"
-          segm[:orthography] = "qu"
-          segm[:palatalized] = true
-        when "g"
-          segm[:orthography] = "gu"
-          segm[:palatalized] = true
-        end
-      end
-    end
+    ary.change(%w[k g], { palatalized: true }, lambda do |segm|
+      segm[:orthography] = segm.voiced? ? 'gu' : 'qu'
+    end) { |iff| iff.next.starts_with =~ [:front_vowel, 'j'] }
 
     # post-vocalic H
     ary = ary.each_with_index do |segm, idx|
