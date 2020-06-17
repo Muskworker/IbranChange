@@ -938,6 +938,24 @@ class OldDutch
     end
   end
 
+  # assign stress
+  # This is not even close to universally true
+  # but will work for our initial case
+  def self.assign_stress(ary)
+    vowels = ary.find_all(&:vocalic?)
+
+    case ary[-1][:orthography]
+    when '!'
+      vowels[-1][:stress] = true
+    when '>'
+      vowels[1][:stress] = true unless ary.stressed? || vowels.length < 2
+    else
+      vowels[0][:stress] = true unless ary.stressed?
+    end
+
+    ary.change(%w[! >], {}, ->(s) { s.delete })
+  end
+
   # INCOMPLETE
   def self.to_dictum(word)
     ary = word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
@@ -963,25 +981,10 @@ class OldDutch
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
-
-
-    # assign stress
-    # This is not even close to universally true but will work for our initial case
-    vowels = ary.find_all{|segment| segment.vocalic?}
-    if ary[-1][:orthography] == "!" # Manual override for final stress
-      vowels[-1][:stress] = true
-      ary[-1][:IPA] = nil
-      ary[-1][:orthography] = nil
-    elsif ary[-1][:orthography] == ">" # Move stress one syllable towards the end
-      ary[-1][:IPA] = nil
-      ary[-1][:orthography] = nil
-      vowels[1][:stress] = true unless ary.count(&:stressed?).positive? || vowels.length < 2  # Don't assign new stress if ending has.
-    else
-      vowels[0][:stress] = true unless ary.count(&:stressed?).positive?  # Don't assign new stress if ending has.
-    end
     OldDutch.front_velars(ary)
     OldDutch.postvocalic_h(ary)
     OldDutch.endings(ary)
+    OldDutch.assign_stress(ary)
 
     postinitial = false
 
