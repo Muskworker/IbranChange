@@ -924,6 +924,20 @@ class OldDutch
     end) { |iff| iff.between?(:vocalic, :consonantal) || iff.final? }
   end
 
+  def self.endings(ary)
+    # Endings
+    case ary.join
+    when /are$/
+      ary.pop(3)
+      ary << Segment[IPA: 'ɑ', orthography: 'a', long: false, stress: true] \
+          << Segment[IPA: 'r', orthography: 'r', long: false]
+    when /ariu(m|s)$/ # ariam, arium
+      ary.pop(5)
+      ary << Segment[IPA: 'a', orthography: 'ài', long: true, stress: true] \
+          << Segment[IPA: 'r', orthography: 'r', long: false]
+    end
+  end
+
   # INCOMPLETE
   def self.to_dictum(word)
     ary = word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
@@ -950,16 +964,6 @@ class OldDutch
     end
 
 
-    # Endings
-    case ary.join
-    when /are$/
-      ary.pop(3)
-      ary << Segment[IPA: "ɑ", orthography: "a", long: false, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
-    when /ariu(m|s)$/ #ariam, arium
-      ary.pop(5)
-      ary << Segment[IPA: "a", orthography: "ài", long: true, stress: true] << Segment[IPA: "r", orthography: "r", long: false]
-    end
-
 
     # assign stress
     # This is not even close to universally true but will work for our initial case
@@ -977,6 +981,7 @@ class OldDutch
     end
     OldDutch.front_velars(ary)
     OldDutch.postvocalic_h(ary)
+    OldDutch.endings(ary)
 
     postinitial = false
 
