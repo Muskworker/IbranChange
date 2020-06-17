@@ -910,6 +910,13 @@ class OldDutch
     Hash[orth.zip(phon)].fetch(search, search).dup
   end
 
+  # velar before front vowels
+  def self.front_velars(ary)
+    ary.change(%w[k g], { palatalized: true }, lambda do |segm|
+      segm[:orthography] = segm.voiced? ? 'gu' : 'qu'
+    end) { |iff| iff.next.starts_with =~ [:front_vowel, 'j'] }
+  end
+
   # INCOMPLETE
   def self.to_dictum(word)
     ary = word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
@@ -935,10 +942,6 @@ class OldDutch
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
-    # velar before front vowels
-    ary.change(%w[k g], { palatalized: true }, lambda do |segm|
-      segm[:orthography] = segm.voiced? ? 'gu' : 'qu'
-    end) { |iff| iff.next.starts_with =~ [:front_vowel, 'j'] }
 
     # post-vocalic H
     ary.change('h', { orthography: 'gh' }, lambda do |segm|
@@ -970,6 +973,7 @@ class OldDutch
     else
       vowels[0][:stress] = true unless ary.count(&:stressed?).positive?  # Don't assign new stress if ending has.
     end
+    OldDutch.front_velars(ary)
 
     postinitial = false
 
