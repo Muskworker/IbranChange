@@ -958,7 +958,9 @@ class OldDutch
 
   # INCOMPLETE
   def self.to_dictum(word)
-    ary = word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
+    ary = word.scan(/[ct]h|qu|kw|ei|eu|
+                     uo|[iī]w|ou|ng|i[ée]
+                     |aũ|au|nj|./ix).inject(Dictum.new) do |memo, obj|
       supra = {}
       supra.merge!(long: true) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
 
@@ -995,22 +997,23 @@ class OldDutch
           segm.replace!(%w[ə e])
 
           # metathesis of @C > C@
-          if segm.prev.intervocalic? && segm.next.final? && ary[idx+1] && segm.next.consonantal?
+          if segm.prev.intervocalic? && segm.next.final? \
+             && ary[idx + 1] && segm.next.consonantal?
             segm.prev[:orthography] = case segm.prev.orth
-            when "qu" then "c"
-            when "gu" then "g"
-            else segm.prev.orth
-            end
+                                      when 'qu' then 'c'
+                                      when 'gu' then 'g'
+                                      else segm.prev.orth
+                                      end
 
-            ary[idx], ary[idx+1] = ary[idx+1], ary[idx]
+            ary[idx], ary[idx + 1] = ary[idx + 1], ary[idx]
           end
 
-          if segm.prev && %w{e i é}.include?(segm[:orthography])
+          if segm.prev && %w[e i é].include?(segm[:orthography])
             case segm.prev.phon
-            when "k"
-              segm.prev[:orthography] = "qu"
-            when "g"
-              segm.prev[:orthography] = "gu"
+            when 'k'
+              segm.prev[:orthography] = 'qu'
+            when 'g'
+              segm.prev[:orthography] = 'gu'
             end
           end
         end
@@ -1019,7 +1022,7 @@ class OldDutch
       postinitial = true if segm.vocalic?
     end
 
-    ary.delete_if {|segment| segment[:IPA].nil? }
+    ary.delete_if { |segment| segment[:IPA].nil? }
   end
 end
 
