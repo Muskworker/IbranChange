@@ -765,8 +765,9 @@ class PaysanIbran
     if segm.posttonic? && segm[:orthography] != 'ă'
       # The check for \u0302 is to get rid of "ă̂"
       # The "main" vowel may not exist, e.g. if the orth is |y| [jV]
-      segm.orth.sub!(/(.{#{vowel_pos}})(.\u0302?)?/,
-                     segm.dictum.join =~ /ă/ ? '\\1a' : '\\1ă')
+      outcome = segm.dictum.join =~ /ă/ ? '\\1a' : '\\1ă'
+      segm[:orthography] = segm.orth.sub(/(.{#{vowel_pos}})(.\u0302?)?/,
+                                         outcome)
     end
 
     PaysanIbran.respell_velars(segm)
@@ -902,6 +903,11 @@ end
 
 # Operations for Old Dutch words
 class OldDutch
+  def self.vowel_reduces?(segm)
+    segm.vowels_before.positive? && segm.match_all(:vocalic, :unstressed) \
+    && !segm[:long] && segm !~ [:diphthong, 'ə']
+  end
+
   def self.naive_ipa(str)
     orth = %w[qu ch th aũ au eu ā a ié ie ei ē e iw īw ī uo ou o ō ū c ng ph nj]
     phon = %w[kw k θ o o œ ɑ ɑ je jɛ ɛj e ɛ iw iw i u ɔw ɔ o u k ŋ f ɲ]
@@ -956,8 +962,32 @@ class OldDutch
     ary.change(%w[! >], {}, ->(s) { s.delete })
   end
 
+  def self.vowel_reduction(ary)
+    ary.change(:vocalic, Segment.new('ə', 'e'), lambda do |segm|
+      # metathesis of @C > C@
+      if segm.between?(:intervocalic, final: true, consonantal: true)
+        outcomes = { 'qu' => 'c', 'gu' => 'g' }
+        segm.prev[:orthography] = outcomes.fetch(segm.prev.orth, segm.prev.orth)
+
+        segm.metathesize(segm.next)
+      end
+    end) { |iff| OldDutch.vowel_reduces?(iff) }
+
+    OldDutch.respell_velars(ary)
+  end
+
+  def self.respell_velars(ary)
+    ary.change(%w[k g], {}, lambda do |segm|
+      segm[:orthography] = segm =~ 'k' ? 'qu' : 'gu'
+    end) { |iff| %w[e i é].include?(iff.next.orth) }
+  end
+
   # INCOMPLETE
   def self.to_dictum(word)
+    maps = { 'k' => 'c', 'y' => 'i', 'ā' => 'a', 'ē' => 'éi', 'īw' => 'iu',
+             'iw' => 'iu', 'ī' => 'i', 'ō' => 'ó', 'ū' => 'u', 'nj' => 'nh',
+             'j' => 'y' }
+
     ary = word.scan(/[ct]h|qu|kw|ei|eu|
                      uo|[iī]w|ou|ng|i[ée]
                      |aũ|au|nj|./ix).inject(Dictum.new) do |memo, obj|
@@ -965,64 +995,18 @@ class OldDutch
       supra.merge!(long: true) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
 
       phon = OldDutch.naive_ipa(obj)
-
-      orth = case obj
-             when /k/i     then 'c'
-             when /y/i     then 'i'
-             when /ā/i     then 'a'
-             when /ē/i     then 'éi'
-             when /[īi]w/i then 'iu'
-             when /ī/i     then 'i'
-             when /ō/i     then 'ó'
-             when /ū/i     then 'u'
-             when /nj/i    then 'nh'
-             when /j/i     then 'y' # revisit this as needed
-             else obj.dup
-             end
+      orth = maps.fetch(obj.downcase, obj.dup)
 
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
+    # Practically all of this belongs in an Ibran class,
+    # as these are not this language's transformations
     OldDutch.front_velars(ary)
     OldDutch.postvocalic_h(ary)
     OldDutch.endings(ary)
     OldDutch.assign_stress(ary)
-
-    postinitial = false
-
-    ary = ary.each_with_index do |segm, idx|
-      # unstressed schwas - non-initial
-      if segm.vocalic? && !segm.stressed? && postinitial
-        if !segm[:long] && !segm.diphthong? && segm[:IPA] != 'ə'
-          segm.replace!(%w[ə e])
-
-          # metathesis of @C > C@
-          if segm.prev.intervocalic? && segm.next.final? \
-             && ary[idx + 1] && segm.next.consonantal?
-            segm.prev[:orthography] = case segm.prev.orth
-                                      when 'qu' then 'c'
-                                      when 'gu' then 'g'
-                                      else segm.prev.orth
-                                      end
-
-            ary[idx], ary[idx + 1] = ary[idx + 1], ary[idx]
-          end
-
-          if segm.prev && %w[e i é].include?(segm[:orthography])
-            case segm.prev.phon
-            when 'k'
-              segm.prev[:orthography] = 'qu'
-            when 'g'
-              segm.prev[:orthography] = 'gu'
-            end
-          end
-        end
-      end
-
-      postinitial = true if segm.vocalic?
-    end
-
-    ary.delete_if { |segment| segment[:IPA].nil? }
+    OldDutch.vowel_reduction(ary)
   end
 end
 
@@ -1888,8 +1872,9 @@ end
 # je wo wø > i u y in closed syllables
 def step_pi4(ary)
   ary.change(/\Aj?(e|ẽ)\Z|\Aw?(o|õ|ø|ø̃\Z)/, {}, lambda do |segm|
+    rising = segm.rising_diphthong?
     segm.replace!(PaysanIbran.close_diphthong(segm))
-    segm.prev.delete if segm.after? %w[j w]
+    segm.prev.delete if segm.after?(%w[j w]) && !rising
   end) do |iff|
     iff =~ [:rising_diphthong,
             ->(s) { s.prev =~ %w[j w] && s =~ :starts_with_vocalic }] \
