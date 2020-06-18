@@ -1192,7 +1192,7 @@ def step_vl6(lemma)
     end
 
     # t'l > tr
-    nxt.update(IPA: 'r', orthography: 'r') if seg.between? 't', 'l'
+    nxt.update(IPA: 'r', orthography: 'r') if seg.between? %w[t f d], %w[l n]
 
     # Devoice previous if the next is voiceless
     prev.devoice!(nxt)

@@ -962,6 +962,7 @@ class IbranChangeTest < Minitest::Test
       { w: "conflāre", RI_IPA: "kʲɔwˈlɑr", RI_Cyrl: "коулар", RI_Latn: "cow̃lar", PI_IPA: "kəwˈlɑr", PI: "cowlar" },
       { w: "cōsēre", RI_IPA: "kʲaˈzer", RI_Cyrl: "кязир", RI_Latn: "càsér", PI_IPA: "kəˈzer", PI: "càsér" },
       { w: "contāre", RI_IPA: "kʲɔ̃ˈtɑr", RI_Cyrl: "контар", RI_Latn: "contar", PI_IPA: "kə̃ˈtɑr", PI: "contar" },
+      { w: "cophinum", RI_IPA: "kʲœjr", RI_Cyrl: "көјр", RI_Latn: "coyure", PI_IPA: "ˈkɔərə", PI: "coăra" },
       { w: "cordem", RI_IPA: "kʲwɛrt", RI_Cyrl: "куерт", RI_Latn: "cuerd", PI_IPA: "kwɛrd", PI: "cuerd" },
       { w: "cornum", RI_IPA: "kʲwɛrn", RI_Cyrl: "куерн", RI_Latn: "cuern", PI_IPA: "kwɛrn", PI: "cuern" },
       { w: "corpum", RI_IPA: "kʲœːr", RI_Cyrl: "кө̄р", RI_Latn: "cueur", PI_IPA: "kwœːr", PI: "cueur" },
