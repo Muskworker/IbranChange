@@ -1003,15 +1003,17 @@ class OldDutch
              'iw' => 'iu', 'ī' => 'i', 'ō' => 'ó', 'ū' => 'u', 'nj' => 'nh',
              'j' => 'y' }
 
-    ary = word.scan(/[ct]h|qu|kw|ei|eu|
-                     uo|[iī]w|ou|ng|i[ée]
-                     |aũ|au|nj|./ix).inject(Dictum.new) do |memo, obj|
-      supra = {}
-      supra.merge!(long: true) if obj.match(/[āēīōūȳ]|uo|aũ|au|eu/i)
+    word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i) \
+        .inject(Dictum.new) do |memo, obj|
 
+      long = obj =~ /[āēīōūȳ]|uo|aũ|au|eu/i
       phon = OldDutch.naive_ipa(obj)
       orth = maps.fetch(obj.downcase, obj.dup)
 
+      memo << Segment[IPA: phon, orthography: orth, long: long]
+    end
+  end
+end
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
