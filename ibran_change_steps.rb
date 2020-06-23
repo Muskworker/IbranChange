@@ -545,6 +545,18 @@ class OldIbran
     || (after_next =~ [:labial, 'l']                 \
     && after_next.between?(:sonorant, [:consonantal, '']))
   end
+
+  def self.borrow_old_dutch(word)
+    ary = OldDutch.to_dictum(word)
+
+    # Practically all of this belongs in an Ibran class,
+    # as these are not this language's transformations
+    OldDutch.front_velars(ary)
+    OldDutch.postvocalic_h(ary)
+    OldDutch.endings(ary)
+    OldDutch.assign_stress(ary)
+    OldDutch.vowel_reduction(ary)
+  end
 end
 
 # Complex exceptions to regular Ibran changes
@@ -1003,13 +1015,6 @@ class OldDutch
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
-    # Practically all of this belongs in an Ibran class,
-    # as these are not this language's transformations
-    OldDutch.front_velars(ary)
-    OldDutch.postvocalic_h(ary)
-    OldDutch.endings(ary)
-    OldDutch.assign_stress(ary)
-    OldDutch.vowel_reduction(ary)
   end
 end
 
@@ -2263,7 +2268,7 @@ def transform(str, since = "L", plural = false)
   end
 
   if ["OLF", "FRO", "L"].include?(since)
-    @steps[38] = OldDutch.to_dictum(str) if since == "OLF"
+    @steps[38] = OldIbran.borrow_old_dutch(str) if since == "OLF"
     @steps[38] = OldFrench.to_dictum(str) if since == "FRO"
     @steps[38].features.merge!(plural: plural)
     
@@ -2372,7 +2377,7 @@ def name_transform(str, since = "L", plural = false)
   end
 
   if ["OLF", "FRO", "L"].include?(since)
-    @outcomes = [@steps[38] = OldDutch.to_dictum(str)] if since == "OLF"
+    @outcomes = [@steps[38] = OldIbran.borrow_old_dutch(str)] if since == "OLF"
     @outcomes = [@steps[38] = OldFrench.to_dictum(str)] if since == "FRO"
     @steps[38].features.merge!(plural: plural)
     steps = %i[step_oix1 step_oix2 step_oix3 step_oix4 step_oix5 step_oix6 step_oix7
