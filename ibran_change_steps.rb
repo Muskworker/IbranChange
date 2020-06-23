@@ -2149,10 +2149,10 @@ end
 
 # je wo wø > i u y in closed syllables
 def step_pi4(ary)
-  ary.change(/\Aj?(e|ẽ)\Z|\Aw?(o|õ|ø|ø̃\Z)/, {}, lambda do |segm|
+  ary.change(/\A(j?(e|ẽ)|w?(o|õ|ø|ø̃))\Z/, {}, lambda do |segm|
     rising = segm.rising_diphthong?
     segm.replace!(PaysanIbran.close_diphthong(segm))
-    segm.prev.delete if segm.after?(%w[j w]) && !rising
+    segm.prev.delete unless rising
   end) do |iff|
     iff =~ [:rising_diphthong,
             ->(s) { s.prev =~ %w[j w] && s =~ :starts_with_vocalic }] \
