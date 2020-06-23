@@ -4,6 +4,8 @@ require 'forwardable'
 
 # Dictum: A word or series of segments.
 class Dictum < Array
+  attr_accessor :features
+
   def <<(segm)
     segm.dictum = self
     segm.pos = size
@@ -18,7 +20,8 @@ class Dictum < Array
     renumber
   end
 
-  def initialize(segments = [])
+  def initialize(segments = [], features = {})
+    @features = features
     segments.inject(self) do |dict, seg|
       dict << seg
     end
@@ -1527,7 +1530,7 @@ end
 
 # plural /Os As/ to /@s/
 def step_oix1(ary)
-  if @plural
+  if ary.features[:plural]
     ary << Segment.new('ə', 'e') unless ary.last.ends_with =~ 'ə'
     ary << Segment.new('s')
   end
@@ -2215,7 +2218,6 @@ def transform(str, since = "L", plural = false)
   @current = []
   @roesan_steps = []
   @paysan_steps = []
-  @plural = plural
 
   if since == "L"
     @steps[0] = deep_dup step_vl0(str)
@@ -2263,7 +2265,8 @@ def transform(str, since = "L", plural = false)
   if ["OLF", "FRO", "L"].include?(since)
     @steps[38] = OldDutch.to_dictum(str) if since == "OLF"
     @steps[38] = OldFrench.to_dictum(str) if since == "FRO"
-
+    @steps[38].features.merge!(plural: plural)
+    
     @steps[39] = step_oix1(deep_dup(@steps[38]))
     @steps[40] = step_oix2(deep_dup(@steps[39]))
     @steps[41] = step_oix3(deep_dup(@steps[40]))
@@ -2354,7 +2357,6 @@ def name_transform(str, since = "L", plural = false)
   @current = []
   @roesan_steps = []
   @paysan_steps = []
-  @plural = plural
   @outcomes = []
   @prior_outcome_size = 1
 
@@ -2372,6 +2374,7 @@ def name_transform(str, since = "L", plural = false)
   if ["OLF", "FRO", "L"].include?(since)
     @outcomes = [@steps[38] = OldDutch.to_dictum(str)] if since == "OLF"
     @outcomes = [@steps[38] = OldFrench.to_dictum(str)] if since == "FRO"
+    @steps[38].features.merge!(plural: plural)
     steps = %i[step_oix1 step_oix2 step_oix3 step_oix4 step_oix5 step_oix6 step_oix7
                step_ci1 step_ci2 step_ci3 step_ci4 step_ci5 step_ci6 step_ci7 step_ci8]
 
