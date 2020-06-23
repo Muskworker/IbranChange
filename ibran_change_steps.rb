@@ -1047,13 +1047,13 @@ class LateLatin
              when /th/           then 'θ'
              when /lj/           then 'ʎ'
              when /nj/           then 'ɲ'
-            #when /ng/i          then 'ng'
+             # when /ng/i          then 'ng'
              when /j/            then 'ʝ'
              else obj.dup.downcase
              end
 
       orth = case obj
-             #when /k/i  then "c"
+             # when /k/i  then "c"
              when /ī/i  then 'i'
              when /y/i  then 'i'
              when /lj/i then 'll'
@@ -1084,9 +1084,9 @@ class LateLatin
 
     # assign stress to each word
     ary.change(:final, {}, lambda do |mark|
-      initial = ary[0...mark.pos].reverse_each.find {|s| s =~ :initial }
+      initial = ary[0...mark.pos].reverse_each.find { |s| s =~ :initial }
       word = ary[initial.pos..mark.pos]
-      vowels = word.find_all { |segm| segm.vocalic? }
+      vowels = word.find_all(&:vocalic?)
 
       if mark =~ '!'
         vowels[-1][:stress] = true
@@ -1114,7 +1114,7 @@ class LateLatin
         end
       end
 
-      if vowels[-2]&.stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
+      if vowels[-2]&.stressed? && %w[ɛ ɔ].include?(vowels[-2][:IPA])
         case vowels[-2][:IPA]
         when 'ɛ'
           vowels[-2][:IPA] = 'e'
@@ -1127,14 +1127,14 @@ class LateLatin
     end)
 
     ary.change(:final, {}, lambda do |segm|
-      initial = ary[0...segm.pos].reverse_each.find {|s| s =~ :initial }
+      initial = ary[0...segm.pos].reverse_each.find { |s| s =~ :initial }
       word = ary[initial.pos..segm.pos]
 
       # TODO: correctly get this working for multiple words
       # TODO: get 'pop' working
       case word.join
       when /alis|alem$/
-        segm.before_prev.prev.update(IPA: "o", orthography: "au", stress: true, long: true)
+        segm.before_prev.prev.update(IPA: 'o', orthography: 'au', stress: true, long: true)
         segm.dictum[-3].delete # l
         segm.dictum.renumber   # argh
         segm.dictum[-2].delete # i/e
@@ -1144,7 +1144,7 @@ class LateLatin
         segm.before_prev.update(orthography: 'a', stress: true)
         segm.delete # e
       when /ariu(m|s)$/ #ariam, arium
-        segm.before_prev.before_prev.update(IPA: "a", orthography: "ài", long: true, stress: true)
+        segm.before_prev.before_prev.update(IPA: 'a', orthography: 'ài', long: true, stress: true)
         segm.dictum[-3].delete # i
         segm.dictum.renumber   # argh
         segm.dictum[-2].delete # u
