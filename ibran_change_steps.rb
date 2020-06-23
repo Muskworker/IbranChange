@@ -1014,9 +1014,277 @@ class OldDutch
     end
   end
 end
+
+# Operations for late-borrowed Latin words
+class LateLatin
+  def self.to_dictum(str)
+    ary = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|[ln]j|./i).inject(Dictum.new) do |memo, obj|
+      supra = {}
+      supra.merge!(long: true) if obj.match(/aũ|éũ|eũ|éu|eu|iũ/i)
+      supra.merge!(was_k: true) if obj.match(/k|ch/)
+
+      phon = case obj
+             when /qu/i          then 'kw'
+             when /x/i           then 'ks'
+             when /ss/i          then 's'
+             when /aũ|au/i       then 'o'
+             when /iéũ|iéũ|iéu/i then 'jø'
+             when /ié/i          then 'je'
+             when /ie/i          then 'jɛ'
+             when /éũ|éu/i       then 'ø'
+             when /eũ|eu/i       then 'œ'
+             when /iũ|iu/i       then 'y'
+             when /ae/i          then 'ɑɛ̯'
+             when /ā|ă|a/i       then 'ɑ'
+             when /ē|ĕ|e/i       then 'ɛ'
+             when /ī|ĭ|ȳ|y̆|y/i   then 'i'
+             when /ō|ŏ|o/i       then 'ɔ'
+             when /ū|ŭ/i         then 'u'
+             when /c/i           then 'k'
+             when /z/i           then 'ʃ'
+             when /ph/i          then 'f'
+             when /rh/i          then 'r'
+             when /th/           then 'θ'
+             when /lj/           then 'ʎ'
+             when /nj/           then 'ɲ'
+            #when /ng/i          then 'ng'
+             when /j/            then 'ʝ'
+             else obj.dup.downcase
+             end
+
+      orth = case obj
+             #when /k/i  then "c"
+             when /ī/i  then 'i'
+             when /y/i  then 'i'
+             when /lj/i then 'll'
+             when /nj/i then 'nh'
+             when /ph/i then 'f'
+             else obj.dup
+             end
+
       memo << Segment[IPA: phon, orthography: orth].merge(supra)
     end
 
+    # /gw/
+    ary.change('g', { IPA: 'gw', orthography: 'gu' }, lambda do |segm|
+      segm.next.delete
+    end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with.vowel? }
+
+    # /gw/ in LL verb forms
+    ary.change('g', {}, lambda do |segm|
+      segm[:orthography] = 'gu' unless segm.after_next =~ '>'
+      segm.next.delete
+    end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with =~ ['>', 'j'] }
+
+    # jot
+    ary.change(%w[t s ks], { IPA: 'ʃʃ' }, lambda do |segm|
+      segm[:orthography] << 'i'
+      segm.next.delete
+    end) { |iff| iff.before?('i') && iff.after_next.vowel? }
+
+    # assign stress to each word
+    ary.change(:final, {}, lambda do |mark|
+      initial = ary[0...mark.pos].reverse_each.find {|s| s =~ :initial }
+      word = ary[initial.pos..mark.pos]
+      vowels = word.find_all { |segm| segm.vocalic? }
+
+      if mark =~ '!'
+        vowels[-1][:stress] = true
+        mark.delete
+      elsif mark =~ '>'
+        mark[:IPA] = '' # '>' is read as consonantal
+
+        case vowels.length
+        when 0
+          # no stress
+        when 1
+          vowels[-1][:stress] = true
+        else
+          (vowels[-1][:long] || ultima_cluster?(word)) ? vowels[-1][:stress] = true : vowels[-2][:stress] = true
+        end
+        mark.delete
+      else
+        case vowels.length
+        when 0, 1
+          # no stress
+        when 2
+          vowels[-2][:stress] = true
+        else
+          (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2][:stress] = true : vowels[-3][:stress] = true
+        end
+      end
+
+      if vowels[-2]&.stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
+        case vowels[-2][:IPA]
+        when 'ɛ'
+          vowels[-2][:IPA] = 'e'
+          vowels[-2][:orthography] = 'é'
+        when 'ɔ'
+          vowels[-2][:IPA] = 'o'
+          vowels[-2][:orthography] = 'ó'
+        end
+      end
+    end)
+
+    ary.change(:final, {}, lambda do |segm|
+      initial = ary[0...segm.pos].reverse_each.find {|s| s =~ :initial }
+      word = ary[initial.pos..segm.pos]
+
+      # TODO: correctly get this working for multiple words
+      # TODO: get 'pop' working
+      case word.join
+      when /alis|alem$/
+        segm.before_prev.prev.update(IPA: "o", orthography: "au", stress: true, long: true)
+        segm.dictum[-3].delete # l
+        segm.dictum.renumber   # argh
+        segm.dictum[-2].delete # i/e
+        segm.dictum.renumber   # argh
+        segm.delete            # s/m
+      when /āre$/
+        segm.before_prev.update(orthography: 'a', stress: true)
+        segm.delete # e
+      when /ariu(m|s)$/ #ariam, arium
+        segm.before_prev.before_prev.update(IPA: "a", orthography: "ài", long: true, stress: true)
+        segm.dictum[-3].delete # i
+        segm.dictum.renumber   # argh
+        segm.dictum[-2].delete # u
+        segm.dictum.renumber   # argh
+        segm.delete            # m/s
+      when /as$/
+        segm.prev.replace!(%w[ə e]) # a
+      when /atio$/
+        segm.prev.replace!(%w[ʒʒ sç])
+        segm.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
+      when /ator$/
+        segm.before_prev.prev.replace!(%w[ə e])
+        segm.before_prev.replace!('l')
+        segm.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
+        respell_velars(word)
+      when /atorium$/
+        segm.dictum[-7].replace!(%w[ə e])
+        segm.dictum[-6].replace!('l')
+        segm.dictum[-5].update(IPA: 'œ', orthography: 'eu', long: true, stress: true)
+        segm.dictum[-3].delete # i
+        segm.dictum.renumber   # argh
+        segm.dictum[-2].delete # u
+        segm.dictum.renumber   # argh
+        segm.delete            # m
+      when /illum$/
+        segm.dictum[-5].update(IPA: "i", orthography: "ill", stress: true, long: true)
+        segm.dictum[-4].delete # l
+        segm.dictum.renumber   # argh
+        segm.dictum[-3].delete # l
+        segm.dictum.renumber   # argh
+        segm.dictum[-2].delete # u
+        segm.dictum.renumber   # argh
+        segm.delete            # m
+      when /illa$/
+        segm.dictum[-3].replace!(%w[j ll])
+        segm.dictum[-2].delete
+        segm.replace!(%w[ə e])
+      when /a$/
+        segm.replace!(%w[ə e])
+        respell_velars(word)
+      when /ēre$/
+        segm.before_prev.update(IPA: 'je', orthography: 'ié', stress: true)
+        segm.delete
+      when /(énsem|énsis)$/
+        segm.dictum[-4].delete # n
+        segm.dictum[-2].delete # e/i
+        segm.dictum.renumber   # argh
+        segm.delete            # m/s
+      when /(sin|sis)$/
+        segm.prev.delete
+        segm.dictum.renumber
+        segm.delete
+      when /(t|s)ionem$/
+        segm.before_prev.before_prev.replace!(%w[ʒʒ sç])
+        segm.before_prev.prev.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
+        segm.dictum[-3].delete # n
+        segm.dictum.renumber   # argh
+        segm.dictum[-2].delete # e
+        segm.dictum.renumber   # argh
+        segm.delete            # m
+      when /onem$/
+        segm.before_prev.prev.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
+        segm.dictum[-3].delete # n
+        segm.dictum.renumber   # argh
+        segm.dictum[-2].delete # e
+        segm.dictum.renumber   # argh
+        segm.delete            # m
+      when /tórem$/
+        segm.before_prev.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
+        segm.dictum[-2].delete # e
+        segm.dictum.renumber   # argh
+        segm.delete            # m
+      when /ium$/
+        # segm.before_prev.replace!(%w[j i]) if segm.before_prev =~ 'i'
+        segm.prev.replace!(%w[ə e])         # u
+        segm.delete                         # m
+      when /(e|u)m$/ # not us
+        segm.delete # m
+        step_oi26(ary)
+      end
+    end)
+
+    ary.change('i', {}, lambda do |segm|
+      ary.insert(segm.pos + 1, Segment.new('j', '')) # segm.append('j', '')
+    end) { |iff| iff.pretonic? && iff.next.vocalic?  }
+
+    @current = ary
+    # duplicate stresses after endings
+    @current.select(&:stressed?)[0..-2].each{|s| s[:stress] = false} if @current.count(&:stressed?) > 1
+
+    @current = step_oix1(@current)
+    @current = step_ci2(@current)
+    @current = step_ci3(@current)
+    @current = step_ci4(@current)
+    @current = step_ci5(@current)
+    @current = step_ci8(@current)
+
+    posttonic = false
+
+    @current = @current.each_with_index do |segm, idx|
+      case segm[:IPA]
+      when "k"
+        if @current[idx+1] && (segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j' ) && segm.next[:orthography] != "u" # /y/ is a front vowel
+          if segm[:orthography] == "ch"
+            segm[:orthography] = "qu"
+            segm[:palatalized] = true
+          elsif !segm[:was_k]
+            segm[:IPA] = "ç"
+            respell_velars(@current)
+          end
+        end
+      when "g"
+        if (segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j' ) && segm.next[:orthography] != "u"
+          if segm[:orthography] == "gh"
+            segm[:orthography] = "gu"
+            segm[:palatalized] = true
+          else
+            segm[:IPA] = "ʝ"
+            respell_velars(@current)
+          end
+        end
+      when "œ"
+        segm[:IPA] = 'o' if !segm.stressed?
+      end
+
+      segm[:orthography] = segm[:orthography].gsub(/ch/, "c")
+
+      if segm.vocalic? && posttonic
+        case segm[:orthography]
+        when 'e'
+          segm[:IPA] = 'ə'
+       # when 'en'
+      #    segm[:IPA] = 'ə̃'
+        end
+      end
+
+      posttonic = true if segm.stressed?
+    end
+
+    @current.compact
   end
 end
 
@@ -1943,278 +2211,6 @@ def step_pi10(ary)
   PaysanIbran.orthographic_changes(ary)
 end
 
-# INCOMPLETE
-def convert_LL str
-  ary = str.scan(/[aeé]u|i?.ũ|iéu?|[aoi]e|[ey][ij]|qu|[ckprtg]h|ss|[ln]j|./i).inject(Dictum.new) do |memo, obj|
-    supra = {}
-    supra.merge!({ long: true }) if obj.match(/aũ|éũ|eũ|éu|eu|iũ/i)
-    supra.merge!({ was_k: true }) if obj.match(/k|ch/)
-    #supra.merge!({ originally_long: true }) if obj.match(/[āēīōūȳ]/i)
-
-    phon = case obj
-           when /qu/i     then "kw"
-           when /x/i      then "ks"
-           when /ss/i     then "s"
-           when /aũ|au/i  then "o"
-           when /iéũ|iéũ|iéu/i  then "jø"
-           when /ié/i     then "je"
-           when /ie/i     then "jɛ"
-           when /éũ|éu/i    then "ø"
-           when /eũ|eu/i    then "œ"
-           when /iũ|iu/i    then "y"
-           when /ae/i       then "ɑɛ̯"
-           when /ā|ă|a/i  then "ɑ"
-           when /ē|ĕ|e/i  then "ɛ"
-           when /ī|ĭ|ȳ|y̆|y/i  then "i"
-           when /ō|ŏ|o/i  then "ɔ"
-           when /ū|ŭ/i    then "u"
-           when /c/i      then "k"
-           when /z/i      then "ʃ"
-           when /ph/i     then 'f'
-           when /rh/i     then 'r'
-           when /th/      then 'θ'
-           when /lj/      then 'ʎ'
-           when /nj/      then 'ɲ'
-          #when /ng/i     then 'ng'
-           when /j/       then 'ʝ'
-           else obj.dup.downcase
-           end
-
-    orth = case obj
-           #when /k/i  then "c"
-           when /ī/i  then "i"
-           when /y/i  then "i"
-           when /lj/i then 'll'
-           when /nj/i then 'nh'
-           when /ph/i then 'f'
-           else obj.dup
-           end
-
-    memo << Segment[IPA: phon, orthography: orth].merge(supra)
-  end
-
-  # /gw/
-  ary.change('g', { IPA: 'gw', orthography: 'gu' }, lambda do |segm|
-    segm.next.delete
-  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with.vowel? }
-
-  # /gw/ in LL verb forms
-  ary.change('g', {}, lambda do |segm|
-    segm[:orthography] = 'gu' unless segm.after_next =~ '>'
-    segm.next.delete
-  end) { |iff| iff.between?('n', 'u') && iff.after_next.starts_with =~ ['>', 'j'] }
-
-  # jot
-  ary.change(%w[t s ks], { IPA: 'ʃʃ' }, lambda do |segm|
-    segm[:orthography] << 'i'
-    segm.next.delete
-  end) { |iff| iff.before?('i') && iff.after_next.vowel? }
-
-  # assign stress to each word
-  ary.change(:final, {}, lambda do |mark|
-    initial = ary[0...mark.pos].reverse_each.find {|s| s =~ :initial }
-    word = ary[initial.pos..mark.pos]
-    vowels = word.find_all { |segm| segm.vocalic? }
-
-    if mark =~ '!'
-      vowels[-1][:stress] = true
-      mark.delete
-    elsif mark =~ '>'
-      mark[:IPA] = '' # '>' is read as consonantal
-
-      case vowels.length
-      when 0
-        # no stress
-      when 1
-        vowels[-1][:stress] = true
-      else
-        (vowels[-1][:long] || ultima_cluster?(word)) ? vowels[-1][:stress] = true : vowels[-2][:stress] = true
-      end
-      mark.delete
-    else
-      case vowels.length
-      when 0, 1
-        # no stress
-      when 2
-        vowels[-2][:stress] = true
-      else
-        (vowels[-2][:long] || penult_cluster?(word)) ? vowels[-2][:stress] = true : vowels[-3][:stress] = true
-      end
-    end
-
-    if vowels[-2]&.stressed? && %w{ɛ ɔ}.include?(vowels[-2][:IPA])
-      case vowels[-2][:IPA]
-      when 'ɛ'
-        vowels[-2][:IPA] = 'e'
-        vowels[-2][:orthography] = 'é'
-      when 'ɔ'
-        vowels[-2][:IPA] = 'o'
-        vowels[-2][:orthography] = 'ó'
-      end
-    end
-  end)
-
-  ary.change(:final, {}, lambda do |segm|
-    initial = ary[0...segm.pos].reverse_each.find {|s| s =~ :initial }
-    word = ary[initial.pos..segm.pos]
-
-    # TODO: correctly get this working for multiple words
-    # TODO: get 'pop' working
-    case word.join
-    when /alis|alem$/
-      segm.before_prev.prev.update(IPA: "o", orthography: "au", stress: true, long: true)
-      segm.dictum[-3].delete # l
-      segm.dictum.renumber   # argh
-      segm.dictum[-2].delete # i/e
-      segm.dictum.renumber   # argh
-      segm.delete            # s/m
-    when /āre$/
-      segm.before_prev.update(orthography: 'a', stress: true)
-      segm.delete # e
-    when /ariu(m|s)$/ #ariam, arium
-      segm.before_prev.before_prev.update(IPA: "a", orthography: "ài", long: true, stress: true)
-      segm.dictum[-3].delete # i
-      segm.dictum.renumber   # argh
-      segm.dictum[-2].delete # u
-      segm.dictum.renumber   # argh
-      segm.delete            # m/s
-    when /as$/
-      segm.prev.replace!(%w[ə e]) # a
-    when /atio$/
-      segm.prev.replace!(%w[ʒʒ sç])
-      segm.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
-    when /ator$/
-      segm.before_prev.prev.replace!(%w[ə e])
-      segm.before_prev.replace!('l')
-      segm.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
-      respell_velars(word)
-    when /atorium$/
-      segm.dictum[-7].replace!(%w[ə e])
-      segm.dictum[-6].replace!('l')
-      segm.dictum[-5].update(IPA: 'œ', orthography: 'eu', long: true, stress: true)
-      segm.dictum[-3].delete # i
-      segm.dictum.renumber   # argh
-      segm.dictum[-2].delete # u
-      segm.dictum.renumber   # argh
-      segm.delete            # m
-    when /illum$/
-      segm.dictum[-5].update(IPA: "i", orthography: "ill", stress: true, long: true)
-      segm.dictum[-4].delete # l
-      segm.dictum.renumber   # argh
-      segm.dictum[-3].delete # l
-      segm.dictum.renumber   # argh
-      segm.dictum[-2].delete # u
-      segm.dictum.renumber   # argh
-      segm.delete            # m
-    when /illa$/
-      segm.dictum[-3].replace!(%w[j ll])
-      segm.dictum[-2].delete
-      segm.replace!(%w[ə e])
-    when /a$/
-      segm.replace!(%w[ə e])
-      respell_velars(word)
-    when /ēre$/
-      segm.before_prev.update(IPA: 'je', orthography: 'ié', stress: true)
-      segm.delete
-    when /(énsem|énsis)$/
-      segm.dictum[-4].delete # n
-      segm.dictum[-2].delete # e/i
-      segm.dictum.renumber   # argh
-      segm.delete            # m/s
-    when /(sin|sis)$/
-      segm.prev.delete
-      segm.dictum.renumber
-      segm.delete
-    when /(t|s)ionem$/
-      segm.before_prev.before_prev.replace!(%w[ʒʒ sç])
-      segm.before_prev.prev.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
-      segm.dictum[-3].delete # n
-      segm.dictum.renumber   # argh
-      segm.dictum[-2].delete # e
-      segm.dictum.renumber   # argh
-      segm.delete            # m
-    when /onem$/
-      segm.before_prev.prev.update(IPA: 'ũ', orthography: 'uon', long: true, stress: true)
-      segm.dictum[-3].delete # n
-      segm.dictum.renumber   # argh
-      segm.dictum[-2].delete # e
-      segm.dictum.renumber   # argh
-      segm.delete            # m
-    when /tórem$/
-      segm.before_prev.prev.update(IPA: 'u', orthography: 'uo', long: true, stress: true)
-      segm.dictum[-2].delete # e
-      segm.dictum.renumber   # argh
-      segm.delete            # m
-    when /ium$/
-      # segm.before_prev.replace!(%w[j i]) if segm.before_prev =~ 'i'
-      segm.prev.replace!(%w[ə e])         # u
-      segm.delete                         # m
-    when /(e|u)m$/ # not us
-      segm.delete # m
-      step_oi26(ary)
-    end
-  end)
-
-  ary.change('i', {}, lambda do |segm|
-    ary.insert(segm.pos + 1, Segment.new('j', '')) # segm.append('j', '')
-  end) { |iff| iff.pretonic? && iff.next.vocalic?  }
-
-  @current = ary
-  # duplicate stresses after endings
-  @current.select(&:stressed?)[0..-2].each{|s| s[:stress] = false} if @current.count(&:stressed?) > 1
-
-  @current = step_oix1(@current)
-  @current = step_ci2(@current)
-  @current = step_ci3(@current)
-  @current = step_ci4(@current)
-  @current = step_ci5(@current)
-  @current = step_ci8(@current)
-
-  posttonic = false
-
-  @current = @current.each_with_index do |segm, idx|
-    case segm[:IPA]
-    when "k"
-      if @current[idx+1] && (segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j' ) && segm.next[:orthography] != "u" # /y/ is a front vowel
-        if segm[:orthography] == "ch"
-          segm[:orthography] = "qu"
-          segm[:palatalized] = true
-        elsif !segm[:was_k]
-          segm[:IPA] = "ç"
-          respell_velars(@current)
-        end
-      end
-    when "g"
-      if (segm.next.starts_with.front_vowel? || segm.next.starts_with =~ 'j' ) && segm.next[:orthography] != "u"
-        if segm[:orthography] == "gh"
-          segm[:orthography] = "gu"
-          segm[:palatalized] = true
-        else
-          segm[:IPA] = "ʝ"
-          respell_velars(@current)
-        end
-      end
-    when "œ"
-      segm[:IPA] = 'o' if !segm.stressed?
-    end
-
-    segm[:orthography] = segm[:orthography].gsub(/ch/, "c")
-
-    if segm.vocalic? && posttonic
-      case segm[:orthography]
-      when 'e'
-        segm[:IPA] = 'ə'
-     # when 'en'
-    #    segm[:IPA] = 'ə̃'
-      end
-    end
-
-    posttonic = true if segm.stressed?
-  end
-
-  @current.compact
-end
-
 # Ugh
 def deep_dup ary
   Marshal.load(Marshal.dump(ary))
@@ -2293,7 +2289,7 @@ def transform(str, since = "L", plural = false)
   end
 
   if ["LL", "OLF", "FRO", "L"].include?(since)
-    @steps[53] = convert_LL(str) if since == "LL"
+    @steps[53] = LateLatin.to_dictum(str) if since == "LL"
 
     @roesan_steps[0] = step_ri1(deep_dup(@steps[53]))
     @roesan_steps[1] = step_ri2(deep_dup(@roesan_steps[0]))
@@ -2389,7 +2385,7 @@ def name_transform(str, since = "L", plural = false)
   end
 
   if ["LL", "OLF", "FRO", "L"].include?(since)
-    @outcomes = [@steps[53] = convert_LL(str)] if since == "LL"
+    @outcomes = [@steps[53] = LateLatin.to_dictum(str)] if since == "LL"
 
     @outcomes.each do |oc|
       @roesan_steps[0] = step_ri1(deep_dup(oc))
