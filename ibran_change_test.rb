@@ -1067,6 +1067,7 @@ class IbranChangeTest < Minitest::Test
       { w: "inflāre", RI_IPA: "əwˈlɑr", RI_Cyrl: "ъулар", RI_Latn: "ew̃lar", PI_IPA: "əwˈlɑr", PI: "ewlar" },
       { w: "īsulam", RI_IPA: "izl", RI_Cyrl: "ізл", RI_Latn: "isle", PI_IPA: "ˈizlə", PI: "islă" },
       { w: "jacēre", RI_IPA: "ʝɑˈʒʒer", RI_Cyrl: "жажжир", RI_Latn: "jascér", PI_IPA: "ʝəˈʒʒer", PI: "jascér" },
+      { w: "jacēs", RI_IPA: "ʝaːʒ", RI_Cyrl: "жя̄ж", RI_Latn: "jaeces", PI_IPA: "ˈʝɑjʒəs", PI: "jaeçăs" },
       { w: "jocāre", RI_IPA: "ʝɔˈdʒɑr", RI_Cyrl: "жоџар", RI_Latn: "jogar", PI_IPA: "ʝəˈdʒɑr", PI: "jodjar" },
       { w: "lacum", RI_IPA: "lɑkʲ", RI_Cyrl: "лак", RI_Latn: "lag", PI_IPA: "lɑx", PI: "lag" },
       { w: "lactem", RI_IPA: "laːt", RI_Cyrl: "ля̄т", RI_Latn: "laet", PI_IPA: "lɑjt", PI: "laet" },

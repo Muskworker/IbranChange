@@ -518,7 +518,7 @@ class OldIbran
     (segm.prev.ends_with.consonantal? && segm.before_prev.consonantal? \
     && (OldIbran.in_stop_cluster?(segm) || segm.before?('s')))         \
     || segm.after?(%w[ʃʃ ʒʒ])                                          \
-    || segm.between?('s', :sibilant)
+    || segm.between?(:sibilant, :sibilant)
   end
 
   def self.between_single_consonants?(segm)
