@@ -494,9 +494,7 @@ class Latin
   def self.assign_stress(word, exception = nil)
     vowels = word.find_all(&:vocalic?)
 
-    if %w[! - > <].include? exception
-      word.last.merge!(IPA: nil, orthography: nil)
-    end
+    word.last.merge!(IPA: nil, orthography: nil) if %w[! - > <].include? exception
 
     if exception == '!'
       vowels[-1][:stress] = true
@@ -723,9 +721,7 @@ class PaysanIbran
                  'wø̃' => %w[ỹ un], 'ø' => %w[y u], 'ø̃' => %w[ỹ un] }
 
     outcome = outcomes[segm.phon]
-    if segm.after?([:vocalic, { IPA: 'j', intervocalic: true }])
-      outcome[1] = outcome[1].tr('i', 'y')
-    end
+    outcome[1] = outcome[1].tr('i', 'y') if segm.after?([:vocalic, { IPA: 'j', intervocalic: true }])
 
     outcome
   end
@@ -746,9 +742,7 @@ class PaysanIbran
   def self.resolve_hiatus(ary)
     ary.change(:unstressed, {}, lambda do |segm|
       ## Lengthen vowels before pretonic vowels in hiatus before unstressed
-      if segm.next.match_all(:vowel, :unstressed) && segm.pretonic?
-        segm[:long] = true
-      end
+      segm[:long] = true if segm.next.match_all(:vowel, :unstressed) && segm.pretonic?
 
       if segm.before?(:vowel) && segm.match_all(:posttonic, %w[i ɛ je])
         segm.next.prepend('j', segm.orth)
@@ -815,7 +809,7 @@ class PaysanIbran
     # Orthography changes
     ary.change([:vocalic, 'j'], {}, lambda do |segm|
       # several changes happening in 'order'
-      outcomes.keys.each do |key|
+      outcomes.each_key do |key|
         segm[:orthography] = segm.orth.gsub(/#{key}/, outcomes)
       end
     end)
@@ -1003,9 +997,7 @@ class OldDutch
              'iw' => 'iu', 'ī' => 'i', 'ō' => 'ó', 'ū' => 'u', 'nj' => 'nh',
              'j' => 'y' }
 
-    word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i) \
-        .inject(Dictum.new) do |memo, obj|
-
+    word.scan(/[ct]h|qu|kw|ei|eu|uo|[iī]w|ou|ng|i[ée]|aũ|au|nj|./i).inject(Dictum.new) do |memo, obj|
       long = obj =~ /[āēīōūȳ]|uo|aũ|au|eu/i
       phon = OldDutch.naive_ipa(obj)
       orth = maps.fetch(obj.downcase, obj.dup)
